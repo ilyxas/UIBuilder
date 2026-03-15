@@ -23,7 +23,7 @@
         {
           "name": "UIBuilderApp.swift",
           "type": "file",
-          "description": "Main SwiftUI app entry point. Declares the @main App struct and creates the initial WindowGroup scene containing RootView."
+          "description": "Main SwiftUI app entry point. Declares the @main UIEngineDemoApp struct and creates the initial WindowGroup scene containing RootView."
         },
         {
           "name": "ContentView.swift",
@@ -42,7 +42,7 @@
             {
               "name": "UIEngineDemoApp.swift",
               "type": "file",
-              "description": "Empty placeholder file reserved for a future standalone demo-app configuration separate from the main UIBuilderApp entry point."
+              "description": "Empty placeholder file. The actual @main app entry point struct (UIEngineDemoApp) is defined in UIBuilderApp.swift; this file is reserved for any future UIEngineDemoApp-specific extensions or configuration."
             }
           ]
         },
@@ -67,7 +67,7 @@
                 {
                   "name": "UIAction.swift",
                   "type": "file",
-                  "description": "Codable model describing a discrete action that can be triggered by a UI event. Supports action types including state.set, state.inc, state.dec, state.toggle, nav.push, nav.pop, ui.toast, ui.alert, flow.emit, and ai.request, with an optional conditional when expression."
+                  "description": "Decodable model describing a discrete action that can be triggered by a UI event. Supports action types including state.set, state.inc, state.dec, state.toggle, nav.push, nav.pop, ui.toast, ui.alert, flow.emit, and ai.request, with an optional conditional when expression."
                 },
                 {
                   "name": "Expression.swift",
@@ -93,7 +93,7 @@
                 {
                   "name": "NavigationStore.swift",
                   "type": "file",
-                  "description": "Observable store that manages the navigation path stack. Exposes push(screenId:) and pop() operations consumed by UIActionExecutor to drive SwiftUI NavigationStack transitions."
+                  "description": "Observable store that manages the navigation path stack. Exposes push(_ screenId:) and pop() operations consumed by UIActionExecutor to drive SwiftUI NavigationStack transitions."
                 },
                 {
                   "name": "ExpressionEvaluator.swift",
@@ -119,7 +119,7 @@
                 {
                   "name": "UIRenderer.swift",
                   "type": "file",
-                  "description": "Core SwiftUI rendering engine that recursively converts a UINode tree into native SwiftUI views. Handles over 14 component types, evaluates visibleWhen/enabledWhen conditions, performs state-binding text interpolation, and dispatches named events to UIActionExecutor on user interaction."
+                  "description": "Core SwiftUI rendering engine that recursively converts a UINode tree into native SwiftUI views. Handles 14 component types (vstack, hstack, zstack, scroll, columns, toolbar, text, button, toggle, icon, spacer, card, box/frame, badge), evaluates visibleWhen/enabledWhen conditions, performs state-binding text interpolation, and dispatches named events to UIActionExecutor on user interaction."
                 },
                 {
                   "name": "NodeStyle.swift",
@@ -134,7 +134,7 @@
                 {
                   "name": "LayoutSupport.swift",
                   "type": "file",
-                  "description": "Utility that extracts layout metrics (fixed width, flex-grow weight) from a UINode's props into a LayoutItemMetrics value type. Used by container renderers to implement proportional or flexible layouts."
+                  "description": "Utility that extracts layout metrics (fixed width, flex-grow weight) from a UINode's props into a LayoutItemMetrics value type. Currently defined but not yet referenced by container renderers; reserved for future proportional or flexible layout implementations."
                 },
                 {
                   "name": "NodeViews.swift",
