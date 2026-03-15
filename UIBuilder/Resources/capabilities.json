@@ -1,0 +1,295 @@
+{
+  "version": 2,
+  "status": "base-stable-strict",
+  "engine": {
+    "name": "UIBuilder Base Runtime",
+    "authoringMode": "base-json",
+    "notes": [
+      "This file is a strict generation contract for the current base runtime.",
+      "Use native SwiftUI-like composition.",
+      "Do not invent unsupported node types or event formats."
+    ]
+  },
+  "documents": {
+    "screenDocument": {
+      "requiredFields": [
+        "schema",
+        "screenId",
+        "root",
+        "events"
+      ],
+      "optionalFields": [
+        "title",
+        "theme",
+        "state",
+        "meta"
+      ]
+    },
+    "uiNode": {
+      "requiredFields": [
+        "type"
+      ],
+      "optionalFields": [
+        "id",
+        "props",
+        "children",
+        "visibleWhen",
+        "enabledWhen",
+        "event",
+        "items"
+      ],
+      "notes": [
+        "Children are rendered recursively.",
+        "Renderer must not invent subtree structure."
+      ]
+    }
+  },
+  "nodeTypes": {
+    "layout": [
+      "vstack",
+      "hstack",
+      "zstack",
+      "scroll",
+      "spacer"
+    ],
+    "primitive": [
+      "text",
+      "icon",
+      "toggle",
+      "badge"
+    ],
+    "composite": [
+      "button",
+      "card"
+    ]
+  },
+  "nodeRules": {
+    "vstack": {
+      "childrenAllowed": true
+    },
+    "hstack": {
+      "childrenAllowed": true
+    },
+    "zstack": {
+      "childrenAllowed": true
+    },
+    "scroll": {
+      "childrenAllowed": true
+    },
+    "spacer": {
+      "childrenAllowed": false
+    },
+    "text": {
+      "childrenAllowed": false,
+      "requiredProps": [
+        "value"
+      ]
+    },
+    "icon": {
+      "childrenAllowed": false,
+      "requiredProps": [
+        "name"
+      ],
+      "optionalProps": [
+        "size"
+      ]
+    },
+    "toggle": {
+      "childrenAllowed": false,
+      "requiredProps": [
+        "title",
+        "bind"
+      ]
+    },
+    "badge": {
+      "childrenAllowed": false
+    },
+    "button": {
+      "childrenAllowed": true,
+      "childrenRecommended": true,
+      "requiredEventKeys": [
+        "tap"
+      ],
+      "notes": [
+        "Button is a composite node.",
+        "Button label must be authored through children in base mode.",
+        "Renderer must not auto-create text or icon subtree from props."
+      ]
+    },
+    "card": {
+      "childrenAllowed": true
+    }
+  },
+  "props": {
+    "common": [
+      "padding",
+      "width",
+      "height",
+      "minWidth",
+      "minHeight",
+      "maxWidth",
+      "maxHeight",
+      "backgroundColor",
+      "foregroundColor",
+      "cornerRadius",
+      "opacity"
+    ],
+    "layout": [
+      "spacing",
+      "alignment"
+    ],
+    "text": [
+      "value"
+    ],
+    "icon": [
+      "name",
+      "size"
+    ],
+    "toggle": [
+      "title",
+      "bind"
+    ]
+  },
+  "strictFormats": {
+    "nodeEventFormat": {
+      "description": "Node event values must be string event names.",
+      "valid": {
+        "event": {
+          "tap": "searchPressed"
+        }
+      },
+      "invalid": [
+        {
+          "event": {
+            "tap": [
+              {
+                "do": "state.set",
+                "key": "statusText",
+                "value": "Search pressed"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "topLevelEventsFormat": {
+      "description": "All actions live in top-level events map.",
+      "valid": {
+        "events": {
+          "searchPressed": [
+            {
+              "do": "state.set",
+              "key": "statusText",
+              "value": "Search pressed"
+            }
+          ]
+        }
+      }
+    },
+    "actionFormat": {
+      "requiredFields": [
+        "do"
+      ],
+      "optionalFields": [
+        "key",
+        "value",
+        "min",
+        "max",
+        "id",
+        "input",
+        "message"
+      ],
+      "disallowedAliases": [
+        "action",
+        "target"
+      ]
+    },
+    "textValueFormat": {
+      "allowedForms": [
+        {
+          "value": "Literal text"
+        },
+        {
+          "value": {
+            "bind": "selectedField"
+          }
+        },
+        {
+          "value": {
+            "format": "Count: {count}",
+            "binds": [
+              "count"
+            ]
+          }
+        }
+      ],
+      "disallowedForms": [
+        {
+          "value": "$state.selectedField"
+        }
+      ]
+    }
+  },
+  "actions": {
+    "supported": [
+      "state.set",
+      "state.inc",
+      "state.dec",
+      "state.toggle",
+      "ui.toast",
+      "ai.request",
+      "nav.push",
+      "nav.pop",
+      "ui.alert"
+    ]
+  },
+  "expressions": {
+    "supportedContexts": [
+      "visibleWhen",
+      "enabledWhen"
+    ]
+  },
+  "baseModeConstraints": {
+    "disallowedNodeTypes": [
+      "frame",
+      "box",
+      "columns",
+      "toolbar"
+    ],
+    "notes": [
+      "Do not generate these node types for base runtime documents."
+    ]
+  },
+  "ownershipBoundaries": {
+    "appOwns": [
+      "shell",
+      "safe area handling",
+      "device-aware layout policy",
+      "top and bottom overlay policy",
+      "screen bounds awareness"
+    ],
+    "jsonOwns": [
+      "content tree",
+      "local node composition",
+      "local props",
+      "state bindings",
+      "event wiring",
+      "section structure"
+    ]
+  },
+  "generationRules": [
+    "Use only supported node types.",
+    "Use button as composite node with children.",
+    "Do not inline actions inside node.event.",
+    "Do not invent aliases for action fields.",
+    "Do not use unsupported dynamic text syntaxes.",
+    "Prefer native stack composition.",
+    "Prefer local props over artificial wrapper nodes.",
+    "Do not generate deprecated or experimental layout abstractions in base mode."
+  ],
+  "knownProjectFacts": {
+    "layoutSupportUsed": false,
+    "documentValidatorActive": true,
+    "buttonCompositeModeActive": true
+  }
+}

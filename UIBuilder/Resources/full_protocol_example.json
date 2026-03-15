@@ -1,4 +1,3 @@
-capabilities.json
 {
   "version": 2,
   "status": "base-stable-strict",
@@ -13,11 +12,23 @@ capabilities.json
   },
   "documents": {
     "screenDocument": {
-      "requiredFields": ["schema", "screenId", "root", "events"],
-      "optionalFields": ["title", "theme", "state", "meta"]
+      "requiredFields": [
+        "schema",
+        "screenId",
+        "root",
+        "events"
+      ],
+      "optionalFields": [
+        "title",
+        "theme",
+        "state",
+        "meta"
+      ]
     },
     "uiNode": {
-      "requiredFields": ["type"],
+      "requiredFields": [
+        "type"
+      ],
       "optionalFields": [
         "id",
         "props",
@@ -34,9 +45,23 @@ capabilities.json
     }
   },
   "nodeTypes": {
-    "layout": ["vstack", "hstack", "zstack", "scroll", "spacer"],
-    "primitive": ["text", "icon", "toggle", "badge"],
-    "composite": ["button", "card"]
+    "layout": [
+      "vstack",
+      "hstack",
+      "zstack",
+      "scroll",
+      "spacer"
+    ],
+    "primitive": [
+      "text",
+      "icon",
+      "toggle",
+      "badge"
+    ],
+    "composite": [
+      "button",
+      "card"
+    ]
   },
   "nodeRules": {
     "vstack": {
@@ -56,16 +81,25 @@ capabilities.json
     },
     "text": {
       "childrenAllowed": false,
-      "requiredProps": ["value"]
+      "requiredProps": [
+        "value"
+      ]
     },
     "icon": {
       "childrenAllowed": false,
-      "requiredProps": ["name"],
-      "optionalProps": ["size"]
+      "requiredProps": [
+        "name"
+      ],
+      "optionalProps": [
+        "size"
+      ]
     },
     "toggle": {
       "childrenAllowed": false,
-      "requiredProps": ["title", "bind"]
+      "requiredProps": [
+        "title",
+        "bind"
+      ]
     },
     "badge": {
       "childrenAllowed": false
@@ -73,7 +107,9 @@ capabilities.json
     "button": {
       "childrenAllowed": true,
       "childrenRecommended": true,
-      "requiredEventKeys": ["tap"],
+      "requiredEventKeys": [
+        "tap"
+      ],
       "notes": [
         "Button is a composite node.",
         "Button label must be authored through children in base mode.",
@@ -98,10 +134,21 @@ capabilities.json
       "cornerRadius",
       "opacity"
     ],
-    "layout": ["spacing", "alignment"],
-    "text": ["value"],
-    "icon": ["name", "size"],
-    "toggle": ["title", "bind"]
+    "layout": [
+      "spacing",
+      "alignment"
+    ],
+    "text": [
+      "value"
+    ],
+    "icon": [
+      "name",
+      "size"
+    ],
+    "toggle": [
+      "title",
+      "bind"
+    ]
   },
   "strictFormats": {
     "nodeEventFormat": {
@@ -140,18 +187,46 @@ capabilities.json
       }
     },
     "actionFormat": {
-      "requiredFields": ["do"],
-      "optionalFields": ["key", "value", "min", "max", "id", "input", "message"],
-      "disallowedAliases": ["action", "target"]
+      "requiredFields": [
+        "do"
+      ],
+      "optionalFields": [
+        "key",
+        "value",
+        "min",
+        "max",
+        "id",
+        "input",
+        "message"
+      ],
+      "disallowedAliases": [
+        "action",
+        "target"
+      ]
     },
     "textValueFormat": {
       "allowedForms": [
-        { "value": "Literal text" },
-        { "value": { "bind": "selectedField" } },
-        { "value": { "format": "Count: {count}", "binds": ["count"] } }
+        {
+          "value": "Literal text"
+        },
+        {
+          "value": {
+            "bind": "selectedField"
+          }
+        },
+        {
+          "value": {
+            "format": "Count: {count}",
+            "binds": [
+              "count"
+            ]
+          }
+        }
       ],
       "disallowedForms": [
-        { "value": "$state.selectedField" }
+        {
+          "value": "$state.selectedField"
+        }
       ]
     }
   },
@@ -162,14 +237,25 @@ capabilities.json
       "state.dec",
       "state.toggle",
       "ui.toast",
-      "ai.request"
+      "ai.request",
+      "nav.push",
+      "nav.pop",
+      "ui.alert"
     ]
   },
   "expressions": {
-    "supportedContexts": ["visibleWhen", "enabledWhen"]
+    "supportedContexts": [
+      "visibleWhen",
+      "enabledWhen"
+    ]
   },
   "baseModeConstraints": {
-    "disallowedNodeTypes": ["frame", "box", "columns", "toolbar"],
+    "disallowedNodeTypes": [
+      "frame",
+      "box",
+      "columns",
+      "toolbar"
+    ],
     "notes": [
       "Do not generate these node types for base runtime documents."
     ]
@@ -203,14 +289,14 @@ capabilities.json
   ],
   "knownProjectFacts": {
     "layoutSupportUsed": false,
-    "documentValidatorActive": false,
+    "documentValidatorActive": true,
     "buttonCompositeModeActive": true
   }
 }
 
 Examples:
 {
-  "schema": "uibuilder.base.v1",
+  "schema": "com.ilya.ui/1.0",
   "screenId": "example-button-composite",
   "root": {
     "type": "vstack",
@@ -280,7 +366,7 @@ Examples:
 }
 
 {
-  "schema": "uibuilder.base.v1",
+  "schema": "com.ilya.ui/1.0",
   "screenId": "example-settings-row",
   "root": {
     "type": "vstack",
@@ -360,7 +446,7 @@ Examples:
 }
 
 {
-  "schema": "uibuilder.base.v1",
+  "schema": "com.ilya.ui/1.0",
   "screenId": "example-small-screen",
   "title": "Controls",
   "state": {
@@ -576,20 +662,3 @@ Examples:
     ]
   }
 }
-
-Task:
-Используй только этот протокол и только этот wire format.
-
-Собери новый ScreenDocument:
-- сверху горизонтальный ряд из 4 иконок-кнопок
-- ниже список из 4 строк
-- в каждой строке слева нажимаемая текстовая часть, справа toggle
-- внизу карточка, которая показывает выбранное поле
-- button должен быть composite node с children
-- event у node должен содержать только строковое имя события
-- все действия должны жить только в top-level events
-- не использовать frame, box, columns, toolbar
-- не использовать inline actions inside event
-- не использовать $state.something
-
-Выдай только JSON.

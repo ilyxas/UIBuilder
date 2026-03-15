@@ -3,6 +3,8 @@ import SwiftUI
 struct RootView: View {
     @State private var document: ScreenDocument?
     @State private var toastMessage: String?
+    @State private var alertTitle: String?
+    @State private var alertMessage: String?
 
     @State private var stateStore = UIStateStore()
     @State private var navigationStore = NavigationStore()
@@ -34,6 +36,14 @@ struct RootView: View {
         } message: {
             Text(toastMessage ?? "")
         }
+        .alert(alertTitle ?? "", isPresented: Binding(
+            get: { alertMessage != nil },
+            set: { if !$0 { alertTitle = nil; alertMessage = nil } }
+        )) {
+            Button("OK") {}
+        } message: {
+            Text(alertMessage ?? "")
+        }
     }
 
     @MainActor
@@ -53,6 +63,10 @@ struct RootView: View {
     private func configured(_ executor: UIActionExecutor) -> UIActionExecutor {
         executor.onToast = { message in
             toastMessage = message
+        }
+        executor.onAlert = { title, message in
+            alertTitle = title
+            alertMessage = message
         }
         executor.onAIRequest = { id, input in
             print("AI request:", id, input)
