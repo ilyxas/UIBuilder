@@ -1,0 +1,222 @@
+{
+  "name": "UIBuilder",
+  "type": "directory",
+  "children": [
+    {
+      "name": "UIBuilder.xcodeproj",
+      "type": "directory",
+      "children": [
+        { "name": "project.pbxproj", "type": "file" },
+        {
+          "name": "project.xcworkspace",
+          "type": "directory",
+          "children": [
+            { "name": "contents.xcworkspacedata", "type": "file" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UIBuilder",
+      "type": "directory",
+      "children": [
+        {
+          "name": "UIBuilderApp.swift",
+          "type": "file",
+          "description": "Main SwiftUI app entry point. Declares the @main App struct and creates the initial WindowGroup scene containing RootView."
+        },
+        {
+          "name": "ContentView.swift",
+          "type": "file",
+          "description": "Placeholder content view that ships with the default Xcode project template. Not used by the main application flow."
+        },
+        {
+          "name": "App",
+          "type": "directory",
+          "children": [
+            {
+              "name": "RootView.swift",
+              "type": "file",
+              "description": "Root container view that orchestrates the full UI engine lifecycle. Loads a JSON screen document from the app bundle, initialises UIStateStore and NavigationStore, validates the document, and hands it to UIRenderer. Also surfaces toast messages as SwiftUI alerts."
+            },
+            {
+              "name": "UIEngineDemoApp.swift",
+              "type": "file",
+              "description": "Empty placeholder file reserved for a future standalone demo-app configuration separate from the main UIBuilderApp entry point."
+            }
+          ]
+        },
+        {
+          "name": "Engine",
+          "type": "directory",
+          "children": [
+            {
+              "name": "Schema",
+              "type": "directory",
+              "children": [
+                {
+                  "name": "ScreenDocument.swift",
+                  "type": "file",
+                  "description": "Root Codable model for an entire screen definition. Holds the schema version identifier, screenId, title, optional theme tokens (spacing, corner radius, colour palette, font sizes), initial state variables, the root UINode tree, named event handlers, and arbitrary metadata."
+                },
+                {
+                  "name": "UINode.swift",
+                  "type": "file",
+                  "description": "Core data model representing a single node in the UI component tree. Stores the node id, component type (vstack, hstack, zstack, scroll, text, button, toggle, icon, card, columns, toolbar, badge, box, frame, spacer, etc.), arbitrary props, child nodes, optional visibleWhen/enabledWhen expressions, event bindings, and list-item data."
+                },
+                {
+                  "name": "UIAction.swift",
+                  "type": "file",
+                  "description": "Codable model describing a discrete action that can be triggered by a UI event. Supports action types including state.set, state.inc, state.dec, state.toggle, nav.push, nav.pop, ui.toast, ui.alert, flow.emit, and ai.request, with an optional conditional when expression."
+                },
+                {
+                  "name": "Expression.swift",
+                  "type": "file",
+                  "description": "Recursive enum defining the expression language used throughout the schema for conditions and value bindings. Supports bind (state-key lookup), literal values, comparison operators (eq, neq, gt, gte, lt, lte), and logical combinators (and, or, not). Implements a custom Decoder so plain literals can be inlined without wrapper objects."
+                },
+                {
+                  "name": "Capabilities.swift",
+                  "type": "file",
+                  "description": "Placeholder file reserved for future declarations of device or runtime capability descriptors that a screen document may require."
+                }
+              ]
+            },
+            {
+              "name": "Runtime",
+              "type": "directory",
+              "children": [
+                {
+                  "name": "UIStateStore.swift",
+                  "type": "file",
+                  "description": "Observable key-value state store that holds all runtime state for a rendered screen. Provides typed accessors and mutators (get, set, increment, decrement, toggle) operating on DynamicValue entries. Marked with @Observable so SwiftUI views automatically re-render on changes."
+                },
+                {
+                  "name": "NavigationStore.swift",
+                  "type": "file",
+                  "description": "Observable store that manages the navigation path stack. Exposes push(screenId:) and pop() operations consumed by UIActionExecutor to drive SwiftUI NavigationStack transitions."
+                },
+                {
+                  "name": "ExpressionEvaluator.swift",
+                  "type": "file",
+                  "description": "Stateless evaluator that resolves Expression trees against the current UIStateStore. Supports boolean evaluation for visibility/enabled conditions as well as value resolution for comparisons across strings, numbers, and booleans."
+                },
+                {
+                  "name": "UIActionExecutor.swift",
+                  "type": "file",
+                  "description": "Executes UIAction sequences triggered by UI events. Modifies state via UIStateStore, drives navigation via NavigationStore, and fires callbacks for side-effects such as toasts, alerts, and AI requests. Respects conditional when expressions before executing each action."
+                },
+                {
+                  "name": "DocumentValidator.swift",
+                  "type": "file",
+                  "description": "Validates a ScreenDocument before it is rendered. Enforces the required schema identifier (com.ilya.ui/1.0), a maximum of 500 nodes, a maximum tree depth of 30, and that all event handler references resolve to defined entries in the document."
+                }
+              ]
+            },
+            {
+              "name": "Renderer",
+              "type": "directory",
+              "children": [
+                {
+                  "name": "UIRenderer.swift",
+                  "type": "file",
+                  "description": "Core SwiftUI rendering engine that recursively converts a UINode tree into native SwiftUI views. Handles over 14 component types, evaluates visibleWhen/enabledWhen conditions, performs state-binding text interpolation, and dispatches named events to UIActionExecutor on user interaction."
+                },
+                {
+                  "name": "NodeStyle.swift",
+                  "type": "file",
+                  "description": "View modifier that reads a UINode's props dictionary and applies corresponding SwiftUI modifiers: padding, fixed/min/max width and height, opacity, corner radius, background colour, and foreground colour. Returns a type-erased AnyView for uniform composition."
+                },
+                {
+                  "name": "ColorJSON.swift",
+                  "type": "file",
+                  "description": "SwiftUI Color extension that adds support for parsing hex colour strings in #RRGGBB format and for constructing colours directly from DynamicValue objects containing hex strings."
+                },
+                {
+                  "name": "LayoutSupport.swift",
+                  "type": "file",
+                  "description": "Utility that extracts layout metrics (fixed width, flex-grow weight) from a UINode's props into a LayoutItemMetrics value type. Used by container renderers to implement proportional or flexible layouts."
+                },
+                {
+                  "name": "NodeViews.swift",
+                  "type": "file",
+                  "description": "Placeholder file reserved for additional specialised SwiftUI view components that may be extracted from UIRenderer as the component library grows."
+                }
+              ]
+            },
+            {
+              "name": "Support",
+              "type": "directory",
+              "children": [
+                {
+                  "name": "JSONLoader.swift",
+                  "type": "file",
+                  "description": "Utility that locates a named JSON file in the main app bundle and decodes it into a ScreenDocument. Propagates file-not-found and decoding errors to the caller."
+                },
+                {
+                  "name": "DynamicValue.swift",
+                  "type": "file",
+                  "description": "Type-safe enum representing any JSON-compatible value: string, number, bool, object (dictionary), array, or null. Implements Codable with a custom strategy so it can round-trip arbitrary JSON. Provides convenience accessors (stringValue, doubleValue, boolValue) used throughout the engine."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Resources",
+          "type": "directory",
+          "children": [
+            { "name": "home.json", "type": "file" },
+            { "name": "capabilities.json", "type": "file" },
+            { "name": "full_protocol_example.json", "type": "file" }
+          ]
+        },
+        {
+          "name": "Assets.xcassets",
+          "type": "directory",
+          "children": [
+            { "name": "Contents.json", "type": "file" },
+            {
+              "name": "AccentColor.colorset",
+              "type": "directory",
+              "children": [
+                { "name": "Contents.json", "type": "file" }
+              ]
+            },
+            {
+              "name": "AppIcon.appiconset",
+              "type": "directory",
+              "children": [
+                { "name": "Contents.json", "type": "file" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    { "name": "README.md", "type": "file" },
+    { "name": "cop-hello.txt", "type": "file" }
+  ],
+  "summary": {
+    "title": "UIBuilder – JSON-Driven SwiftUI Runtime Engine",
+    "description": "UIBuilder is an iOS framework that renders fully interactive SwiftUI screens from declarative JSON definitions at runtime, enabling server-driven or remotely configured UIs without recompiling the app.",
+    "how_it_works": [
+      "A JSON file conforming to the com.ilya.ui/1.0 schema describes a complete screen: its component tree (UINode), initial state variables, theme tokens, and named event handlers.",
+      "At startup, JSONLoader reads the JSON from the app bundle and decodes it into a ScreenDocument model.",
+      "DocumentValidator checks the schema version, enforces a 500-node and 30-level depth limit, and verifies that all event references are defined.",
+      "RootView initialises UIStateStore (an observable key-value store) and NavigationStore (a navigation-path stack), then passes the validated document to UIRenderer.",
+      "UIRenderer recursively walks the UINode tree and maps each node type to the corresponding SwiftUI view. Before rendering, it evaluates visibleWhen and enabledWhen Expression trees via ExpressionEvaluator to conditionally show or disable nodes.",
+      "NodeStyle applies prop-driven styling (padding, colours, dimensions, opacity, corner radius) to every rendered view.",
+      "User interactions fire named events. UIActionExecutor processes the corresponding UIAction sequence, mutating UIStateStore (set, increment, decrement, toggle), pushing or popping the navigation stack, or triggering side-effects such as toasts and alerts.",
+      "Because UIStateStore is @Observable, SwiftUI automatically re-renders any view whose dependent state changes, closing the reactive loop."
+    ],
+    "key_concepts": {
+      "ScreenDocument": "Root JSON model representing one screen with its full component tree, state, theme, and event handlers.",
+      "UINode": "A single UI component node with a type, props, children, visibility/enabled conditions, and event bindings.",
+      "UIAction": "A discrete, optionally conditional side-effect triggered by an event (state mutation, navigation, toast, alert, AI request).",
+      "Expression": "A recursive expression language for conditionals and value bindings evaluated against live runtime state.",
+      "UIStateStore": "Observable runtime state container that drives reactive re-rendering when values change.",
+      "UIRenderer": "The SwiftUI rendering engine that converts the UINode tree into native views using NodeStyle, LayoutSupport, and ColorJSON helpers.",
+      "DocumentValidator": "Pre-render validator that ensures schema compliance, structural limits, and referential integrity."
+    }
+  }
+}
