@@ -1,0 +1,93 @@
+{
+  "project": "UIBuilder",
+  "tree": {
+    "UIBuilder": {
+      "UIBuilderApp.swift": {
+        "description": "App entry point. Defines the top-level App struct and creates the initial WindowGroup containing RootView."
+      },
+      "ContentView.swift": {
+        "description": "Legacy placeholder view kept for reference. Contains a basic SwiftUI 'Hello, world!' example and is not used by the main application flow."
+      },
+      "App": {
+        "RootView.swift": {
+          "description": "Root view responsible for loading a screen document from JSON, validating it, initialising the state store and navigation store, configuring the action executor, and handing the resulting UINode tree to UIRenderer for display. Also manages toast and alert presentation."
+        },
+        "UIEngineDemoApp.swift": {
+          "description": "Minimal application setup file. Currently a placeholder; the active app entry point lives in UIBuilderApp.swift."
+        }
+      },
+      "Engine": {
+        "Schema": {
+          "ScreenDocument.swift": {
+            "description": "Root Codable model for a JSON screen document. Holds the schema version identifier, screen ID, optional title, theme tokens, initial state, the root UINode, global event definitions, and metadata."
+          },
+          "UINode.swift": {
+            "description": "Defines the UINode struct that represents a single component in the UI tree. Stores the component type, dynamic props dictionary, child nodes, conditional-visibility and conditional-enable expressions, event handler map, and list items. Also defines the ListItem helper struct."
+          },
+          "UIAction.swift": {
+            "description": "Defines the UIAction struct that describes a single user-triggered action. Supports state mutations (set, increment, decrement, toggle), navigation commands (push, pop), UI feedback (toast, alert), event emission, and AI request hooks. Actions may carry an optional conditional 'when' expression."
+          },
+          "Expression.swift": {
+            "description": "Defines the Expression enum (with bind, eq, neq, gt, gte, lt, lte, and, or, not cases) and companion types ExpressionValue and ExpressionPayload used to parse and represent dynamic boolean or value expressions embedded in JSON documents."
+          },
+          "Capabilities.swift": {
+            "description": "Reserved placeholder file for future capability definitions. Currently empty."
+          }
+        },
+        "Runtime": {
+          "ExpressionEvaluator.swift": {
+            "description": "Evaluates Expression trees to boolean or DynamicValue results. Resolves bind references against UIStateStore and supports all comparison and logical operators defined in Expression.swift."
+          },
+          "UIStateStore.swift": {
+            "description": "Observable reactive state store backed by a String-keyed DynamicValue dictionary. Provides get, set, increment (with optional min/max bounds), decrement, and toggle operations. Changes automatically propagate to SwiftUI views."
+          },
+          "UIActionExecutor.swift": {
+            "description": "Executes sequences of UIAction objects in response to user events. Handles state mutations, navigation push/pop, toast and alert callbacks, flow event emission, and AI request forwarding. Skips actions whose 'when' condition evaluates to false."
+          },
+          "NavigationStore.swift": {
+            "description": "Simple observable navigation stack. Exposes push(screenId:) and pop() methods to drive screen-level navigation, with the current path stack available for reactive consumption by SwiftUI views."
+          },
+          "DocumentValidator.swift": {
+            "description": "Validates a loaded ScreenDocument before rendering. Checks the schema identifier, enforces a maximum of 500 nodes and a maximum tree depth of 30, and verifies that every event name referenced in the node tree is declared in the document's top-level events dictionary."
+          }
+        },
+        "Renderer": {
+          "UIRenderer.swift": {
+            "description": "Core rendering engine that recursively converts a UINode tree into SwiftUI views. Handles vstack, hstack, zstack, scroll, columns, toolbar, button, toggle, text, icon, badge, card, spacer, box/frame, and more. Applies visibleWhen/enabledWhen expressions, resolves dynamic text from state, and routes event triggers to UIActionExecutor."
+          },
+          "NodeStyle.swift": {
+            "description": "Applies SwiftUI view modifiers to a rendered node based on its props dictionary. Supports sizing (width, height, min/max variants), padding, opacity, cornerRadius, backgroundColor, and foregroundColor properties."
+          },
+          "ColorJSON.swift": {
+            "description": "Provides a Color(hex:) initializer and a Color.fromDynamic(_:) helper to parse hex color strings (with or without the '#' prefix) from JSON props into SwiftUI Color values."
+          },
+          "LayoutSupport.swift": {
+            "description": "Extracts layout metrics (fixed width and flex weight) from a node's props dictionary into a LayoutItemMetrics struct, centralising the calculation logic used by column and toolbar layout renderers."
+          },
+          "NodeViews.swift": {
+            "description": "Reserved placeholder file for component-specific SwiftUI view implementations. Currently empty."
+          }
+        },
+        "Support": {
+          "DynamicValue.swift": {
+            "description": "Universal value type used throughout the engine to represent any JSON-serialisable value. Enum cases cover string, number, bool, object (dictionary), array, and null. Provides a custom Codable implementation and convenience accessors for each primitive type."
+          },
+          "JSONLoader.swift": {
+            "description": "Utility that locates a named JSON file in the app bundle and decodes it into a ScreenDocument. Throws a descriptive NSError if the file is missing or the JSON is malformed."
+          }
+        }
+      }
+    }
+  },
+  "summary": {
+    "description": "UIBuilder is a JSON-driven declarative UI runtime for iOS built on SwiftUI. Instead of hardcoding screens in Swift, developers (or external tools) describe entire screen layouts as JSON documents that conform to the 'com.ilya.ui/1.0' schema. At runtime the app loads these documents, validates them, and renders them as native SwiftUI views — enabling fully dynamic UIs without recompilation.",
+    "how_it_works": {
+      "1_document_loading": "A ScreenDocument is decoded from a JSON file in the app bundle by JSONLoader and validated by DocumentValidator, which enforces schema version, a 500-node cap, a maximum tree depth of 30, and referential integrity of all event names.",
+      "2_state_initialisation": "The document's 'state' block seeds a UIStateStore — an observable dictionary of DynamicValue entries — which serves as the single source of truth for all runtime state.",
+      "3_rendering": "UIRenderer walks the UINode tree depth-first and converts each node into the appropriate SwiftUI view. Container nodes (vstack, hstack, columns, scroll, etc.) recurse into their children; leaf nodes (text, button, icon, badge, toggle, etc.) are rendered directly. NodeStyle applies additional visual modifiers from each node's props.",
+      "4_expressions": "Nodes carry optional visibleWhen and enabledWhen Expression trees. ExpressionEvaluator resolves these at render time by reading current state, enabling fully conditional UI without extra code.",
+      "5_interaction": "User interactions map to named event handlers on each node. RootView wires these up to UIActionExecutor, which processes sequences of UIAction objects: mutating state (set, increment, decrement, toggle), triggering navigation (push, pop), displaying feedback (toast, alert), emitting flow events, or forwarding AI requests.",
+      "6_reactivity": "Because UIStateStore uses Swift's @Observable macro, any state mutation automatically triggers a SwiftUI re-render of every view that read the changed key, providing fine-grained reactivity without manual binding."
+    }
+  }
+}
