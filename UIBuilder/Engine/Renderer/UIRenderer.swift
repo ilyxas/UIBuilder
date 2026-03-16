@@ -73,70 +73,6 @@ struct UIRenderer: View {
                     )
                 }
             }
-            
-        case "columns":
-
-            let spacing = CGFloat(node.props?["spacing"]?.doubleValue ?? 0)
-            let padding = CGFloat(node.props?["padding"]?.doubleValue ?? 0)
-
-            HStack(alignment: .top, spacing: spacing) {
-                ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
-
-                    let width = child.props?["width"]?.doubleValue.map { CGFloat($0) }
-                    let hasFlex = child.props?["flex"]?.doubleValue != nil
-
-                    let rendered = UIRenderer(
-                        node: child,
-                        document: document,
-                        state: state,
-                        executor: executor
-                    )
-
-                    if let width {
-                        rendered
-                            .frame(width: width, alignment: .topLeading)
-                    } else if hasFlex {
-                        rendered
-                            .frame(maxWidth: .infinity, alignment: .topLeading)
-                    } else {
-                        rendered
-                    }
-                }
-            }
-            .padding(padding)
-            .frame(maxWidth: .infinity, alignment: .topLeading)
-            
-        case "toolbar":
-
-            let spacing = CGFloat(node.props?["spacing"]?.doubleValue ?? 0)
-            let padding = CGFloat(node.props?["padding"]?.doubleValue ?? 0)
-
-            HStack(alignment: .center, spacing: spacing) {
-                ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
-
-                    let width = child.props?["width"]?.doubleValue.map { CGFloat($0) }
-                    let hasFlex = child.props?["flex"]?.doubleValue != nil
-                    let shouldFill = (width == nil && !hasFlex) || hasFlex
-
-                    let rendered = UIRenderer(
-                        node: child,
-                        document: document,
-                        state: state,
-                        executor: executor
-                    )
-
-                    if let width {
-                        rendered.frame(width: width)
-                    } else if shouldFill {
-                        rendered.frame(maxWidth: .infinity)
-                    } else {
-                        rendered
-                    }
-                }
-            }
-            .padding(padding)
-            .frame(maxWidth: .infinity, alignment: .leading)
-
         case "text":
             NodeStyle.apply(
                 Text(resolveText(from: node.props?["value"], evaluator: evaluator)),
@@ -182,62 +118,6 @@ struct UIRenderer: View {
 
         case "spacer":
             Spacer()
-
-        case "card":
-            VStack(alignment: .leading, spacing: 12) {
-                if let title = node.props?["title"]?.stringValue {
-                    Text(title).font(.headline)
-                }
-                ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
-                    UIRenderer(node: child, document: document, state: state, executor: executor)
-                }
-            }
-            .padding()
-            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
-
-            
-        case "box", "frame":
-
-            let alignmentValue = node.props?["alignment"]?.stringValue ?? "center"
-
-            let alignment: Alignment = switch alignmentValue {
-            case "topLeading": .topLeading
-            case "top": .top
-            case "topTrailing": .topTrailing
-            case "leading": .leading
-            case "trailing": .trailing
-            case "bottomLeading": .bottomLeading
-            case "bottom": .bottom
-            case "bottomTrailing": .bottomTrailing
-            default: .center
-            }
-
-            let children = node.children ?? []
-
-            // Build inner content (single child or stacked children)
-            let inner: some View = Group {
-                if children.count == 1 {
-                    UIRenderer(
-                        node: children[0],
-                        document: document,
-                        state: state,
-                        executor: executor
-                    )
-                } else {
-                    ZStack(alignment: alignment) {
-                        ForEach(Array(children.enumerated()), id: \.offset) { _, child in
-                            UIRenderer(
-                                node: child,
-                                document: document,
-                                state: state,
-                                executor: executor
-                            )
-                        }
-                    }
-                }
-            }
-
-            NodeStyle.apply(AnyView(inner), props: node.props)
             
         case "badge":
             Text(resolveText(from: node.props?["text"], evaluator: evaluator))
