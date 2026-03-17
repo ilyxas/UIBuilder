@@ -34,8 +34,8 @@
   },
   "nodeTypes": {
     "layout": ["vstack", "hstack", "zstack", "scroll", "spacer"],
-    "primitive": ["text", "icon", "toggle", "badge"],
-    "composite": ["button", "card"]
+    "primitive": ["text", "icon", "toggle", "badge", "label"],
+    "composite": ["button", "menu", "tabview", "tab"]
   },
   "nodeRules": {
     "vstack": {
@@ -79,22 +79,53 @@
         "Renderer must not auto-create text or icon subtree from props."
       ]
     },
-    "card": {
-      "childrenAllowed": true
+    "label": {
+      "childrenAllowed": false,
+      "requiredProps": ["title"],
+      "optionalProps": ["icon"],
+      "notes": [
+        "Semantic node combining icon + text in one unit.",
+        "icon must be a valid SF Symbol name.",
+        "Use instead of manually composing hstack with icon and text."
+      ]
+    },
+    "menu": {
+      "childrenAllowed": true,
+      "childrenRecommended": true,
+      "optionalProps": ["title", "icon"],
+      "notes": [
+        "Composite node. Children are menu items (buttons or other interactive nodes).",
+        "A child with id='label' or type='label' will be used as the menu trigger label.",
+        "If no label child is provided, props title and icon are used to build the trigger.",
+        "Renderer must not auto-create label from props if a label child is present."
+      ]
+    },
+    "tabview": {
+      "childrenAllowed": true,
+      "childrenRecommended": true,
+      "optionalProps": ["selection"],
+      "notes": [
+        "Semantic TabView. Children must be of type 'tab'.",
+        "selection prop is a string key bound to state for programmatic tab switching.",
+        "Tab identifiers (id) are used as selection tags when selection is active."
+      ]
+    },
+    "tab": {
+      "childrenAllowed": true,
+      "requiredProps": ["title"],
+      "optionalProps": ["icon"],
+      "notes": [
+        "Must be a direct child of tabview.",
+        "title and icon props define the .tabItem label.",
+        "icon must be a valid SF Symbol name.",
+        "children define the content rendered inside the tab."
+      ]
     }
   },
   "props": {
     "common": [
-      "padding",
-      "width",
-      "height",
-      "minWidth",
-      "minHeight",
-      "maxWidth",
-      "maxHeight",
       "backgroundColor",
       "foregroundColor",
-      "cornerRadius",
       "opacity"
     ],
     "layout": ["spacing", "alignment"],
@@ -204,5 +235,69 @@
     "layoutSupportUsed": false,
     "documentValidatorActive": false,
     "buttonCompositeModeActive": true
+  },
+  "nodeExamples": {
+    "label": {
+      "description": "Semantic icon + text в одной ноде.",
+      "example": {
+        "type": "label",
+        "props": {
+          "title": "Настройки",
+          "icon": "gearshape",
+          "foregroundColor": "#333333"
+        }
+      }
+    },
+    "menu": {
+      "description": "Контекстное меню с trigger-лейблом и пунктами из children.",
+      "example": {
+        "type": "menu",
+        "props": {
+          "title": "Действия",
+          "icon": "ellipsis.circle"
+        },
+        "children": [
+          {
+            "type": "button",
+            "event": { "tap": "editPressed" },
+            "children": [
+              { "type": "label", "props": { "title": "Редактировать", "icon": "pencil" } }
+            ]
+          },
+          {
+            "type": "button",
+            "event": { "tap": "deletePressed" },
+            "children": [
+              { "type": "label", "props": { "title": "Удалить", "icon": "trash" } }
+            ]
+          }
+        ]
+      }
+    },
+    "tabview": {
+      "description": "TabView с двумя табами. selection привязан к state.",
+      "example": {
+        "type": "tabview",
+        "props": { "selection": "activeTab" },
+        "children": [
+          {
+            "type": "tab",
+            "id": "home",
+            "props": { "title": "Главная", "icon": "house" },
+            "children": [
+              { "type": "text", "props": { "value": "Экран главной" } }
+            ]
+          },
+          {
+            "type": "tab",
+            "id": "settings",
+            "props": { "title": "Настройки", "icon": "gearshape" },
+            "children": [
+              { "type": "text", "props": { "value": "Экран настроек" } }
+            ]
+          }
+        ]
+      }
+    }
   }
 }

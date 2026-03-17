@@ -62,7 +62,7 @@ struct UIRenderer: View {
             )
             
         case "zstack":
-            
+            NodeStyle.apply(
             ZStack {
                 ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
                     UIRenderer(
@@ -72,7 +72,9 @@ struct UIRenderer: View {
                         executor: executor
                     )
                 }
-            }
+            },
+            props: node.props
+            )
         case "text":
             NodeStyle.apply(
                 Text(resolveText(from: node.props?["value"], evaluator: evaluator)),
@@ -126,8 +128,115 @@ struct UIRenderer: View {
                 .padding(.vertical, 4)
                 .background(.blue.opacity(0.15), in: Capsule())
 
+        case "label":
+            // Semantic node: icon + text без ручной сборки hstack.
+            // Props: title (string | bind | format), icon (SF Symbol name), size (font size for icon)
+            let labelTitle = resolveText(from: node.props?["title"], evaluator: evaluator)
+            let iconName = node.props?["icon"]?.stringValue ?? ""
+            NodeStyle.apply(
+                Label {
+                    Text(labelTitle)
+                } icon: {
+                    if !iconName.isEmpty {
+                        Image(systemName: iconName)
+                    }
+                },
+                props: node.props
+            )
+
+        case "menu":
+            // Composite node: Menu с label из первого child (или props title/icon)
+            // и действиями/контентом из остальных children.
+            // Структура: первый child с id "label" (или props title+icon) — лейбл,
+            // остальные children — пункты меню.
+            let menuTitle = resolveText(from: node.props?["title"], evaluator: evaluator)
+            let menuIcon = node.props?["icon"]?.stringValue
+            let allChildren = node.children ?? []
+            // Первый child может быть явным label-нодой для кнопки меню
+            let labelChild = allChildren.first(where: { $0.id == "label" || $0.type == "label" })
+            let menuItems = allChildren.filter { $0.id != "label" && $0.type != "label" }
+
+            NodeStyle.apply(
+                Menu {
+                    ForEach(Array(menuItems.enumerated()), id: \.offset) { _, child in
+                        UIRenderer(node: child, document: document, state: state, executor: executor)
+                    }
+                } label: {
+                    if let labelChild {
+                        UIRenderer(node: labelChild, document: document, state: state, executor: executor)
+                    } else if let menuIcon {
+                        Label(menuTitle, systemImage: menuIcon)
+                    } else {
+                        Text(menuTitle)
+                    }
+                },
+                props: node.props
+            )
+
+        case "tabview":
+            // Semantic TabView. Children должны быть типа "tab".
+            // Props: selection (bind к state-переменной, опционально)
+            let tabs = (node.children ?? []).filter { $0.type == "tab" }
+            if let selectionKey = node.props?["selection"]?.stringValue {
+                let binding = Binding<String>(
+                    get: { state.get(selectionKey)?.stringValue ?? (tabs.first?.id ?? "") },
+                    set: { newValue in state.set(selectionKey, value: .string(newValue)) }
+                )
+                NodeStyle.apply(
+                    TabView(selection: binding) {
+                        ForEach(Array(tabs.enumerated()), id: \.offset) { _, tab in
+                            tabContent(tab: tab, evaluator: evaluator)
+                                .tag(tab.id ?? "tab_\(tabs.firstIndex(where: { $0.id == tab.id }) ?? 0)")
+                        }
+                    },
+                    props: node.props
+                )
+            } else {
+                NodeStyle.apply(
+                    TabView {
+                        ForEach(Array(tabs.enumerated()), id: \.offset) { _, tab in
+                            tabContent(tab: tab, evaluator: evaluator)
+                        }
+                    },
+                    props: node.props
+                )
+            }
+
+        case "tab":
+            // tab используется только внутри tabview.
+            // Вне tabview рендерим children как vstack.
+            NodeStyle.apply(
+                VStack(spacing: 0) {
+                    ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
+                        UIRenderer(node: child, document: document, state: state, executor: executor)
+                    }
+                },
+                props: node.props
+            )
+
         default:
             Text("Unsupported node: \(node.type)")
+        }
+    }
+
+    // Рендерит содержимое tab-ноды с .tabItem модификатором.
+    // Props tab-ноды: title (string), icon (SF Symbol name).
+    @ViewBuilder
+    private func tabContent(tab: UINode, evaluator: ExpressionEvaluator) -> some View {
+        let tabTitle = resolveText(from: tab.props?["title"], evaluator: evaluator)
+        let tabIcon = tab.props?["icon"]?.stringValue
+
+        VStack(spacing: 0) {
+            ForEach(Array((tab.children ?? []).enumerated()), id: \.offset) { _, child in
+                UIRenderer(node: child, document: document, state: state, executor: executor)
+            }
+        }
+        .tabItem {
+            if let tabIcon {
+                Label(tabTitle, systemImage: tabIcon)
+            } else {
+                Text(tabTitle)
+            }
         }
     }
 
