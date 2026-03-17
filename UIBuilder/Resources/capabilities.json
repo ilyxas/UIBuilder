@@ -333,7 +333,7 @@
   },
   "nodeExamples": {
     "image": {
-      "description": "Отдельное изображение — SF Symbol или ресурс из assets, resizable с ограничением размера.",
+      "description": "Standalone image — SF Symbol or asset catalog image, resizable with size constraints.",
       "example": {
         "type": "image",
         "props": {
@@ -346,11 +346,11 @@
       }
     },
     "button_semantic": {
-      "description": "Предпочтительный способ авторинга button: semantic label и icon через props.",
+      "description": "Preferred button authoring: semantic label and icon via props.",
       "example": {
         "type": "button",
         "props": {
-          "label": "Сохранить",
+          "label": "Save",
           "icon": "checkmark.circle.fill",
           "padding": 12,
           "backgroundColor": "#EEF2FF",
@@ -361,10 +361,10 @@
       }
     },
     "navigationstack": {
-      "description": "NavigationStack с заголовком и toolbar-кнопками через toolbaritem children.",
+      "description": "NavigationStack with title and toolbar buttons via toolbaritem children.",
       "example": {
         "type": "navigationstack",
-        "props": { "title": "Главная" },
+        "props": { "title": "Home" },
         "children": [
           {
             "type": "toolbaritem",
@@ -372,7 +372,7 @@
             "children": [
               {
                 "type": "button",
-                "props": { "label": "Добавить", "icon": "plus" },
+                "props": { "label": "Add", "icon": "plus" },
                 "event": { "tap": "addPressed" }
               }
             ]
@@ -382,10 +382,10 @@
             "children": [
               {
                 "type": "section",
-                "props": { "title": "Элементы" },
+                "props": { "title": "Items" },
                 "children": [
-                  { "type": "label", "props": { "title": "Первый", "icon": "1.circle" } },
-                  { "type": "label", "props": { "title": "Второй", "icon": "2.circle" } }
+                  { "type": "label", "props": { "title": "First", "icon": "1.circle" } },
+                  { "type": "label", "props": { "title": "Second", "icon": "2.circle" } }
                 ]
               }
             ]
@@ -394,94 +394,94 @@
       }
     },
     "list": {
-      "description": "Вертикальный list с section-группировкой строк.",
+      "description": "Vertical list with section grouping.",
       "example": {
         "type": "list",
         "children": [
           {
             "type": "section",
-            "props": { "title": "Аккаунт" },
+            "props": { "title": "Account" },
             "children": [
-              { "type": "label", "props": { "title": "Профиль", "icon": "person.circle" } },
-              { "type": "label", "props": { "title": "Уведомления", "icon": "bell" } }
+              { "type": "label", "props": { "title": "Profile", "icon": "person.circle" } },
+              { "type": "label", "props": { "title": "Notifications", "icon": "bell" } }
             ]
           },
           {
             "type": "section",
-            "props": { "title": "Поддержка" },
+            "props": { "title": "Support" },
             "children": [
-              { "type": "label", "props": { "title": "Помощь", "icon": "questionmark.circle" } }
+              { "type": "label", "props": { "title": "Help", "icon": "questionmark.circle" } }
             ]
           }
         ]
       }
     },
     "section": {
-      "description": "Section с опциональным заголовком, естественно вписывается внутрь list.",
+      "description": "Section with optional header, fits naturally inside list.",
       "example": {
         "type": "section",
-        "props": { "title": "Настройки" },
+        "props": { "title": "Settings" },
         "children": [
           {
             "type": "toggle",
-            "props": { "title": "Тёмная тема", "bind": "darkMode" }
+            "props": { "title": "Dark Mode", "bind": "darkMode" }
           },
           {
             "type": "toggle",
-            "props": { "title": "Уведомления", "bind": "notificationsEnabled" }
+            "props": { "title": "Notifications", "bind": "notificationsEnabled" }
           }
         ]
       }
     },
     "toolbaritem": {
-      "description": "toolbaritem как дочерний элемент navigationstack — определяет кнопку в navigation bar.",
+      "description": "toolbaritem as a direct child of navigationstack — defines a navigation bar button.",
       "example": {
         "type": "toolbaritem",
         "props": { "placement": "trailing" },
         "children": [
           {
             "type": "button",
-            "props": { "label": "Готово", "icon": "checkmark" },
+            "props": { "label": "Done", "icon": "checkmark" },
             "event": { "tap": "donePressed" }
           }
         ]
       }
     },
     "label": {
-      "description": "Semantic icon + text в одной ноде.",
+      "description": "Semantic icon + text in a single node.",
       "example": {
         "type": "label",
         "props": {
-          "title": "Настройки",
+          "title": "Settings",
           "icon": "gearshape",
           "foregroundColor": "#333333"
         }
       }
     },
     "menu": {
-      "description": "Контекстное меню с trigger-лейблом и пунктами из children.",
+      "description": "Contextual menu with trigger label and items from children.",
       "example": {
         "type": "menu",
         "props": {
-          "title": "Действия",
+          "title": "Actions",
           "icon": "ellipsis.circle"
         },
         "children": [
           {
             "type": "button",
-            "props": { "label": "Редактировать", "icon": "pencil" },
+            "props": { "label": "Edit", "icon": "pencil" },
             "event": { "tap": "editPressed" }
           },
           {
             "type": "button",
-            "props": { "label": "Удалить", "icon": "trash" },
+            "props": { "label": "Delete", "icon": "trash" },
             "event": { "tap": "deletePressed" }
           }
         ]
       }
     },
     "tabview": {
-      "description": "TabView с двумя табами. selection привязан к state.",
+      "description": "TabView with two tabs. selection is bound to state.",
       "example": {
         "type": "tabview",
         "props": { "selection": "activeTab" },
@@ -489,17 +489,17 @@
           {
             "type": "tab",
             "id": "home",
-            "props": { "title": "Главная", "icon": "house" },
+            "props": { "title": "Home", "icon": "house" },
             "children": [
-              { "type": "text", "props": { "value": "Экран главной" } }
+              { "type": "text", "props": { "value": "Home Screen" } }
             ]
           },
           {
             "type": "tab",
             "id": "settings",
-            "props": { "title": "Настройки", "icon": "gearshape" },
+            "props": { "title": "Settings", "icon": "gearshape" },
             "children": [
-              { "type": "text", "props": { "value": "Экран настроек" } }
+              { "type": "text", "props": { "value": "Settings Screen" } }
             ]
           }
         ]

@@ -1,490 +1,451 @@
-{
-  "description": "Practical reference examples for all supported node types.",
-  "examples": [
-
-    {
-      "id": "label-example",
-      "title": "Label — semantic icon + text",
-      "notes": "Use label instead of manually composing hstack + icon + text. Supports title, icon (SF Symbol), and standard appearance props.",
-      "document": {
-        "schema": "com.ilya.ui/1.0",
-        "screenId": "example-label",
-        "title": "Label Example",
-        "state": {
-          "vars": {}
-        },
-        "root": {
-          "type": "vstack",
-          "id": "root",
+[
+  {
+    "schema": "com.ilya.ui/1.0",
+    "screenId": "example-label",
+    "title": "Label Example",
+    "state": {
+      "vars": {}
+    },
+    "root": {
+      "type": "vstack",
+      "id": "root",
+      "props": {
+        "spacing": 16,
+        "padding": 20
+      },
+      "children": [
+        {
+          "type": "label",
+          "id": "settingsLabel",
           "props": {
-            "spacing": 16,
-            "padding": 20
-          },
-          "children": [
-            {
-              "type": "label",
-              "id": "settingsLabel",
-              "props": {
-                "title": "Настройки",
-                "icon": "gearshape",
-                "foregroundColor": "#1C1C1E"
-              }
-            },
-            {
-              "type": "label",
-              "id": "notificationsLabel",
-              "props": {
-                "title": "Уведомления",
-                "icon": "bell.badge",
-                "foregroundColor": "#FF3B30"
-              }
-            },
-            {
-              "type": "label",
-              "id": "profileLabel",
-              "props": {
-                "title": "Профиль",
-                "icon": "person.circle"
-              }
-            },
-            {
-              "type": "button",
-              "id": "actionButton",
-              "props": {
-                "label": "Добавить элемент",
-                "icon": "plus.circle.fill",
-                "padding": 12,
-                "backgroundColor": "#EEF2FF",
-                "foregroundColor": "#2563EB",
-                "cornerRadius": 10
-              },
-              "event": { "tap": "actionPressed" }
-            }
-          ]
-        },
-        "events": {
-          "actionPressed": [
-            { "do": "ui.toast", "message": "Нажато" }
-          ]
-        }
-      }
-    },
-
-    {
-      "id": "button-semantic-example",
-      "title": "Button — semantic label authoring via props",
-      "notes": "Preferred authoring: use props.label and props.icon instead of children. The renderer builds the SwiftUI Label automatically.",
-      "document": {
-        "schema": "com.ilya.ui/1.0",
-        "screenId": "example-button-semantic",
-        "title": "Button Semantic Example",
-        "state": {
-          "vars": { "lastAction": "" }
-        },
-        "root": {
-          "type": "vstack",
-          "props": { "spacing": 12, "padding": 20 },
-          "children": [
-            {
-              "type": "button",
-              "props": {
-                "label": "Сохранить",
-                "icon": "checkmark.circle.fill",
-                "padding": 12,
-                "backgroundColor": "#EEF2FF",
-                "foregroundColor": "#2563EB",
-                "cornerRadius": 10
-              },
-              "event": { "tap": "savePressed" }
-            },
-            {
-              "type": "button",
-              "props": {
-                "label": "Удалить",
-                "icon": "trash",
-                "padding": 12,
-                "backgroundColor": "#FFF3F3",
-                "foregroundColor": "#FF3B30",
-                "cornerRadius": 10
-              },
-              "event": { "tap": "deletePressed" }
-            },
-            {
-              "type": "text",
-              "props": { "value": { "bind": "lastAction" } }
-            }
-          ]
-        },
-        "events": {
-          "savePressed": [
-            { "do": "state.set", "key": "lastAction", "value": "Сохранено" }
-          ],
-          "deletePressed": [
-            { "do": "state.set", "key": "lastAction", "value": "Удалено" }
-          ]
-        }
-      }
-    },
-
-    {
-      "id": "image-example",
-      "title": "Image — standalone image node",
-      "notes": "Use image for full images (SF Symbol or asset). Supports systemName, name, contentMode, and size constraints via width/height props.",
-      "document": {
-        "schema": "com.ilya.ui/1.0",
-        "screenId": "example-image",
-        "title": "Image Example",
-        "state": { "vars": {} },
-        "root": {
-          "type": "vstack",
-          "props": { "spacing": 20, "padding": 20, "alignment": "center" },
-          "children": [
-            {
-              "type": "image",
-              "id": "heroImage",
-              "props": {
-                "systemName": "photo.on.rectangle.angled",
-                "width": 120,
-                "height": 120,
-                "foregroundColor": "#2563EB"
-              }
-            },
-            {
-              "type": "image",
-              "id": "avatarImage",
-              "props": {
-                "systemName": "person.crop.circle.fill",
-                "width": 64,
-                "height": 64,
-                "foregroundColor": "#8E8E93"
-              }
-            },
-            {
-              "type": "text",
-              "props": { "value": "Изображения отображаются через node типа image" }
-            }
-          ]
-        },
-        "events": {}
-      }
-    },
-
-    {
-      "id": "navigationstack-example",
-      "title": "NavigationStack — navigation context with toolbar",
-      "notes": "navigationstack owns the navigation context. toolbaritem children are lifted into the toolbar by the renderer. All other children form the screen content.",
-      "document": {
-        "schema": "com.ilya.ui/1.0",
-        "screenId": "example-navigationstack",
-        "title": "NavigationStack Example",
-        "state": {
-          "vars": {}
-        },
-        "root": {
-          "type": "navigationstack",
-          "props": { "title": "Мой экран" },
-          "children": [
-            {
-              "type": "toolbaritem",
-              "props": { "placement": "trailing" },
-              "children": [
-                {
-                  "type": "button",
-                  "props": { "label": "Добавить", "icon": "plus" },
-                  "event": { "tap": "addPressed" }
-                }
-              ]
-            },
-            {
-              "type": "list",
-              "children": [
-                {
-                  "type": "section",
-                  "props": { "title": "Аккаунт" },
-                  "children": [
-                    { "type": "label", "props": { "title": "Профиль", "icon": "person.circle" } },
-                    { "type": "label", "props": { "title": "Уведомления", "icon": "bell" } }
-                  ]
-                },
-                {
-                  "type": "section",
-                  "props": { "title": "Поддержка" },
-                  "children": [
-                    { "type": "label", "props": { "title": "Помощь", "icon": "questionmark.circle" } }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        "events": {
-          "addPressed": [
-            { "do": "ui.toast", "message": "Добавить нажато" }
-          ]
-        }
-      }
-    },
-
-    {
-      "id": "list-section-example",
-      "title": "List + Section — grouped document-style content",
-      "notes": "Use list for row-based content. section groups rows with optional headers. The renderer handles all List and Section wrapping.",
-      "document": {
-        "schema": "com.ilya.ui/1.0",
-        "screenId": "example-list-section",
-        "title": "List + Section Example",
-        "state": {
-          "vars": {
-            "darkMode": false,
-            "notificationsEnabled": true
+            "title": "Settings",
+            "icon": "gearshape",
+            "foregroundColor": "#1C1C1E"
           }
         },
-        "root": {
+        {
+          "type": "label",
+          "id": "notificationsLabel",
+          "props": {
+            "title": "Notifications",
+            "icon": "bell.badge",
+            "foregroundColor": "#FF3B30"
+          }
+        },
+        {
+          "type": "label",
+          "id": "profileLabel",
+          "props": {
+            "title": "Profile",
+            "icon": "person.circle"
+          }
+        },
+        {
+          "type": "button",
+          "id": "actionButton",
+          "props": {
+            "label": "Add Item",
+            "icon": "plus.circle.fill",
+            "padding": 12,
+            "backgroundColor": "#EEF2FF",
+            "foregroundColor": "#2563EB",
+            "cornerRadius": 10
+          },
+          "event": { "tap": "actionPressed" }
+        }
+      ]
+    },
+    "events": {
+      "actionPressed": [
+        { "do": "ui.toast", "message": "Pressed" }
+      ]
+    }
+  },
+
+  {
+    "schema": "com.ilya.ui/1.0",
+    "screenId": "example-button-semantic",
+    "title": "Button Semantic Example",
+    "state": {
+      "vars": { "lastAction": "" }
+    },
+    "root": {
+      "type": "vstack",
+      "props": { "spacing": 12, "padding": 20 },
+      "children": [
+        {
+          "type": "button",
+          "props": {
+            "label": "Save",
+            "icon": "checkmark.circle.fill",
+            "padding": 12,
+            "backgroundColor": "#EEF2FF",
+            "foregroundColor": "#2563EB",
+            "cornerRadius": 10
+          },
+          "event": { "tap": "savePressed" }
+        },
+        {
+          "type": "button",
+          "props": {
+            "label": "Delete",
+            "icon": "trash",
+            "padding": 12,
+            "backgroundColor": "#FFF3F3",
+            "foregroundColor": "#FF3B30",
+            "cornerRadius": 10
+          },
+          "event": { "tap": "deletePressed" }
+        },
+        {
+          "type": "text",
+          "props": { "value": { "bind": "lastAction" } }
+        }
+      ]
+    },
+    "events": {
+      "savePressed": [
+        { "do": "state.set", "key": "lastAction", "value": "Saved" }
+      ],
+      "deletePressed": [
+        { "do": "state.set", "key": "lastAction", "value": "Deleted" }
+      ]
+    }
+  },
+
+  {
+    "schema": "com.ilya.ui/1.0",
+    "screenId": "example-image",
+    "title": "Image Example",
+    "state": { "vars": {} },
+    "root": {
+      "type": "vstack",
+      "props": { "spacing": 20, "padding": 20, "alignment": "center" },
+      "children": [
+        {
+          "type": "image",
+          "id": "heroImage",
+          "props": {
+            "systemName": "photo.on.rectangle.angled",
+            "width": 120,
+            "height": 120,
+            "foregroundColor": "#2563EB"
+          }
+        },
+        {
+          "type": "image",
+          "id": "avatarImage",
+          "props": {
+            "systemName": "person.crop.circle.fill",
+            "width": 64,
+            "height": 64,
+            "foregroundColor": "#8E8E93"
+          }
+        },
+        {
+          "type": "text",
+          "props": { "value": "Images are authored as image nodes" }
+        }
+      ]
+    },
+    "events": {}
+  },
+
+  {
+    "schema": "com.ilya.ui/1.0",
+    "screenId": "example-navigationstack",
+    "title": "NavigationStack Example",
+    "state": {
+      "vars": {}
+    },
+    "root": {
+      "type": "navigationstack",
+      "props": { "title": "My Screen" },
+      "children": [
+        {
+          "type": "toolbaritem",
+          "props": { "placement": "trailing" },
+          "children": [
+            {
+              "type": "button",
+              "props": { "label": "Add", "icon": "plus" },
+              "event": { "tap": "addPressed" }
+            }
+          ]
+        },
+        {
           "type": "list",
           "children": [
             {
               "type": "section",
-              "props": { "title": "Внешний вид" },
+              "props": { "title": "Account" },
               "children": [
-                {
-                  "type": "toggle",
-                  "props": { "title": "Тёмная тема", "bind": "darkMode" }
-                }
+                { "type": "label", "props": { "title": "Profile", "icon": "person.circle" } },
+                { "type": "label", "props": { "title": "Notifications", "icon": "bell" } }
               ]
             },
             {
               "type": "section",
-              "props": { "title": "Уведомления" },
+              "props": { "title": "Support" },
               "children": [
-                {
-                  "type": "toggle",
-                  "props": { "title": "Включить уведомления", "bind": "notificationsEnabled" }
-                }
-              ]
-            },
-            {
-              "type": "section",
-              "children": [
-                {
-                  "type": "button",
-                  "props": {
-                    "label": "Выйти",
-                    "icon": "rectangle.portrait.and.arrow.right",
-                    "foregroundColor": "#FF3B30"
-                  },
-                  "event": { "tap": "signOutPressed" }
-                }
+                { "type": "label", "props": { "title": "Help", "icon": "questionmark.circle" } }
               ]
             }
           ]
-        },
-        "events": {
-          "signOutPressed": [
-            { "do": "ui.toast", "message": "Выход выполнен" }
-          ]
         }
-      }
+      ]
     },
-
-    {
-      "id": "menu-example",
-      "title": "Menu — contextual actions with trigger label",
-      "notes": "menu trigger is built from props title + icon when no label child is present. Children are interactive nodes (buttons). Prefer button with props.label+icon over button with label child.",
-      "document": {
-        "schema": "com.ilya.ui/1.0",
-        "screenId": "example-menu",
-        "title": "Menu Example",
-        "state": {
-          "vars": {
-            "lastAction": "Действие не выбрано"
-          }
-        },
-        "root": {
-          "type": "vstack",
-          "id": "root",
-          "props": {
-            "spacing": 20,
-            "padding": 20
-          },
-          "children": [
-            {
-              "type": "text",
-              "id": "statusText",
-              "props": {
-                "value": { "bind": "lastAction" }
-              }
-            },
-            {
-              "type": "menu",
-              "id": "actionsMenu",
-              "props": {
-                "title": "Действия",
-                "icon": "ellipsis.circle"
-              },
-              "children": [
-                {
-                  "type": "button",
-                  "id": "editBtn",
-                  "props": { "label": "Редактировать", "icon": "pencil" },
-                  "event": { "tap": "editPressed" }
-                },
-                {
-                  "type": "button",
-                  "id": "shareBtn",
-                  "props": { "label": "Поделиться", "icon": "square.and.arrow.up" },
-                  "event": { "tap": "sharePressed" }
-                },
-                {
-                  "type": "button",
-                  "id": "deleteBtn",
-                  "props": { "label": "Удалить", "icon": "trash", "foregroundColor": "#FF3B30" },
-                  "event": { "tap": "deletePressed" }
-                }
-              ]
-            }
-          ]
-        },
-        "events": {
-          "editPressed": [
-            { "do": "state.set", "key": "lastAction", "value": "Редактирование" }
-          ],
-          "sharePressed": [
-            { "do": "state.set", "key": "lastAction", "value": "Поделиться" }
-          ],
-          "deletePressed": [
-            { "do": "state.set", "key": "lastAction", "value": "Удаление" }
-          ]
-        }
-      }
-    },
-
-    {
-      "id": "tabview-example",
-      "title": "TabView + Tab — semantic tab bar with state-driven selection",
-      "notes": "tabview wraps children of type tab. Each tab has title and icon (SF Symbol) in props. children of tab define the tab content. selection binds to a state key for programmatic switching.",
-      "document": {
-        "schema": "com.ilya.ui/1.0",
-        "screenId": "example-tabview",
-        "title": "TabView Example",
-        "state": {
-          "vars": {
-            "activeTab": "home",
-            "notificationCount": 3
-          }
-        },
-        "root": {
-          "type": "tabview",
-          "id": "mainTabs",
-          "props": {
-            "selection": "activeTab"
-          },
-          "children": [
-            {
-              "type": "tab",
-              "id": "home",
-              "props": {
-                "title": "Главная",
-                "icon": "house"
-              },
-              "children": [
-                {
-                  "type": "vstack",
-                  "props": { "spacing": 16, "padding": 20 },
-                  "children": [
-                    {
-                      "type": "text",
-                      "props": { "value": "Добро пожаловать" }
-                    },
-                    {
-                      "type": "button",
-                      "id": "goToNotificationsBtn",
-                      "props": {
-                        "label": "Перейти к уведомлениям",
-                        "icon": "bell",
-                        "padding": 12,
-                        "backgroundColor": "#F2F2F7",
-                        "cornerRadius": 10
-                      },
-                      "event": { "tap": "goToNotifications" }
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "tab",
-              "id": "notifications",
-              "props": {
-                "title": "Уведомления",
-                "icon": "bell"
-              },
-              "children": [
-                {
-                  "type": "vstack",
-                  "props": { "spacing": 12, "padding": 20 },
-                  "children": [
-                    {
-                      "type": "text",
-                      "props": {
-                        "value": {
-                          "format": "У вас {notificationCount} уведомлений",
-                          "binds": ["notificationCount"]
-                        }
-                      }
-                    },
-                    {
-                      "type": "button",
-                      "id": "clearBtn",
-                      "props": {
-                        "label": "Очистить",
-                        "icon": "trash",
-                        "padding": 12,
-                        "backgroundColor": "#FFF3F3",
-                        "foregroundColor": "#FF3B30",
-                        "cornerRadius": 10
-                      },
-                      "event": { "tap": "clearNotifications" }
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "tab",
-              "id": "profile",
-              "props": {
-                "title": "Профиль",
-                "icon": "person.circle"
-              },
-              "children": [
-                {
-                  "type": "vstack",
-                  "props": { "spacing": 12, "padding": 20 },
-                  "children": [
-                    {
-                      "type": "label",
-                      "props": { "title": "Имя пользователя", "icon": "person" }
-                    },
-                    {
-                      "type": "label",
-                      "props": { "title": "example@mail.com", "icon": "envelope" }
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        "events": {
-          "goToNotifications": [
-            { "do": "state.set", "key": "activeTab", "value": "notifications" }
-          ],
-          "clearNotifications": [
-            { "do": "state.set", "key": "notificationCount", "value": 0 }
-          ]
-        }
-      }
+    "events": {
+      "addPressed": [
+        { "do": "ui.toast", "message": "Add pressed" }
+      ]
     }
+  },
 
-  ]
-}
+  {
+    "schema": "com.ilya.ui/1.0",
+    "screenId": "example-list-section",
+    "title": "List + Section Example",
+    "state": {
+      "vars": {
+        "darkMode": false,
+        "notificationsEnabled": true
+      }
+    },
+    "root": {
+      "type": "list",
+      "children": [
+        {
+          "type": "section",
+          "props": { "title": "Appearance" },
+          "children": [
+            {
+              "type": "toggle",
+              "props": { "title": "Dark Mode", "bind": "darkMode" }
+            }
+          ]
+        },
+        {
+          "type": "section",
+          "props": { "title": "Notifications" },
+          "children": [
+            {
+              "type": "toggle",
+              "props": { "title": "Enable Notifications", "bind": "notificationsEnabled" }
+            }
+          ]
+        },
+        {
+          "type": "section",
+          "children": [
+            {
+              "type": "button",
+              "props": {
+                "label": "Sign Out",
+                "icon": "rectangle.portrait.and.arrow.right",
+                "foregroundColor": "#FF3B30"
+              },
+              "event": { "tap": "signOutPressed" }
+            }
+          ]
+        }
+      ]
+    },
+    "events": {
+      "signOutPressed": [
+        { "do": "ui.toast", "message": "Signed out" }
+      ]
+    }
+  },
+
+  {
+    "schema": "com.ilya.ui/1.0",
+    "screenId": "example-menu",
+    "title": "Menu Example",
+    "state": {
+      "vars": {
+        "lastAction": "No action selected"
+      }
+    },
+    "root": {
+      "type": "vstack",
+      "id": "root",
+      "props": {
+        "spacing": 20,
+        "padding": 20
+      },
+      "children": [
+        {
+          "type": "text",
+          "id": "statusText",
+          "props": {
+            "value": { "bind": "lastAction" }
+          }
+        },
+        {
+          "type": "menu",
+          "id": "actionsMenu",
+          "props": {
+            "title": "Actions",
+            "icon": "ellipsis.circle"
+          },
+          "children": [
+            {
+              "type": "button",
+              "id": "editBtn",
+              "props": { "label": "Edit", "icon": "pencil" },
+              "event": { "tap": "editPressed" }
+            },
+            {
+              "type": "button",
+              "id": "shareBtn",
+              "props": { "label": "Share", "icon": "square.and.arrow.up" },
+              "event": { "tap": "sharePressed" }
+            },
+            {
+              "type": "button",
+              "id": "deleteBtn",
+              "props": { "label": "Delete", "icon": "trash", "foregroundColor": "#FF3B30" },
+              "event": { "tap": "deletePressed" }
+            }
+          ]
+        }
+      ]
+    },
+    "events": {
+      "editPressed": [
+        { "do": "state.set", "key": "lastAction", "value": "Edit" }
+      ],
+      "sharePressed": [
+        { "do": "state.set", "key": "lastAction", "value": "Share" }
+      ],
+      "deletePressed": [
+        { "do": "state.set", "key": "lastAction", "value": "Delete" }
+      ]
+    }
+  },
+
+  {
+    "schema": "com.ilya.ui/1.0",
+    "screenId": "example-tabview",
+    "title": "TabView Example",
+    "state": {
+      "vars": {
+        "activeTab": "home",
+        "notificationCount": 3
+      }
+    },
+    "root": {
+      "type": "tabview",
+      "id": "mainTabs",
+      "props": {
+        "selection": "activeTab"
+      },
+      "children": [
+        {
+          "type": "tab",
+          "id": "home",
+          "props": {
+            "title": "Home",
+            "icon": "house"
+          },
+          "children": [
+            {
+              "type": "vstack",
+              "props": { "spacing": 16, "padding": 20 },
+              "children": [
+                {
+                  "type": "text",
+                  "props": { "value": "Welcome" }
+                },
+                {
+                  "type": "button",
+                  "id": "goToNotificationsBtn",
+                  "props": {
+                    "label": "Go to Notifications",
+                    "icon": "bell",
+                    "padding": 12,
+                    "backgroundColor": "#F2F2F7",
+                    "cornerRadius": 10
+                  },
+                  "event": { "tap": "goToNotifications" }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "tab",
+          "id": "notifications",
+          "props": {
+            "title": "Notifications",
+            "icon": "bell"
+          },
+          "children": [
+            {
+              "type": "vstack",
+              "props": { "spacing": 12, "padding": 20 },
+              "children": [
+                {
+                  "type": "text",
+                  "props": {
+                    "value": {
+                      "format": "You have {notificationCount} notifications",
+                      "binds": ["notificationCount"]
+                    }
+                  }
+                },
+                {
+                  "type": "button",
+                  "id": "clearBtn",
+                  "props": {
+                    "label": "Clear",
+                    "icon": "trash",
+                    "padding": 12,
+                    "backgroundColor": "#FFF3F3",
+                    "foregroundColor": "#FF3B30",
+                    "cornerRadius": 10
+                  },
+                  "event": { "tap": "clearNotifications" }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "tab",
+          "id": "profile",
+          "props": {
+            "title": "Profile",
+            "icon": "person.circle"
+          },
+          "children": [
+            {
+              "type": "vstack",
+              "props": { "spacing": 12, "padding": 20 },
+              "children": [
+                {
+                  "type": "label",
+                  "props": { "title": "Username", "icon": "person" }
+                },
+                {
+                  "type": "label",
+                  "props": { "title": "example@mail.com", "icon": "envelope" }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "events": {
+      "goToNotifications": [
+        { "do": "state.set", "key": "activeTab", "value": "notifications" }
+      ],
+      "clearNotifications": [
+        { "do": "state.set", "key": "notificationCount", "value": 0 }
+      ]
+    }
+  }
+]
+

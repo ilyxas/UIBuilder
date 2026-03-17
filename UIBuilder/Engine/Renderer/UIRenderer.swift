@@ -139,8 +139,8 @@ struct UIRenderer: View {
                 .background(.blue.opacity(0.15), in: Capsule())
 
         case "label":
-            // Semantic node: icon + text без ручной сборки hstack.
-            // Props: title (string | bind | format), icon (SF Symbol name), size (font size for icon)
+            // Semantic node: icon + text, no manual hstack composition needed.
+            // Props: title (string | bind | format), icon (SF Symbol name)
             let labelTitle = resolveText(from: node.props?["title"], evaluator: evaluator)
             let iconName = node.props?["icon"]?.stringValue ?? ""
             NodeStyle.apply(
@@ -155,14 +155,14 @@ struct UIRenderer: View {
             )
 
         case "menu":
-            // Composite node: Menu с label из первого child (или props title/icon)
-            // и действиями/контентом из остальных children.
-            // Структура: первый child с id "label" (или props title+icon) — лейбл,
-            // остальные children — пункты меню.
+            // Composite node: Menu with label from first child (or props title/icon)
+            // and actions/content from remaining children.
+            // First child with id "label" or type "label" is used as the trigger label;
+            // remaining children are menu items.
             let menuTitle = resolveText(from: node.props?["title"], evaluator: evaluator)
             let menuIcon = node.props?["icon"]?.stringValue
             let allChildren = node.children ?? []
-            // Первый child может быть явным label-нодой для кнопки меню
+            // First child may be an explicit label node for the menu trigger button
             let labelChild = allChildren.first(where: { $0.id == "label" || $0.type == "label" })
             let menuItems = allChildren.filter { $0.id != "label" && $0.type != "label" }
 
@@ -184,8 +184,8 @@ struct UIRenderer: View {
             )
 
         case "tabview":
-            // Semantic TabView. Children должны быть типа "tab".
-            // Props: selection (bind к state-переменной, опционально)
+            // Semantic TabView. Children must be of type "tab".
+            // Props: selection (optional bind to a state variable)
             let tabs = (node.children ?? []).filter { $0.type == "tab" }
             if let selectionKey = node.props?["selection"]?.stringValue {
                 let binding = Binding<String>(
@@ -213,8 +213,8 @@ struct UIRenderer: View {
             }
 
         case "tab":
-            // tab используется только внутри tabview.
-            // Вне tabview рендерим children как vstack.
+            // tab is used only inside tabview.
+            // Outside tabview, children are rendered as a vstack.
             NodeStyle.apply(
                 VStack(spacing: 0) {
                     ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
@@ -312,8 +312,8 @@ struct UIRenderer: View {
         }
     }
 
-    // Рендерит содержимое tab-ноды с .tabItem модификатором.
-    // Props tab-ноды: title (string), icon (SF Symbol name).
+    // Renders tab node content with .tabItem modifier.
+    // Props: title (string), icon (SF Symbol name).
     @ViewBuilder
     private func tabContent(tab: UINode, evaluator: ExpressionEvaluator) -> some View {
         let tabTitle = resolveText(from: tab.props?["title"], evaluator: evaluator)
