@@ -104,15 +104,14 @@
       ]
     },
     "button": {
-      "childrenAllowed": true,
-      "optionalProps": ["label", "icon"],
+      "childrenAllowed": false,
+      "requiredProps": ["label"],
+      "optionalProps": ["icon"],
       "requiredEventKeys": ["tap"],
       "notes": [
-        "Preferred semantic path: author button with props.label (string) and optional props.icon (SF Symbol).",
-        "The renderer builds the button label from these props automatically.",
-        "Legacy path: if children are present, they are rendered directly as the button label.",
-        "Do not manually compose hstack + icon + text as button label — use props.label + props.icon instead.",
-        "Children path remains supported for backward compatibility and custom label layouts."
+        "Author button with props.label (string) and optional props.icon (SF Symbol name).",
+        "The renderer builds the SwiftUI Label automatically from these props.",
+        "Do not compose button label manually using children — use props.label + props.icon."
       ]
     },
     "menu": {
@@ -310,7 +309,7 @@
   },
   "generationRules": [
     "Use only supported node types.",
-    "Prefer button with props.label and props.icon over button with children.",
+    "Author button using props.label (required) and props.icon (optional SF Symbol) — do not use children for button label.",
     "Do not manually compose hstack + icon + text as a button label — use label node or button props.",
     "Do not add a VStack wrapper inside scroll — the renderer provides it.",
     "Do not add a VStack wrapper inside tab — the renderer provides it.",
@@ -329,7 +328,7 @@
     "layoutSupportUsed": false,
     "documentValidatorActive": false,
     "buttonSemanticLabelActive": true,
-    "buttonCompositeModeActive": true
+    "buttonCompositeModeActive": false
   },
   "nodeExamples": {
     "image": {

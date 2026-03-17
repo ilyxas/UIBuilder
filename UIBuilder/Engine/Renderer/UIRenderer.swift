@@ -82,23 +82,16 @@ struct UIRenderer: View {
             )
 
         case "button":
-            // Semantic path: use props.label + props.icon to build the label.
-            // Legacy path: if children are present, render them directly as the label.
+            // Semantic: props.label (required) + props.icon (optional SF Symbol).
             let button = Button {
                 trigger(eventName: node.event?["tap"], evaluator: evaluator)
             } label: {
-                if let children = node.children, !children.isEmpty {
-                    ForEach(Array(children.enumerated()), id: \.offset) { _, child in
-                        UIRenderer(node: child, document: document, state: state, executor: executor)
-                    }
+                let btnTitle = resolveText(from: node.props?["label"], evaluator: evaluator)
+                let btnIcon = node.props?["icon"]?.stringValue
+                if let btnIcon, !btnIcon.isEmpty {
+                    Label(btnTitle, systemImage: btnIcon)
                 } else {
-                    let btnTitle = resolveText(from: node.props?["label"], evaluator: evaluator)
-                    let btnIcon = node.props?["icon"]?.stringValue
-                    if let btnIcon, !btnIcon.isEmpty {
-                        Label(btnTitle, systemImage: btnIcon)
-                    } else {
-                        Text(btnTitle)
-                    }
+                    Text(btnTitle)
                 }
             }
 
