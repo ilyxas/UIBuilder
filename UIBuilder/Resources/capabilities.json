@@ -1,13 +1,15 @@
 {
-  "version": 2,
+  "version": 3,
   "status": "base-stable-strict",
   "engine": {
     "name": "UIBuilder Base Runtime",
     "authoringMode": "base-json",
     "notes": [
-      "This file is a strict generation contract for the current base runtime.",
-      "Use native SwiftUI-like composition.",
-      "Do not invent unsupported node types or event formats."
+      "This file is the authoritative authoring contract for the base runtime.",
+      "Use native SwiftUI-like composition. Do not invent unsupported node types.",
+      "Prefer semantic nodes over manual primitive composition wherever possible.",
+      "The renderer owns structural wrapping (VStack inside scroll/tab, toolbar lifting in navigationstack).",
+      "JSON authors own the content tree, props, state bindings, and event wiring."
     ]
   },
   "documents": {
@@ -28,14 +30,16 @@
       ],
       "notes": [
         "Children are rendered recursively.",
-        "Renderer must not invent subtree structure."
+        "The renderer must not invent subtree structure beyond what is documented here."
       ]
     }
   },
   "nodeTypes": {
     "layout": ["vstack", "hstack", "zstack", "scroll", "spacer"],
-    "primitive": ["text", "icon", "toggle", "badge", "label"],
-    "composite": ["button", "menu", "tabview", "tab"]
+    "primitive": ["text", "icon", "image", "toggle", "badge", "label"],
+    "composite": ["button", "menu", "tabview", "tab"],
+    "navigation": ["navigationstack", "toolbaritem"],
+    "content": ["list", "section"]
   },
   "nodeRules": {
     "vstack": {
@@ -48,7 +52,12 @@
       "childrenAllowed": true
     },
     "scroll": {
-      "childrenAllowed": true
+      "childrenAllowed": true,
+      "notes": [
+        "scroll wraps children in a vertical VStack internally by default.",
+        "Use axis='horizontal' prop to switch to horizontal scroll.",
+        "JSON authors should NOT manually add a VStack wrapper inside scroll — the renderer provides it."
+      ]
     },
     "spacer": {
       "childrenAllowed": false
@@ -60,7 +69,22 @@
     "icon": {
       "childrenAllowed": false,
       "requiredProps": ["name"],
-      "optionalProps": ["size"]
+      "optionalProps": ["size"],
+      "notes": [
+        "icon renders an SF Symbol as a small inline decorative glyph.",
+        "For larger standalone images, prefer the image node."
+      ]
+    },
+    "image": {
+      "childrenAllowed": false,
+      "optionalProps": ["systemName", "name", "contentMode"],
+      "notes": [
+        "Semantic image node. Use instead of icon for full images.",
+        "systemName: SF Symbol name (mutually exclusive with name).",
+        "name: asset catalog image name (mutually exclusive with systemName).",
+        "contentMode: 'fit' (default) or 'fill'.",
+        "image is resizable by default. Use width/height props to constrain size."
+      ]
     },
     "toggle": {
       "childrenAllowed": false,
@@ -68,16 +92,6 @@
     },
     "badge": {
       "childrenAllowed": false
-    },
-    "button": {
-      "childrenAllowed": true,
-      "childrenRecommended": true,
-      "requiredEventKeys": ["tap"],
-      "notes": [
-        "Button is a composite node.",
-        "Button label must be authored through children in base mode.",
-        "Renderer must not auto-create text or icon subtree from props."
-      ]
     },
     "label": {
       "childrenAllowed": false,
@@ -87,6 +101,17 @@
         "Semantic node combining icon + text in one unit.",
         "icon must be a valid SF Symbol name.",
         "Use instead of manually composing hstack with icon and text."
+      ]
+    },
+    "button": {
+      "childrenAllowed": false,
+      "requiredProps": ["label"],
+      "optionalProps": ["icon"],
+      "requiredEventKeys": ["tap"],
+      "notes": [
+        "Author button with props.label (string) and optional props.icon (SF Symbol name).",
+        "The renderer builds the SwiftUI Label automatically from these props.",
+        "Do not compose button label manually using children — use props.label + props.icon."
       ]
     },
     "menu": {
@@ -107,7 +132,8 @@
       "notes": [
         "Semantic TabView. Children must be of type 'tab'.",
         "selection prop is a string key bound to state for programmatic tab switching.",
-        "Tab identifiers (id) are used as selection tags when selection is active."
+        "Tab identifiers (id) are used as selection tags when selection is active.",
+        "The renderer owns the tab item wrapping — JSON authors should not add extra VStack inside tab."
       ]
     },
     "tab": {
@@ -118,7 +144,51 @@
         "Must be a direct child of tabview.",
         "title and icon props define the .tabItem label.",
         "icon must be a valid SF Symbol name.",
-        "children define the content rendered inside the tab."
+        "children define the content rendered inside the tab.",
+        "The renderer wraps tab content in a VStack — do not add an outer VStack unless needed for spacing."
+      ]
+    },
+    "navigationstack": {
+      "childrenAllowed": true,
+      "childrenRecommended": true,
+      "optionalProps": ["title"],
+      "notes": [
+        "Owns the navigation context. Use as the root container for navigable screens.",
+        "title prop sets the navigation bar title.",
+        "toolbaritem children are automatically lifted into the navigation toolbar by the renderer.",
+        "All other children are rendered as vertical content inside the navigation stack.",
+        "JSON authors must NOT manually apply .navigationTitle or toolbar — the renderer handles this."
+      ]
+    },
+    "toolbaritem": {
+      "childrenAllowed": true,
+      "childrenRecommended": true,
+      "optionalProps": ["placement"],
+      "notes": [
+        "Must be a direct child of navigationstack to function as a toolbar item.",
+        "placement: 'leading', 'trailing' (default), or 'bottom'.",
+        "Children define the visual content of the toolbar item (typically a button or label).",
+        "When used outside navigationstack, children are rendered as a plain inline view."
+      ]
+    },
+    "list": {
+      "childrenAllowed": true,
+      "childrenRecommended": true,
+      "notes": [
+        "Vertical document-style list container, matching SwiftUI List semantics.",
+        "Use for rows of data or settings-style content.",
+        "section children group rows naturally inside a list.",
+        "The renderer handles all List styling — do not wrap list children in additional stacks unless needed."
+      ]
+    },
+    "section": {
+      "childrenAllowed": true,
+      "optionalProps": ["title"],
+      "notes": [
+        "Groups rows inside a list with an optional header.",
+        "title prop renders as the section header text.",
+        "Fits naturally inside list. Can also be used inside other container types.",
+        "section header is renderer-owned when title prop is provided."
       ]
     }
   },
@@ -126,12 +196,25 @@
     "common": [
       "backgroundColor",
       "foregroundColor",
-      "opacity"
+      "opacity",
+      "padding",
+      "width",
+      "height",
+      "minWidth",
+      "minHeight",
+      "maxWidth",
+      "maxHeight",
+      "cornerRadius"
     ],
     "layout": ["spacing", "alignment"],
     "text": ["value"],
     "icon": ["name", "size"],
-    "toggle": ["title", "bind"]
+    "image": ["systemName", "name", "contentMode"],
+    "toggle": ["title", "bind"],
+    "button": ["label", "icon"],
+    "navigationstack": ["title"],
+    "toolbaritem": ["placement"],
+    "section": ["title"]
   },
   "strictFormats": {
     "nodeEventFormat": {
@@ -205,12 +288,14 @@
     ]
   },
   "ownershipBoundaries": {
-    "appOwns": [
-      "shell",
-      "safe area handling",
+    "rendererOwns": [
+      "shell and safe area handling",
       "device-aware layout policy",
-      "top and bottom overlay policy",
-      "screen bounds awareness"
+      "VStack wrapping inside scroll and tab",
+      "navigation bar title binding from navigationstack.title prop",
+      "toolbar item placement from toolbaritem children inside navigationstack",
+      "tab item label from tab.title and tab.icon props",
+      "section header from section.title prop"
     ],
     "jsonOwns": [
       "content tree",
@@ -218,64 +303,184 @@
       "local props",
       "state bindings",
       "event wiring",
-      "section structure"
+      "section structure inside list",
+      "toolbaritem placement inside navigationstack"
     ]
   },
   "generationRules": [
     "Use only supported node types.",
-    "Use button as composite node with children.",
-    "Do not inline actions inside node.event.",
+    "Author button using props.label (required) and props.icon (optional SF Symbol) — do not use children for button label.",
+    "Do not manually compose hstack + icon + text as a button label — use label node or button props.",
+    "Do not add a VStack wrapper inside scroll — the renderer provides it.",
+    "Do not add a VStack wrapper inside tab — the renderer provides it.",
+    "Use navigationstack as the root container for navigable screens.",
+    "Place toolbaritem nodes as direct children of navigationstack.",
+    "Use list for vertical document-style row content.",
+    "Use section inside list to group rows with optional headers.",
+    "Use image for standalone image content; use icon for inline decorative glyphs.",
+    "Do not inline actions inside node.event — use top-level events map.",
     "Do not invent aliases for action fields.",
     "Do not use unsupported dynamic text syntaxes.",
-    "Prefer native stack composition.",
     "Prefer local props over artificial wrapper nodes.",
     "Do not generate deprecated or experimental layout abstractions in base mode."
   ],
   "knownProjectFacts": {
     "layoutSupportUsed": false,
     "documentValidatorActive": false,
-    "buttonCompositeModeActive": true
+    "buttonSemanticLabelActive": true,
+    "buttonCompositeModeActive": false
   },
   "nodeExamples": {
+    "image": {
+      "description": "Standalone image — SF Symbol or asset catalog image, resizable with size constraints.",
+      "example": {
+        "type": "image",
+        "props": {
+          "systemName": "photo.on.rectangle.angled",
+          "width": 80,
+          "height": 80,
+          "contentMode": "fit",
+          "foregroundColor": "#2563EB"
+        }
+      }
+    },
+    "button_semantic": {
+      "description": "Preferred button authoring: semantic label and icon via props.",
+      "example": {
+        "type": "button",
+        "props": {
+          "label": "Save",
+          "icon": "checkmark.circle.fill",
+          "padding": 12,
+          "backgroundColor": "#EEF2FF",
+          "foregroundColor": "#2563EB",
+          "cornerRadius": 10
+        },
+        "event": { "tap": "savePressed" }
+      }
+    },
+    "navigationstack": {
+      "description": "NavigationStack with title and toolbar buttons via toolbaritem children.",
+      "example": {
+        "type": "navigationstack",
+        "props": { "title": "Home" },
+        "children": [
+          {
+            "type": "toolbaritem",
+            "props": { "placement": "trailing" },
+            "children": [
+              {
+                "type": "button",
+                "props": { "label": "Add", "icon": "plus" },
+                "event": { "tap": "addPressed" }
+              }
+            ]
+          },
+          {
+            "type": "list",
+            "children": [
+              {
+                "type": "section",
+                "props": { "title": "Items" },
+                "children": [
+                  { "type": "label", "props": { "title": "First", "icon": "1.circle" } },
+                  { "type": "label", "props": { "title": "Second", "icon": "2.circle" } }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "list": {
+      "description": "Vertical list with section grouping.",
+      "example": {
+        "type": "list",
+        "children": [
+          {
+            "type": "section",
+            "props": { "title": "Account" },
+            "children": [
+              { "type": "label", "props": { "title": "Profile", "icon": "person.circle" } },
+              { "type": "label", "props": { "title": "Notifications", "icon": "bell" } }
+            ]
+          },
+          {
+            "type": "section",
+            "props": { "title": "Support" },
+            "children": [
+              { "type": "label", "props": { "title": "Help", "icon": "questionmark.circle" } }
+            ]
+          }
+        ]
+      }
+    },
+    "section": {
+      "description": "Section with optional header, fits naturally inside list.",
+      "example": {
+        "type": "section",
+        "props": { "title": "Settings" },
+        "children": [
+          {
+            "type": "toggle",
+            "props": { "title": "Dark Mode", "bind": "darkMode" }
+          },
+          {
+            "type": "toggle",
+            "props": { "title": "Notifications", "bind": "notificationsEnabled" }
+          }
+        ]
+      }
+    },
+    "toolbaritem": {
+      "description": "toolbaritem as a direct child of navigationstack — defines a navigation bar button.",
+      "example": {
+        "type": "toolbaritem",
+        "props": { "placement": "trailing" },
+        "children": [
+          {
+            "type": "button",
+            "props": { "label": "Done", "icon": "checkmark" },
+            "event": { "tap": "donePressed" }
+          }
+        ]
+      }
+    },
     "label": {
-      "description": "Semantic icon + text в одной ноде.",
+      "description": "Semantic icon + text in a single node.",
       "example": {
         "type": "label",
         "props": {
-          "title": "Настройки",
+          "title": "Settings",
           "icon": "gearshape",
           "foregroundColor": "#333333"
         }
       }
     },
     "menu": {
-      "description": "Контекстное меню с trigger-лейблом и пунктами из children.",
+      "description": "Contextual menu with trigger label and items from children.",
       "example": {
         "type": "menu",
         "props": {
-          "title": "Действия",
+          "title": "Actions",
           "icon": "ellipsis.circle"
         },
         "children": [
           {
             "type": "button",
-            "event": { "tap": "editPressed" },
-            "children": [
-              { "type": "label", "props": { "title": "Редактировать", "icon": "pencil" } }
-            ]
+            "props": { "label": "Edit", "icon": "pencil" },
+            "event": { "tap": "editPressed" }
           },
           {
             "type": "button",
-            "event": { "tap": "deletePressed" },
-            "children": [
-              { "type": "label", "props": { "title": "Удалить", "icon": "trash" } }
-            ]
+            "props": { "label": "Delete", "icon": "trash" },
+            "event": { "tap": "deletePressed" }
           }
         ]
       }
     },
     "tabview": {
-      "description": "TabView с двумя табами. selection привязан к state.",
+      "description": "TabView with two tabs. selection is bound to state.",
       "example": {
         "type": "tabview",
         "props": { "selection": "activeTab" },
@@ -283,17 +488,17 @@
           {
             "type": "tab",
             "id": "home",
-            "props": { "title": "Главная", "icon": "house" },
+            "props": { "title": "Home", "icon": "house" },
             "children": [
-              { "type": "text", "props": { "value": "Экран главной" } }
+              { "type": "text", "props": { "value": "Home Screen" } }
             ]
           },
           {
             "type": "tab",
             "id": "settings",
-            "props": { "title": "Настройки", "icon": "gearshape" },
+            "props": { "title": "Settings", "icon": "gearshape" },
             "children": [
-              { "type": "text", "props": { "value": "Экран настроек" } }
+              { "type": "text", "props": { "value": "Settings Screen" } }
             ]
           }
         ]

@@ -82,13 +82,16 @@ struct UIRenderer: View {
             )
 
         case "button":
+            // Semantic: props.label (required) + props.icon (optional SF Symbol).
             let button = Button {
                 trigger(eventName: node.event?["tap"], evaluator: evaluator)
             } label: {
-                HStack(spacing: CGFloat(node.props?["spacing"]?.doubleValue ?? 8)) {
-                    ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
-                        UIRenderer(node: child, document: document, state: state, executor: executor)
-                    }
+                let btnTitle = resolveText(from: node.props?["label"], evaluator: evaluator)
+                let btnIcon = node.props?["icon"]?.stringValue
+                if let btnIcon, !btnIcon.isEmpty {
+                    Label(btnTitle, systemImage: btnIcon)
+                } else {
+                    Text(btnTitle)
                 }
             }
 
@@ -129,8 +132,8 @@ struct UIRenderer: View {
                 .background(.blue.opacity(0.15), in: Capsule())
 
         case "label":
-            // Semantic node: icon + text без ручной сборки hstack.
-            // Props: title (string | bind | format), icon (SF Symbol name), size (font size for icon)
+            // Semantic node: icon + text, no manual hstack composition needed.
+            // Props: title (string | bind | format), icon (SF Symbol name)
             let labelTitle = resolveText(from: node.props?["title"], evaluator: evaluator)
             let iconName = node.props?["icon"]?.stringValue ?? ""
             NodeStyle.apply(
@@ -145,14 +148,14 @@ struct UIRenderer: View {
             )
 
         case "menu":
-            // Composite node: Menu с label из первого child (или props title/icon)
-            // и действиями/контентом из остальных children.
-            // Структура: первый child с id "label" (или props title+icon) — лейбл,
-            // остальные children — пункты меню.
+            // Composite node: Menu with label from first child (or props title/icon)
+            // and actions/content from remaining children.
+            // First child with id "label" or type "label" is used as the trigger label;
+            // remaining children are menu items.
             let menuTitle = resolveText(from: node.props?["title"], evaluator: evaluator)
             let menuIcon = node.props?["icon"]?.stringValue
             let allChildren = node.children ?? []
-            // Первый child может быть явным label-нодой для кнопки меню
+            // First child may be an explicit label node for the menu trigger button
             let labelChild = allChildren.first(where: { $0.id == "label" || $0.type == "label" })
             let menuItems = allChildren.filter { $0.id != "label" && $0.type != "label" }
 
@@ -174,8 +177,8 @@ struct UIRenderer: View {
             )
 
         case "tabview":
-            // Semantic TabView. Children должны быть типа "tab".
-            // Props: selection (bind к state-переменной, опционально)
+            // Semantic TabView. Children must be of type "tab".
+            // Props: selection (optional bind to a state variable)
             let tabs = (node.children ?? []).filter { $0.type == "tab" }
             if let selectionKey = node.props?["selection"]?.stringValue {
                 let binding = Binding<String>(
@@ -203,8 +206,8 @@ struct UIRenderer: View {
             }
 
         case "tab":
-            // tab используется только внутри tabview.
-            // Вне tabview рендерим children как vstack.
+            // tab is used only inside tabview.
+            // Outside tabview, children are rendered as a vstack.
             NodeStyle.apply(
                 VStack(spacing: 0) {
                     ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
@@ -214,13 +217,96 @@ struct UIRenderer: View {
                 props: node.props
             )
 
+        case "image":
+            // Semantic image node. Props: systemName (SF Symbol) or name (asset catalog),
+            // contentMode ("fit" | "fill", default "fit").
+            let fillMode = node.props?["contentMode"]?.stringValue == "fill"
+            if let systemName = node.props?["systemName"]?.stringValue {
+                NodeStyle.apply(
+                    Image(systemName: systemName)
+                        .resizable()
+                        .aspectRatio(contentMode: fillMode ? .fill : .fit),
+                    props: node.props
+                )
+            } else if let assetName = node.props?["name"]?.stringValue {
+                NodeStyle.apply(
+                    Image(assetName)
+                        .resizable()
+                        .aspectRatio(contentMode: fillMode ? .fill : .fit),
+                    props: node.props
+                )
+            } else {
+                Image(systemName: "photo")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+            }
+
+        case "navigationstack":
+            // NavigationStack owning the navigation context.
+            // Props: title (navigation bar title, optional).
+            // toolbaritem children are lifted into the toolbar; all other children
+            // are rendered as vertical content.
+            let navTitle = resolveText(from: node.props?["title"], evaluator: evaluator)
+            let allNavChildren = node.children ?? []
+            let toolbarNodes = allNavChildren.filter { $0.type == "toolbaritem" }
+            let contentNodes = allNavChildren.filter { $0.type != "toolbaritem" }
+
+            NavigationStack {
+                VStack(spacing: 0) {
+                    ForEach(Array(contentNodes.enumerated()), id: \.offset) { _, child in
+                        UIRenderer(node: child, document: document, state: state, executor: executor)
+                    }
+                }
+                .navigationTitle(navTitle)
+                .toolbar {
+                    toolbarContent(nodes: toolbarNodes, evaluator: evaluator)
+                }
+            }
+
+        case "list":
+            // Vertical document-style content list.
+            // Children are rendered as List rows; section children group naturally.
+            NodeStyle.apply(
+                List {
+                    ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
+                        UIRenderer(node: child, document: document, state: state, executor: executor)
+                    }
+                },
+                props: node.props
+            )
+
+        case "section":
+            // Section grouping, fits naturally inside list.
+            // Props: title (optional header string).
+            let sectionTitle = resolveText(from: node.props?["title"], evaluator: evaluator)
+            if sectionTitle.isEmpty {
+                Section {
+                    ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
+                        UIRenderer(node: child, document: document, state: state, executor: executor)
+                    }
+                }
+            } else {
+                Section(sectionTitle) {
+                    ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
+                        UIRenderer(node: child, document: document, state: state, executor: executor)
+                    }
+                }
+            }
+
+        case "toolbaritem":
+            // toolbaritem is handled natively by navigationstack.
+            // When used outside that context, children are rendered as a plain view group.
+            ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
+                UIRenderer(node: child, document: document, state: state, executor: executor)
+            }
+
         default:
             Text("Unsupported node: \(node.type)")
         }
     }
 
-    // Рендерит содержимое tab-ноды с .tabItem модификатором.
-    // Props tab-ноды: title (string), icon (SF Symbol name).
+    // Renders tab node content with .tabItem modifier.
+    // Props: title (string), icon (SF Symbol name).
     @ViewBuilder
     private func tabContent(tab: UINode, evaluator: ExpressionEvaluator) -> some View {
         let tabTitle = resolveText(from: tab.props?["title"], evaluator: evaluator)
@@ -297,6 +383,27 @@ struct UIRenderer: View {
         case "title": return .title2.weight(.semibold)
         case "caption": return .caption
         default: return .body
+        }
+    }
+
+    // Builds ToolbarContent for navigationstack from toolbaritem children.
+    @ToolbarContentBuilder
+    private func toolbarContent(nodes: [UINode], evaluator: ExpressionEvaluator) -> some ToolbarContent {
+        ForEach(Array(nodes.enumerated()), id: \.offset) { _, item in
+            ToolbarItem(placement: toolbarPlacement(from: item.props?["placement"])) {
+                ForEach(Array((item.children ?? []).enumerated()), id: \.offset) { _, child in
+                    UIRenderer(node: child, document: document, state: state, executor: executor)
+                }
+            }
+        }
+    }
+
+    private func toolbarPlacement(from value: DynamicValue?) -> ToolbarItemPlacement {
+        switch value?.stringValue {
+        case "leading": return .topBarLeading
+        case "trailing": return .topBarTrailing
+        case "bottom": return .bottomBar
+        default: return .automatic
         }
     }
 }
