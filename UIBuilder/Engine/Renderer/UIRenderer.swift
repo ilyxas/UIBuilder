@@ -82,12 +82,22 @@ struct UIRenderer: View {
             )
 
         case "button":
+            // Semantic path: use props.label + props.icon to build the label.
+            // Legacy path: if children are present, render them directly as the label.
             let button = Button {
                 trigger(eventName: node.event?["tap"], evaluator: evaluator)
             } label: {
-                HStack(spacing: CGFloat(node.props?["spacing"]?.doubleValue ?? 8)) {
-                    ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
+                if let children = node.children, !children.isEmpty {
+                    ForEach(Array(children.enumerated()), id: \.offset) { _, child in
                         UIRenderer(node: child, document: document, state: state, executor: executor)
+                    }
+                } else {
+                    let btnTitle = resolveText(from: node.props?["label"], evaluator: evaluator)
+                    let btnIcon = node.props?["icon"]?.stringValue
+                    if let btnIcon, !btnIcon.isEmpty {
+                        Label(btnTitle, systemImage: btnIcon)
+                    } else {
+                        Text(btnTitle)
                     }
                 }
             }
@@ -214,6 +224,89 @@ struct UIRenderer: View {
                 props: node.props
             )
 
+        case "image":
+            // Semantic image node. Props: systemName (SF Symbol) or name (asset catalog),
+            // contentMode ("fit" | "fill", default "fit").
+            let fillMode = node.props?["contentMode"]?.stringValue == "fill"
+            if let systemName = node.props?["systemName"]?.stringValue {
+                NodeStyle.apply(
+                    Image(systemName: systemName)
+                        .resizable()
+                        .aspectRatio(contentMode: fillMode ? .fill : .fit),
+                    props: node.props
+                )
+            } else if let assetName = node.props?["name"]?.stringValue {
+                NodeStyle.apply(
+                    Image(assetName)
+                        .resizable()
+                        .aspectRatio(contentMode: fillMode ? .fill : .fit),
+                    props: node.props
+                )
+            } else {
+                Image(systemName: "photo")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+            }
+
+        case "navigationstack":
+            // NavigationStack owning the navigation context.
+            // Props: title (navigation bar title, optional).
+            // toolbaritem children are lifted into the toolbar; all other children
+            // are rendered as vertical content.
+            let navTitle = resolveText(from: node.props?["title"], evaluator: evaluator)
+            let allNavChildren = node.children ?? []
+            let toolbarNodes = allNavChildren.filter { $0.type == "toolbaritem" }
+            let contentNodes = allNavChildren.filter { $0.type != "toolbaritem" }
+
+            NavigationStack {
+                VStack(spacing: 0) {
+                    ForEach(Array(contentNodes.enumerated()), id: \.offset) { _, child in
+                        UIRenderer(node: child, document: document, state: state, executor: executor)
+                    }
+                }
+                .navigationTitle(navTitle)
+                .toolbar {
+                    toolbarContent(nodes: toolbarNodes, evaluator: evaluator)
+                }
+            }
+
+        case "list":
+            // Vertical document-style content list.
+            // Children are rendered as List rows; section children group naturally.
+            NodeStyle.apply(
+                List {
+                    ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
+                        UIRenderer(node: child, document: document, state: state, executor: executor)
+                    }
+                },
+                props: node.props
+            )
+
+        case "section":
+            // Section grouping, fits naturally inside list.
+            // Props: title (optional header string).
+            let sectionTitle = resolveText(from: node.props?["title"], evaluator: evaluator)
+            if sectionTitle.isEmpty {
+                Section {
+                    ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
+                        UIRenderer(node: child, document: document, state: state, executor: executor)
+                    }
+                }
+            } else {
+                Section(sectionTitle) {
+                    ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
+                        UIRenderer(node: child, document: document, state: state, executor: executor)
+                    }
+                }
+            }
+
+        case "toolbaritem":
+            // toolbaritem is handled natively by navigationstack.
+            // When used outside that context, children are rendered as a plain view group.
+            ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
+                UIRenderer(node: child, document: document, state: state, executor: executor)
+            }
+
         default:
             Text("Unsupported node: \(node.type)")
         }
@@ -297,6 +390,27 @@ struct UIRenderer: View {
         case "title": return .title2.weight(.semibold)
         case "caption": return .caption
         default: return .body
+        }
+    }
+
+    // Builds ToolbarContent for navigationstack from toolbaritem children.
+    @ToolbarContentBuilder
+    private func toolbarContent(nodes: [UINode], evaluator: ExpressionEvaluator) -> some ToolbarContent {
+        ForEach(Array(nodes.enumerated()), id: \.offset) { _, item in
+            ToolbarItem(placement: toolbarPlacement(from: item.props?["placement"])) {
+                ForEach(Array((item.children ?? []).enumerated()), id: \.offset) { _, child in
+                    UIRenderer(node: child, document: document, state: state, executor: executor)
+                }
+            }
+        }
+    }
+
+    private func toolbarPlacement(from value: DynamicValue?) -> ToolbarItemPlacement {
+        switch value?.stringValue {
+        case "leading": return .topBarLeading
+        case "trailing": return .topBarTrailing
+        case "bottom": return .bottomBar
+        default: return .automatic
         }
     }
 }
