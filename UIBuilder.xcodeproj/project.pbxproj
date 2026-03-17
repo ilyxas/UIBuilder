@@ -10,33 +10,9 @@
 		09D2D4902F5C89A7004A180F /* UIBuilder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UIBuilder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		09C2727A2F6253CE00A7D83E /* Exceptions for "UIBuilder" folder in "UIBuilder" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Resources/full_protocol_example.json,
-			);
-			target = 09D2D48F2F5C89A7004A180F /* UIBuilder */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
-/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		09C2727B2F6253CE00A7D83E /* Exceptions for "UIBuilder" folder in "Compile Sources" phase from "UIBuilder" target */ = {
-			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
-			buildPhase = 09D2D48C2F5C89A7004A180F /* Sources */;
-			membershipExceptions = (
-				Resources/full_protocol_example.json,
-			);
-		};
-/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		09D2D4922F5C89A7004A180F /* UIBuilder */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				09C2727A2F6253CE00A7D83E /* Exceptions for "UIBuilder" folder in "UIBuilder" target */,
-				09C2727B2F6253CE00A7D83E /* Exceptions for "UIBuilder" folder in "Compile Sources" phase from "UIBuilder" target */,
-			);
 			path = UIBuilder;
 			sourceTree = "<group>";
 		};
