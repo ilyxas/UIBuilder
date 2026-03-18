@@ -1,39 +1,332 @@
 {
   "contract": {
-    "version": "1.0",
-    "purpose": "AI-facing authoring contract for JSON-driven SwiftUI screen generation in the UIBuilder runtime.",
-    "audience": "AI language models generating screen JSON for the UIBuilder runtime.",
-    "principle": "Semantic nodes are the primary authoring tools. Layout primitives (vstack, hstack, zstack) are fallbacks for custom composition, not the default worldview. Always prefer the highest-level semantic node that correctly expresses the UI intent.",
+    "version": "2.0",
+    "purpose": "AI-facing authoring protocol for JSON-driven SwiftUI screen generation in the UIBuilder runtime.",
+    "audience": "AI language models generating ScreenDocument JSON for the UIBuilder runtime.",
+    "coreDirective": "Generate structurally valid, semantically appropriate screens by choosing the highest-level semantic node that correctly expresses the UI intent. Treat layout primitives as local composition tools and last-resort fallbacks — not as the default worldview for whole-screen construction.",
     "schemaVersion": "com.ilya.ui/1.0"
   },
 
+  "authoringProtocol": {
+    "description": "The generative flow that governs screen construction. Execute these steps in order before reaching for individual nodes.",
+
+    "generationFlow": [
+      {
+        "step": 1,
+        "name": "Choose root semantics",
+        "question": "What is the top-level navigation and chrome model of the screen?",
+        "rules": [
+          "If the screen needs a navigation bar, title, or toolbar buttons → root is navigationstack.",
+          "If the screen has multiple primary tab destinations → root is tabview.",
+          "If the screen is a long-scrolling form or content page without navigation chrome → root is scroll.",
+          "If the screen is a settings or options list → root is list (or list inside navigationstack).",
+          "If none of the above → root is vstack."
+        ],
+        "priority": "navigationstack and tabview are structural decisions that define navigation architecture. Establish them before composing any content."
+      },
+      {
+        "step": 2,
+        "name": "Choose major content structure",
+        "question": "What is the primary shape of the screen content?",
+        "rules": [
+          "If the content is a collection of similar rows (settings, options, items, contacts) → use list.",
+          "If the content is a tabular data grid → use table.",
+          "If the content is custom-layout or mixed and does not match row structure → use vstack or scroll.",
+          "Scrollability: list is always scrollable. Do not wrap list in scroll."
+        ]
+      },
+      {
+        "step": 3,
+        "name": "Choose semantic grouping and collection nodes",
+        "question": "How should content be grouped and organized inside the major container?",
+        "rules": [
+          "Inside list: use section to group rows under a named header.",
+          "Outside list: use group for standalone content blocks with optional title, footer, or card style.",
+          "Multi-tab page content: each destination is a tab child of tabview.",
+          "Navigation bar actions: use toolbaritem as a direct child of navigationstack.",
+          "Do not simulate section groups with vstack inside list."
+        ]
+      },
+      {
+        "step": 4,
+        "name": "Choose semantic leaf and composite nodes",
+        "question": "What is the right node for each content unit?",
+        "rules": [
+          "Icon + text as a semantic unit → label (not hstack + icon + text).",
+          "Dropdown menu with action items → menu.",
+          "Toggle switch → toggle.",
+          "Text input → textfield.",
+          "Range value input → slider.",
+          "Geometric shape → shape.",
+          "Standalone large image → image. Inline decorative glyph → icon.",
+          "Action trigger → button.",
+          "Status tag → badge."
+        ]
+      },
+      {
+        "step": 5,
+        "name": "Apply local primitive composition",
+        "question": "Do any remaining layout needs require low-level composition?",
+        "rules": [
+          "Side-by-side elements with custom spacing → hstack.",
+          "Custom vertical layout inside a container → vstack.",
+          "Depth overlay → zstack.",
+          "Explicit size constraints or alignment → frame.",
+          "Flexible whitespace → spacer.",
+          "These are local composition tools, not screen-level structural choices."
+        ]
+      }
+    ],
+
+    "authoringHierarchy": {
+      "description": "The canonical hierarchy of authoring tools from most-semantic to most-primitive.",
+      "tiers": [
+        {
+          "tier": 1,
+          "label": "Navigation and structure containers",
+          "nodes": ["navigationstack", "tabview"],
+          "role": "Define the screen's navigation architecture and chrome. Always evaluate these first."
+        },
+        {
+          "tier": 2,
+          "label": "Content collection containers",
+          "nodes": ["list", "scroll", "table"],
+          "role": "Define how the screen's primary content is organized and scrolled."
+        },
+        {
+          "tier": 3,
+          "label": "Semantic grouping nodes",
+          "nodes": ["section", "group", "toolbaritem", "tab"],
+          "role": "Organize content into logical units, navigation bar slots, and tab pages."
+        },
+        {
+          "tier": 4,
+          "label": "Semantic leaf and composite nodes",
+          "nodes": ["label", "button", "toggle", "textfield", "slider", "menu", "image", "icon", "text", "badge", "shape"],
+          "role": "Express concrete UI elements. Always prefer the semantic node over a manually composed equivalent."
+        },
+        {
+          "tier": 5,
+          "label": "Local layout primitives",
+          "nodes": ["vstack", "hstack", "zstack", "frame", "spacer"],
+          "role": "Low-level composition for layouts that no semantic node covers. Use locally, not as whole-screen architecture."
+        }
+      ],
+      "mandate": "Always descend this hierarchy in order. Do not reach for tier-5 primitives before confirming that tiers 1–4 do not have the right semantic fit."
+    },
+
+    "ownershipBoundary": {
+      "description": "Clearly separates what the container manages automatically from what the author must provide explicitly. Never duplicate container-managed behavior in JSON.",
+      "containerManaged": [
+        "navigationstack manages: screen-level scrollability, navigation bar chrome, toolbar slot — author should not add wrappers for these.",
+        "navigationstack manages: lifting toolbaritem children into the navigation bar — author should not place toolbaritem anywhere else.",
+        "navigationstack manages: navigation title from its title prop — author should not place a separate title text node at the top.",
+        "scroll manages: the vertical flow of children — author should not add a single vstack as the only child of scroll.",
+        "tab (inside tabview) manages: the tab bar label from title and icon props — author should not add a manual tab bar row.",
+        "section manages: the header label from its title prop — author should not add a header text node above section children.",
+        "table manages: the column header row from its columns prop — author should not add a manual header hstack.",
+        "group manages: the title headline, footer caption, and card/inset styling from its props — author should not add those manually.",
+        "group manages: expand/collapse behavior when collapsible=true — author does not need to wire a visibility toggle."
+      ],
+      "authorOwned": [
+        "The content tree: all children, their types, and their order.",
+        "All node props: values, bindings, and event wiring.",
+        "State structure: all keys in state.vars and their initial values.",
+        "Event handlers: the events map and its action sequences.",
+        "Section structure inside list.",
+        "toolbaritem placement inside navigationstack."
+      ]
+    },
+
+    "disallowedNodes": ["box", "columns", "toolbar"],
+    "disallowedNote": "Do not generate these node types. They are not part of the base runtime."
+  },
+
+  "decisionRules": [
+    {
+      "question": "What should be the root container of the screen?",
+      "rules": [
+        { "if": "Screen has a navigation bar, title, or toolbar buttons", "then": "navigationstack is root. Content goes inside it as children." },
+        { "if": "Screen has multiple primary tab destinations", "then": "tabview is root. Each destination is a tab child." },
+        { "if": "Screen is a long-scrolling form without navigation chrome", "then": "scroll is root. Place content children directly inside — no extra vstack." },
+        { "if": "Screen is a settings or document list", "then": "list is root (or inside navigationstack). Use section children for grouping." },
+        { "if": "None of the above", "then": "vstack is acceptable as root." }
+      ]
+    },
+    {
+      "question": "Should I use list or vstack for vertical content?",
+      "rules": [
+        { "if": "Content is a collection of similar rows", "then": "list. Add section children for category grouping." },
+        { "if": "Content is custom layout with varied, non-row elements", "then": "vstack." },
+        { "if": "Content is inside navigationstack and is document-style rows", "then": "list inside navigationstack." }
+      ]
+    },
+    {
+      "question": "How do I group rows inside a list?",
+      "rules": [
+        { "if": "Rows belong to a named category", "then": "section with title prop inside list." },
+        { "if": "No named grouping is needed", "then": "Place children directly in list." },
+        { "never": "Use vstack inside list to simulate section grouping." }
+      ]
+    },
+    {
+      "question": "Should I use label or compose hstack + icon + text manually?",
+      "rules": [
+        { "if": "Icon + text are a semantic unit (list row, menu item, standalone labeled element)", "then": "label with title and icon props." },
+        { "if": "Icon and text need independent styles or disconnected positions", "then": "hstack with icon and text children." }
+      ]
+    },
+    {
+      "question": "Where do toolbar buttons go?",
+      "rules": [
+        { "if": "Screen has a navigationstack", "then": "toolbaritem as a direct child of navigationstack. Place the button as a child of toolbaritem." },
+        { "if": "toolbaritem is placed outside navigationstack", "then": "Its children render flat without toolbar behavior. Avoid." }
+      ]
+    },
+    {
+      "question": "Should I use group or section?",
+      "rules": [
+        { "if": "Grouping rows inside a list", "then": "section." },
+        { "if": "Standalone content block outside a list, with optional card/inset style or collapsible behavior", "then": "group." }
+      ]
+    },
+    {
+      "question": "Should I wrap content in scroll?",
+      "rules": [
+        { "if": "Content may exceed viewport height and is not inside list or tabview", "then": "scroll as container." },
+        { "if": "Content is a list", "then": "Do not wrap list in scroll. list is already scrollable." },
+        { "if": "Content is inside a tab", "then": "Use scroll inside the tab if the tab content is long." }
+      ]
+    },
+    {
+      "question": "Should I use image or icon?",
+      "rules": [
+        { "if": "Large standalone image, hero image, or large SF Symbol as a visual element", "then": "image. Use width/height style props to constrain." },
+        { "if": "Small inline decorative SF Symbol glyph", "then": "icon." },
+        { "if": "Icon + label text together", "then": "label (not icon + text composed manually)." }
+      ]
+    },
+    {
+      "question": "When is vstack still the right choice?",
+      "rules": [
+        { "use": "vstack for custom vertical layouts that are not row-based lists." },
+        { "use": "vstack inside a tab's children for custom tab page content." },
+        { "use": "vstack for hero sections, form areas, or mixed content without row structure." },
+        { "never": "vstack as a substitute for list, section, group, or navigationstack." }
+      ]
+    }
+  ],
+
+  "antiPatterns": [
+    {
+      "name": "vstack_inside_scroll",
+      "whatWentWrong": "Adding a single vstack as the only child of scroll to 'add content flow'.",
+      "whySemanticallyWrong": "scroll already provides vertical flow for its children. The extra vstack is redundant wrapping, not composition.",
+      "correctChoice": "Place content children directly inside scroll. The vertical arrangement is managed by the container.",
+      "example": {
+        "bad":  { "type": "scroll", "children": [{ "type": "vstack", "children": ["..."] }] },
+        "good": { "type": "scroll", "children": ["...content children..."] }
+      }
+    },
+    {
+      "name": "manual_label_composition",
+      "whatWentWrong": "Composing hstack + icon + text instead of using label.",
+      "whySemanticallyWrong": "label is the semantic node for icon+text unity. Manually composing it bypasses platform spacing, accessibility, and layout conventions.",
+      "correctChoice": "label with title and icon props whenever icon and text form a single semantic unit.",
+      "example": {
+        "bad":  { "type": "hstack", "children": [{ "type": "icon", "props": { "name": "gearshape" } }, { "type": "text", "props": { "value": "Settings" } }] },
+        "good": { "type": "label", "props": { "title": "Settings", "icon": "gearshape" } }
+      }
+    },
+    {
+      "name": "vstack_as_list",
+      "whatWentWrong": "Using vstack to render a list of similar content rows.",
+      "whySemanticallyWrong": "vstack is a layout tool with no row semantics. The screen intent is a document-style list: it needs list for platform-native row appearance, separators, and scroll.",
+      "correctChoice": "list with section children for grouped rows."
+    },
+    {
+      "name": "vstack_simulating_sections",
+      "whatWentWrong": "Placing vstack children inside a list to group rows instead of using section.",
+      "whySemanticallyWrong": "section is the semantic node for named row groups inside a list. A vstack does not express that meaning and renders without a visible header.",
+      "correctChoice": "section with a title prop directly inside list for named row groups."
+    },
+    {
+      "name": "toolbaritem_outside_navigationstack",
+      "whatWentWrong": "Placing toolbaritem as a child of vstack, hstack, or any container that is not navigationstack.",
+      "whySemanticallyWrong": "toolbaritem is a navigation bar slot node. Its semantics are defined by its position as a direct child of navigationstack. Elsewhere it has no meaning.",
+      "correctChoice": "toolbaritem must be a direct child of navigationstack."
+    },
+    {
+      "name": "tab_outside_tabview",
+      "whatWentWrong": "Using a tab node outside of tabview.",
+      "whySemanticallyWrong": "tab is a tab page slot. Its tabItem label is attached by tabview. Outside that context it renders as a plain VStack with no tab identity.",
+      "correctChoice": "tab nodes must be direct children of tabview."
+    },
+    {
+      "name": "nested_navigationstack",
+      "whatWentWrong": "Placing a navigationstack inside another navigationstack.",
+      "whySemanticallyWrong": "A screen has one navigation context. Nested stacks produce conflicting navigation bars.",
+      "correctChoice": "Use a single navigationstack at the screen root."
+    },
+    {
+      "name": "list_wrapped_in_scroll",
+      "whatWentWrong": "Wrapping a list node inside a scroll container.",
+      "whySemanticallyWrong": "list is already scrollable. Wrapping it in scroll creates conflicting scroll areas and broken layout.",
+      "correctChoice": "Use list directly without a scroll wrapper."
+    },
+    {
+      "name": "vstack_root_when_navigation_is_needed",
+      "whatWentWrong": "Using vstack as the screen root when the screen clearly needs a navigation bar, title, or toolbar.",
+      "whySemanticallyWrong": "vstack is a layout primitive. It provides no navigation chrome. Choosing it as root when navigationstack is semantically required misses the structural intent of the screen.",
+      "correctChoice": "navigationstack as root. Compose the content inside it."
+    },
+    {
+      "name": "missing_state_declaration",
+      "whatWentWrong": "Referencing a state key in a bind prop without declaring it in state.vars.",
+      "whySemanticallyWrong": "An undeclared state key has no initial value. The binding produces an empty or nil result, making the UI appear broken.",
+      "correctChoice": "Declare every state key used in bind props in state.vars with an appropriate initial value."
+    },
+    {
+      "name": "events_field_omitted",
+      "whatWentWrong": "Omitting the events field when no event handlers are needed.",
+      "whySemanticallyWrong": "events is a required top-level field. Its absence causes document validation failure.",
+      "correctChoice": "Always include events: {} even when there are no handlers."
+    },
+    {
+      "name": "frame_as_group_substitute",
+      "whatWentWrong": "Using frame to group content that should be in a group node.",
+      "whySemanticallyWrong": "frame applies sizing and alignment constraints. It has no concept of a titled, footered, or styled content block. Using it for semantic grouping erases those signals.",
+      "correctChoice": "group with the appropriate style prop for titled or styled content sections."
+    }
+  ],
+
   "documentStructure": {
-    "description": "Every screen is a ScreenDocument JSON object.",
-    "required": ["schema", "screenId", "root", "events"],
-    "optional": ["title", "theme", "state", "meta"],
-    "fieldNotes": {
-      "schema": "Must be exactly 'com.ilya.ui/1.0'. Validation fails on any other value.",
-      "screenId": "Unique string identifier for the screen.",
-      "root": "The root UINode of the screen content tree.",
-      "events": "Named event handler map. Must be present even when empty: {}. Key is handler name, value is array of actions.",
-      "title": "Display title for the screen (optional, informational).",
-      "theme": "Design tokens: spacing, cornerRadius, colors map (name → hex), fonts map. Optional.",
-      "state": "Initial state variables. state.vars is a map of key → initial value (string, number, bool). Declare every key used in bind props here.",
-      "meta": "Optional metadata: version, author, tags."
+    "screenDocument": {
+      "required": ["schema", "screenId", "root", "events"],
+      "optional": ["title", "theme", "state", "meta"],
+      "notes": {
+        "schema": "Must be exactly 'com.ilya.ui/1.0'. Validation fails on any other value.",
+        "screenId": "Unique string identifier for the screen.",
+        "root": "Root UINode of the screen content tree.",
+        "events": "Named handler map. Required even when empty: {}.",
+        "title": "Display title (informational only).",
+        "theme": "Design tokens: spacing, cornerRadius, colors (name→hex), fonts (name→value). Optional.",
+        "state": "state.vars is a map of key→initial value (string, number, bool). Declare every key used in bind props.",
+        "meta": "Optional metadata: version, author, tags."
+      }
     },
     "uiNode": {
-      "description": "A single UI node in the content tree.",
       "required": ["type"],
       "optional": ["id", "props", "children", "visibleWhen", "enabledWhen", "event", "items"],
-      "fieldNotes": {
-        "type": "Node type name (see nodeLibrary). Unknown types render a warning placeholder.",
-        "id": "Unique node identifier within the document. Required for nodes referenced by toolbaritem lifting or state keys.",
-        "props": "Key-value map of node-specific and style properties.",
-        "children": "Array of child UINode objects. Only allowed when the node permits children.",
-        "visibleWhen": "Expression evaluated at render time. Node is hidden (not removed) when false.",
-        "enabledWhen": "Expression evaluated at render time. Node interactions are disabled when false.",
-        "event": "Maps event trigger names (e.g. 'tap', 'change') to handler names defined in top-level events.",
-        "items": "Optional list items array for list-based nodes. Less common than children."
+      "notes": {
+        "type": "Node type name from the nodeLibrary. Unknown types render a warning placeholder.",
+        "id": "Unique identifier within the document. Required for collapsible groups (state key) and tab selection bindings.",
+        "props": "Node-specific and style properties as a key-value map.",
+        "children": "Child UINode array. Only author nodes whose type permits children.",
+        "visibleWhen": "Expression. Node is hidden (not removed) when false.",
+        "enabledWhen": "Expression. Node interactions are disabled when false.",
+        "event": "Maps trigger names ('tap', 'change') to handler names in the top-level events map.",
+        "items": "Optional list items for list-based nodes."
       }
     }
   },
@@ -42,122 +335,100 @@
 
     "navigationstack": {
       "category": "navigation",
-      "purpose": "Establishes a navigation context. Provides a navigation bar, a screen title, and a toolbar slot. Wraps all non-toolbar children as vertical content.",
-      "rendererOwns": [
-        "Separating toolbaritem children from content children automatically.",
-        "Wrapping content children in a VStack with spacing=0.",
-        "Applying .navigationTitle() from the title prop.",
-        "Mounting toolbaritem children into the SwiftUI toolbar via .toolbar()."
+      "tier": 1,
+      "purpose": "Establishes the navigation context for a screen. Provides a navigation bar with a title and a toolbar slot. All non-toolbar content is presented as the screen body.",
+      "containerManages": [
+        "Navigation bar and title — do not add a separate title text node at the top of the content.",
+        "Toolbar slot — toolbaritem children are automatically placed in the navigation bar. Do not place them in a manual hstack.",
+        "Screen body flow — do not add an extra vstack around all content children."
       ],
-      "authorMustProvide": [
-        "The title prop when a navigation bar title is desired.",
-        "toolbaritem children for each toolbar button needed.",
-        "Content children as direct children (not wrapped in an extra VStack)."
+      "authorProvides": [
+        "title prop when a navigation bar title is needed.",
+        "toolbaritem children for each toolbar action.",
+        "Content children directly (not wrapped in an extra layer)."
       ],
       "useWhen": [
-        "The screen has a navigation bar with a visible title.",
-        "The screen needs toolbar buttons (add, edit, done, share, etc.).",
-        "The screen is a top-level destination that requires platform navigation chrome.",
-        "A tab page needs its own navigation bar and toolbar."
+        "Screen has a navigation bar with a title.",
+        "Screen needs toolbar buttons (add, edit, done, etc.).",
+        "Screen is a primary destination in a navigation-based app."
       ],
       "avoidWhen": [
-        "The screen is a modal or sheet without a navigation bar.",
-        "The screen is already wrapped in a parent navigationstack (do not nest).",
-        "The screen only needs a title as a text node — use a text node instead."
+        "Screen is a modal without navigation chrome.",
+        "Already inside a parent navigationstack — do not nest."
       ],
       "props": {
-        "title": { "type": "string", "required": false, "description": "Navigation bar title." }
+        "title": { "type": "string", "required": false }
       },
-      "allowsChildren": true,
-      "childConstraints": {
-        "toolbaritem": "Direct children of type toolbaritem are lifted into the toolbar. All other children become the navigation content.",
-        "note": "Do not manually wrap content children in a vstack — the renderer adds it."
-      }
+      "allowsChildren": true
     },
 
     "toolbaritem": {
       "category": "navigation",
-      "purpose": "Defines a button or control in the navigation bar or bottom bar. Must be a direct child of navigationstack to have effect. Children become the toolbar content.",
-      "rendererOwns": [
-        "Lifting this node into the SwiftUI toolbar when used inside navigationstack.",
-        "Grouping children using ToolbarItemGroup with the specified placement."
+      "tier": 3,
+      "purpose": "Defines a button or control in the navigation bar or bottom bar. Meaningful only as a direct child of navigationstack.",
+      "containerManages": [
+        "Placement in the navigation bar — author specifies the placement prop, the container handles the rest."
       ],
-      "authorMustProvide": [
-        "placement prop to specify where in the toolbar the item appears.",
-        "At least one button child as the toolbar item content."
+      "authorProvides": [
+        "placement prop.",
+        "At least one button child as the toolbar control."
       ],
       "useWhen": [
-        "Adding an action button to the navigation bar (add, edit, done, filter, etc.).",
-        "Placing multiple related buttons in the trailing or leading bar position."
+        "Adding a navigation bar action button.",
+        "Multiple related buttons in the leading or trailing bar slot."
       ],
       "avoidWhen": [
-        "Outside of navigationstack — children will render inline without toolbar behavior.",
-        "As a child of a vstack or hstack — it has no toolbar semantics there."
+        "Outside navigationstack — no toolbar behavior occurs."
       ],
       "props": {
-        "placement": {
-          "type": "enum",
-          "values": ["leading", "trailing", "bottom"],
-          "required": false,
-          "default": "trailing",
-          "description": "Navigation bar slot position."
-        }
+        "placement": { "type": "enum", "values": ["leading", "trailing", "bottom"], "default": "trailing" }
       },
       "allowsChildren": true
     },
 
     "list": {
       "category": "content",
-      "purpose": "Platform-styled vertical scrollable list of content rows. Renders with native iOS list appearance: separators, inset groups, swipe actions. section children group rows under headers.",
-      "rendererOwns": [
-        "List styling including row separators and inset grouping.",
-        "Vertical scroll behavior (list is already scrollable — do not wrap in scroll).",
-        "Platform-appropriate row spacing and dividers."
+      "tier": 2,
+      "purpose": "Platform-styled scrollable list of content rows. Use for row-based content that benefits from native iOS list appearance. section children group rows under named headers.",
+      "containerManages": [
+        "Vertical scroll — do not wrap list in scroll.",
+        "Row separators and inset grouping appearance."
       ],
-      "authorMustProvide": [
-        "Content children: label, toggle, textfield, button, or section nodes.",
-        "section children to group rows under a named header when grouping is needed."
+      "authorProvides": [
+        "Content children: label, toggle, textfield, button, section, or other row-compatible nodes.",
+        "section children when grouped rows with named headers are needed."
       ],
       "useWhen": [
-        "Displaying a settings-style screen with labeled rows.",
-        "Showing a vertical list of items (contacts, tasks, results, options).",
-        "The content is a vertically scrollable collection of similar rows.",
-        "Section grouping is needed (Account, Support, Preferences sections, etc.).",
-        "Platform-standard list chrome is desired."
+        "Settings, options, contacts, tasks, or any collection of similar rows.",
+        "Content needs native iOS list chrome.",
+        "Section grouping is needed."
       ],
       "avoidWhen": [
-        "The layout is custom and non-row-based — use vstack instead.",
-        "The content is horizontal — use hstack or scroll with axis=horizontal.",
-        "The screen has very few items with custom spacing — vstack may be cleaner."
+        "Custom layout with varied non-row elements — use vstack.",
+        "Horizontal content — use scroll with axis=horizontal.",
+        "Wrapping in scroll — list is already scrollable."
       ],
       "props": {},
-      "allowsChildren": true,
-      "childConstraints": {
-        "preferred": ["section", "label", "toggle", "textfield", "button", "text", "hstack"],
-        "note": "section children create grouped sections. Any UINode is technically valid as a child."
-      }
+      "allowsChildren": true
     },
 
     "section": {
       "category": "content",
-      "purpose": "Semantic grouping of rows under an optional header title. Fits naturally inside list. Renders as a SwiftUI Section with a visible header when title is provided.",
-      "rendererOwns": [
-        "Rendering the section header from the title prop.",
-        "Platform-appropriate section grouping visual treatment."
+      "tier": 3,
+      "purpose": "Groups related rows under an optional header title. Most effective inside list, where it produces a platform-standard section with a visible header. Can also be used inside table to group table rows.",
+      "containerManages": [
+        "Header rendering from the title prop."
       ],
-      "authorMustProvide": [
-        "title prop when a header label is desired.",
+      "authorProvides": [
+        "title prop when a header label is needed.",
         "Content children as the section rows."
       ],
       "useWhen": [
-        "Grouping related rows inside a list under a named heading.",
-        "Creating collapsible or named groups within a settings or content list.",
-        "Any time rows in a list belong to a named category."
+        "Grouping rows in a list under a named heading.",
+        "Grouping rows in a table under a named heading."
       ],
       "avoidWhen": [
-        "Outside of a list context — section has no special visual behavior there.",
-        "When no grouping is needed — just use flat list children.",
-        "As a substitute for group (which is for standalone grouped content)."
+        "As a general-purpose content grouping node outside list/table — use group instead."
       ],
       "props": {
         "title": { "type": "string", "required": false, "description": "Section header label. Omit for an untitled section." }
@@ -167,564 +438,412 @@
 
     "tabview": {
       "category": "composite",
-      "purpose": "Multi-tab navigation container. Renders a SwiftUI TabView with a tab bar. Direct children must be tab nodes. Optionally binds the selected tab to a state key.",
-      "rendererOwns": [
-        "Tab bar rendering.",
-        "Tab selection state when a selection binding is provided.",
-        "Silently ignoring non-tab children."
+      "tier": 1,
+      "purpose": "Multi-tab navigation container with a tab bar. Direct children must be tab nodes.",
+      "containerManages": [
+        "Tab bar and selection state."
       ],
-      "authorMustProvide": [
-        "tab nodes as the only direct children.",
-        "id on each tab node when using selection binding (tab.id is the selection value).",
-        "selection prop bound to a state key when programmatic tab selection is needed."
+      "authorProvides": [
+        "tab children only.",
+        "id on each tab when using a selection binding.",
+        "selection prop bound to a state key for programmatic tab switching."
       ],
       "useWhen": [
-        "The screen is a top-level multi-destination view (Home, Search, Profile, Settings).",
-        "There are 2–5 primary navigation destinations with tab bar icons.",
-        "Tab-based navigation is the primary navigation model for the screen."
+        "Screen has 2–5 primary navigation destinations with tab bar icons."
       ],
       "avoidWhen": [
-        "Switching between views that are not primary destinations (use group with collapsible or conditional visibility instead).",
-        "Only one 'tab' exists — use the content directly.",
-        "Tab bar should be hidden — there is no hide-tab-bar mechanism in the current runtime."
+        "Toggling between views that are not primary destinations — use group collapsible or visibleWhen.",
+        "Only one tab exists."
       ],
       "props": {
         "selection": { "type": "string", "required": false, "description": "State key bound to the selected tab's id." }
       },
       "allowsChildren": true,
-      "childConstraints": {
-        "required": "All children must be of type tab."
-      }
+      "childConstraint": "All children must be of type tab."
     },
 
     "tab": {
       "category": "composite",
-      "purpose": "A single tab page inside tabview. Carries the tab bar label (title + icon). Children are the tab page content.",
-      "rendererOwns": [
-        "Applying .tabItem modifier with Label(title, icon) or Text(title) to the page content.",
-        "Rendering children in a VStack."
+      "tier": 3,
+      "purpose": "A single tab page inside tabview. Carries the tab bar label (title + icon). Children are the page content.",
+      "containerManages": [
+        "Tab bar label from title and icon props — do not add a manual tab bar row inside the content."
       ],
-      "authorMustProvide": [
-        "title prop for the tab bar label.",
-        "icon prop (SF Symbol name) for the tab bar icon.",
-        "id that matches the selection binding value used in the parent tabview."
+      "authorProvides": [
+        "title and icon props for the tab bar label.",
+        "id that matches the selection binding value in the parent tabview.",
+        "Content children."
       ],
-      "useWhen": [
-        "As a direct child of tabview to represent a named tab destination."
-      ],
-      "avoidWhen": [
-        "Outside of tabview — children will render as a plain VStack without tab semantics."
-      ],
+      "useWhen": ["As a direct child of tabview."],
+      "avoidWhen": ["Outside of tabview — renders as a plain layout with no tab semantics."],
       "props": {
-        "title": { "type": "string", "required": true, "description": "Tab bar label text." },
-        "icon": { "type": "string", "required": false, "description": "SF Symbol name for the tab bar icon." }
+        "title": { "type": "string", "required": true },
+        "icon": { "type": "string", "required": false, "description": "SF Symbol name." }
       },
       "allowsChildren": true
     },
 
     "group": {
       "category": "composite",
-      "purpose": "Standalone semantic content grouping with optional title, footer, and collapsible behavior. Not a list row group — use section inside list for that. Supports visual styles: plain, card, inset.",
-      "rendererOwns": [
-        "Rendering the title headline above children.",
-        "Rendering the footer caption below children.",
-        "Wrapping children in DisclosureGroup when collapsible=true.",
-        "Applying card or inset visual treatment based on the style prop.",
-        "Managing expanded/collapsed state using node id as the state key suffix."
+      "tier": 3,
+      "purpose": "Standalone content block with optional title, footer, and collapsible behavior. Not a list row group — use section inside list for that. Supports visual styles: plain, card, inset.",
+      "containerManages": [
+        "Title headline, footer caption, card/inset visual styling, and expand/collapse behavior — author declares intent via props, container renders the result."
       ],
-      "authorMustProvide": [
-        "title for labeled groups.",
-        "style prop when card or inset visual treatment is desired.",
-        "collapsible=true and a node id when the group should expand/collapse.",
+      "authorProvides": [
+        "title for labeled blocks.",
+        "style when card or inset treatment is desired.",
+        "collapsible=true and a node id when expand/collapse is needed.",
         "Content children."
       ],
       "useWhen": [
-        "Grouping related form fields or UI elements with a visible title.",
-        "Presenting a card-style contained region (style='card').",
-        "Creating an expand/collapse section outside of a list (collapsible=true).",
-        "Presenting an inset-padded group (style='inset')."
+        "Grouping related form fields or UI elements with a visible title outside a list.",
+        "Card-style contained region (style='card').",
+        "Expandable/collapsible section outside a list (collapsible=true).",
+        "Inset-padded group (style='inset')."
       ],
       "avoidWhen": [
         "Inside a list — use section instead.",
-        "When no grouping behavior or title is needed — use vstack.",
-        "As a substitute for list rows."
+        "No grouping behavior needed — use vstack."
       ],
       "props": {
-        "title": { "type": "string", "required": false, "description": "Group heading text." },
-        "footer": { "type": "string", "required": false, "description": "Caption text below the group content." },
-        "collapsible": { "type": "boolean", "required": false, "default": false, "description": "When true, renders a DisclosureGroup that the user can expand/collapse. Requires a node id." },
-        "isExpanded": { "type": "boolean", "required": false, "default": true, "description": "Initial expanded state when collapsible=true." },
-        "style": { "type": "enum", "values": ["plain", "card", "inset"], "required": false, "default": "plain", "description": "Visual style. card adds elevated background and rounded corners. inset adds horizontal padding." }
+        "title": { "type": "string", "required": false },
+        "footer": { "type": "string", "required": false },
+        "collapsible": { "type": "boolean", "required": false, "default": false, "note": "Requires a node id to manage expand state." },
+        "isExpanded": { "type": "boolean", "required": false, "default": true },
+        "style": { "type": "enum", "values": ["plain", "card", "inset"], "default": "plain" }
       },
       "allowsChildren": true
     },
 
     "label": {
       "category": "primitive",
-      "purpose": "Semantic icon + text unit. Renders as a SwiftUI Label. Author must NOT manually compose hstack + icon + text when a label is needed.",
-      "rendererOwns": [
-        "Correct icon-text layout and spacing per platform conventions."
-      ],
-      "authorMustProvide": [
-        "title prop (required): the text content.",
-        "icon prop (optional): SF Symbol name for the icon."
+      "tier": 4,
+      "purpose": "Semantic icon + text unit. Author must NOT manually compose hstack + icon + text when a label is needed.",
+      "authorProvides": [
+        "title (required).",
+        "icon (optional): SF Symbol name."
       ],
       "useWhen": [
-        "Displaying an item with an icon and a text label (settings rows, menu items, list rows).",
-        "Any time icon + text is a single semantic unit.",
-        "Inside list/section for labeled rows.",
-        "As children of menu for menu items with icons."
+        "Any item that pairs an icon with a text label as a single semantic unit.",
+        "List/section rows, menu items, standalone labeled elements."
       ],
       "avoidWhen": [
-        "The item is icon-only — use icon instead.",
-        "The item is text-only — use text instead.",
-        "The icon and text need independent styling or spacing — use hstack with icon and text children."
+        "Icon only — use icon.",
+        "Text only — use text.",
+        "Independent styling for icon and text — use hstack with icon and text."
       ],
       "props": {
-        "title": { "type": "string|bind", "required": true, "description": "Label text. Accepts a string or a bind expression." },
-        "icon": { "type": "string", "required": false, "description": "SF Symbol name for the label icon." }
+        "title": { "type": "string|bind", "required": true },
+        "icon": { "type": "string", "required": false, "description": "SF Symbol name." }
       },
       "allowsChildren": false
     },
 
     "button": {
       "category": "composite",
-      "purpose": "Interactive action trigger. Renders a SwiftUI Button with optional icon. Fires the 'tap' event when pressed.",
-      "rendererOwns": [
-        "Rendering Label(title, icon) when icon is provided, Text(title) otherwise.",
-        "SwiftUI default button styling."
-      ],
-      "authorMustProvide": [
-        "label prop: the button title text.",
-        "event.tap: the handler name to fire when tapped."
-      ],
-      "useWhen": [
-        "User needs to trigger an action (save, delete, submit, navigate, etc.).",
-        "A toolbar action button is needed (provide as child of toolbaritem).",
-        "A menu item action is needed (provide as child of menu)."
-      ],
-      "avoidWhen": [
-        "Navigation row behavior is needed — use label inside list/section with a tap event instead."
+      "tier": 4,
+      "purpose": "Interactive action trigger. Fires the 'tap' event. Label text is in props.label; optional icon is in props.icon. Do not use children for the button label.",
+      "authorProvides": [
+        "label prop (required): button title.",
+        "event.tap: the handler name."
       ],
       "props": {
-        "label": { "type": "string|bind", "required": true, "description": "Button title text." },
-        "icon": { "type": "string", "required": false, "description": "SF Symbol name shown alongside the label." }
+        "label": { "type": "string|bind", "required": true },
+        "icon": { "type": "string", "required": false, "description": "SF Symbol name." }
       },
-      "events": {
-        "tap": "Fires when the button is pressed."
-      },
+      "events": { "tap": "Fires when pressed." },
       "allowsChildren": false
     },
 
     "toggle": {
       "category": "primitive",
-      "purpose": "Binary on/off switch bound to a boolean state key. Renders as a SwiftUI Toggle.",
-      "rendererOwns": [
-        "Binding the toggle to the state value.",
-        "Triggering the 'change' event after state update."
-      ],
-      "authorMustProvide": [
-        "title prop: visible label text.",
-        "bind prop: the state key holding the boolean value."
-      ],
-      "useWhen": [
-        "Enabling or disabling a setting (notifications, dark mode, Wi-Fi, etc.).",
-        "Any binary on/off control."
-      ],
-      "avoidWhen": [
-        "Multi-state selection — use menu or tabview instead."
+      "tier": 4,
+      "purpose": "Binary on/off switch bound to a boolean state key.",
+      "authorProvides": [
+        "title (required): visible label.",
+        "bind (required): state key for the boolean value."
       ],
       "props": {
-        "title": { "type": "string", "required": true, "description": "Visible toggle label." },
+        "title": { "type": "string", "required": true },
         "bind": { "type": "string", "required": true, "description": "State key for the boolean value." }
       },
-      "events": {
-        "change": "Fires after the toggle state changes."
-      },
+      "events": { "change": "Fires after the toggle state changes." },
       "allowsChildren": false
     },
 
     "textfield": {
       "category": "primitive",
-      "purpose": "Single-line text input field bound to a string state key. Supports password mode, keyboard type, prefix/suffix icons, and length capping.",
-      "rendererOwns": [
-        "Rendering SecureField when secure=true.",
-        "Capping input length at maxLength characters.",
-        "Wrapping prefix/suffix icons in an HStack with the field.",
-        "Triggering the 'change' event after each keystroke."
-      ],
-      "authorMustProvide": [
-        "bind prop: the state key for the string value.",
-        "placeholder when user hint text is needed.",
-        "The corresponding state key initialized in state.vars."
-      ],
-      "useWhen": [
-        "Free-text user input (name, email, search, message).",
-        "Password entry (secure=true).",
-        "Numeric input (keyboardType='numberPad' or 'decimalPad')."
-      ],
-      "avoidWhen": [
-        "Multi-line text input — not supported; consider multiple textfield nodes or use text for display."
+      "tier": 4,
+      "purpose": "Single-line text input field bound to a string state key. Supports password mode, keyboard configuration, prefix/suffix icons, and character length capping.",
+      "authorProvides": [
+        "bind (required): state key for the text value.",
+        "The corresponding state key declared in state.vars.",
+        "placeholder when a hint is needed."
       ],
       "props": {
-        "bind": { "type": "string", "required": true, "description": "State key for the text value." },
-        "placeholder": { "type": "string", "required": false, "description": "Placeholder hint text." },
-        "secure": { "type": "boolean", "required": false, "default": false, "description": "Renders as SecureField (password input) when true." },
-        "keyboardType": { "type": "enum", "values": ["default", "email", "numberPad", "decimalPad", "phone", "url"], "required": false, "default": "default", "note": "Use 'email' (not 'emailAddress'), 'phone' (not 'phonePad'). Unknown values fall back to 'default'." },
-        "returnKeyType": { "type": "enum", "values": ["done", "go", "next", "search"], "required": false, "default": "done" },
-        "autocapitalization": { "type": "enum", "values": ["none", "words", "sentences", "characters"], "required": false },
-        "autocorrectionDisabled": { "type": "boolean", "required": false, "default": false },
-        "maxLength": { "type": "number", "required": false, "description": "Maximum character count. Input is capped at this length." },
-        "prefixIcon": { "type": "string", "required": false, "description": "SF Symbol shown before the field." },
-        "suffixIcon": { "type": "string", "required": false, "description": "SF Symbol shown after the field." }
+        "bind": { "type": "string", "required": true },
+        "placeholder": { "type": "string", "required": false },
+        "secure": { "type": "boolean", "required": false, "default": false, "note": "Renders SecureField." },
+        "keyboardType": { "type": "enum", "values": ["default", "numberPad", "decimalPad", "email", "phone", "url"], "default": "default" },
+        "returnKeyType": { "type": "enum", "values": ["default", "done", "go", "search", "next"], "default": "default" },
+        "autocapitalization": { "type": "enum", "values": ["none", "words", "sentences", "characters"], "default": "none" },
+        "autocorrectionDisabled": { "type": "boolean", "default": false },
+        "maxLength": { "type": "number", "note": "Input is capped at this character count." },
+        "prefixIcon": { "type": "string", "note": "SF Symbol shown before the field." },
+        "suffixIcon": { "type": "string", "note": "SF Symbol shown after the field." }
       },
-      "events": {
-        "change": "Fires after the text value changes."
-      },
+      "events": { "change": "Fires after text changes." },
       "allowsChildren": false
     },
 
     "slider": {
       "category": "primitive",
-      "purpose": "Continuous or stepped value slider bound to a numeric state key. Renders as a SwiftUI Slider.",
-      "rendererOwns": [
-        "Binding the slider value to state.",
-        "Triggering the 'change' event after value changes.",
-        "Rendering the step-based slider when step is provided."
-      ],
-      "authorMustProvide": [
-        "bind prop: the state key for the numeric value.",
-        "min and max props defining the value range.",
-        "The corresponding state key initialized in state.vars."
-      ],
-      "useWhen": [
-        "Selecting a numeric value within a range (volume, brightness, price range, etc.).",
-        "Stepped selection (star ratings, quantity selectors with step=1)."
-      ],
-      "avoidWhen": [
-        "Discrete option selection — use menu or toggle instead."
+      "tier": 4,
+      "purpose": "Continuous or stepped value slider bound to a numeric state key.",
+      "authorProvides": [
+        "bind, min, max (all required).",
+        "The state key declared in state.vars."
       ],
       "props": {
-        "bind": { "type": "string", "required": true, "description": "State key for the numeric value." },
-        "min": { "type": "number", "required": true, "description": "Minimum slider value." },
-        "max": { "type": "number", "required": true, "description": "Maximum slider value." },
-        "step": { "type": "number", "required": false, "description": "Step increment. Omit for continuous slider." },
-        "label": { "type": "string", "required": false, "description": "Accessibility label for the slider." },
-        "accentColor": { "type": "string", "required": false, "description": "Hex color for the slider tint." }
+        "bind": { "type": "string", "required": true },
+        "min": { "type": "number", "required": true },
+        "max": { "type": "number", "required": true },
+        "step": { "type": "number", "note": "Omit for continuous slider." },
+        "label": { "type": "string", "note": "Accessibility label." },
+        "accentColor": { "type": "string", "note": "Hex color for slider tint." },
+        "thumbColor": { "type": "string", "note": "Hex color for the thumb. Declared; limited SwiftUI support on iOS." },
+        "trackColorActive": { "type": "string", "note": "Hex color for the filled track portion. Declared; limited SwiftUI support on iOS." },
+        "trackColorInactive": { "type": "string", "note": "Hex color for the empty track portion. Declared; limited SwiftUI support on iOS." }
       },
-      "events": {
-        "change": "Fires after the slider value changes."
-      },
+      "events": { "change": "Fires after value changes." },
       "allowsChildren": false
     },
 
     "menu": {
       "category": "composite",
-      "purpose": "Contextual dropdown menu with a trigger button and action items. The trigger label is defined via props (title + icon) or a special label child. All other children are menu items.",
-      "rendererOwns": [
-        "Identifying the label child (by id='label' or type='label') as the menu trigger.",
-        "Rendering remaining children as menu items in the dropdown.",
-        "Constructing the trigger as Label(title, icon) when props are provided."
-      ],
-      "authorMustProvide": [
-        "title and/or icon props for the trigger button (or a label child with id='label').",
+      "tier": 4,
+      "purpose": "Contextual dropdown menu with a trigger button and action items. Trigger label is defined via title/icon props or a special label child with id='label'.",
+      "authorProvides": [
+        "title and/or icon props for the trigger (or a label child with id='label').",
         "button children for each menu item."
       ],
       "useWhen": [
-        "A button reveals a list of contextual actions (Edit, Delete, Share, etc.).",
-        "Overflow actions that do not fit in the main UI.",
-        "Secondary actions behind an ellipsis or similar disclosure control."
-      ],
-      "avoidWhen": [
-        "Primary single actions — use button instead.",
-        "Navigation between screens — use tabview or navigationstack."
+        "A button reveals a list of contextual actions.",
+        "Overflow actions that do not fit in the main UI."
       ],
       "props": {
-        "title": { "type": "string", "required": false, "description": "Trigger button label text." },
-        "icon": { "type": "string", "required": false, "description": "SF Symbol for the trigger button." }
+        "title": { "type": "string", "required": false },
+        "icon": { "type": "string", "required": false }
       },
-      "allowsChildren": true,
-      "childConstraints": {
-        "labelChild": "A child with id='label' or type='label' is used as the trigger label view instead of title/icon props.",
-        "itemChildren": "All other children (typically button nodes) are the menu items."
-      }
+      "childNotes": "A child with id='label' or type='label' becomes the trigger view. All other children are menu items.",
+      "allowsChildren": true
     },
 
     "image": {
       "category": "primitive",
-      "purpose": "Standalone visual image. Renders a resizable SwiftUI Image from an asset catalog name or an SF Symbol. Always resizable — use width/height style props to constrain size.",
-      "rendererOwns": [
-        "Making the image resizable.",
-        "Applying contentMode (fit or fill) via aspectRatio modifier."
-      ],
-      "authorMustProvide": [
-        "Either systemName (SF Symbol name) or name (asset catalog name) — mutually exclusive.",
-        "width and/or height style props when a specific size is required."
+      "tier": 4,
+      "purpose": "Standalone visual image from an asset catalog or SF Symbol. Always resizable — use width/height style props to constrain.",
+      "authorProvides": [
+        "Either systemName (SF Symbol) or name (asset catalog name) — mutually exclusive.",
+        "width and/or height when a specific size is required."
       ],
       "useWhen": [
-        "Displaying a full-size image or large icon from assets.",
-        "Displaying a large SF Symbol as a visual element (not a decorative glyph)."
+        "Full-size image or large SF Symbol as a visual element."
       ],
-      "avoidWhen": [
-        "Small inline SF Symbol glyphs inside text or labels — use icon instead."
-      ],
+      "avoidWhen": ["Small inline decorative glyph — use icon."],
       "props": {
-        "systemName": { "type": "string", "required": false, "description": "SF Symbol name. Mutually exclusive with name." },
-        "name": { "type": "string", "required": false, "description": "Asset catalog image name. Mutually exclusive with systemName." },
-        "contentMode": { "type": "enum", "values": ["fit", "fill"], "required": false, "default": "fit" }
+        "systemName": { "type": "string", "note": "SF Symbol name. Mutually exclusive with name." },
+        "name": { "type": "string", "note": "Asset catalog name. Mutually exclusive with systemName." },
+        "contentMode": { "type": "enum", "values": ["fit", "fill"], "default": "fit" }
       },
       "allowsChildren": false
     },
 
     "icon": {
       "category": "primitive",
-      "purpose": "Small decorative SF Symbol glyph rendered at a configurable point size. Use for inline icons, not for standalone visual content.",
-      "rendererOwns": [
-        "Rendering Image(systemName:) with the specified font size."
-      ],
-      "authorMustProvide": [
-        "name prop: the SF Symbol name."
-      ],
-      "useWhen": [
-        "Decorative or informational inline SF Symbol glyph.",
-        "Icon in a custom hstack layout where label is not appropriate."
-      ],
-      "avoidWhen": [
-        "Icon + text together — use label instead.",
-        "Large standalone visual image — use image instead."
-      ],
+      "tier": 4,
+      "purpose": "Small inline SF Symbol glyph at a configurable point size. Use for decorative or informational glyphs, not for standalone visual content.",
+      "useWhen": ["Decorative or informational inline SF Symbol."],
+      "avoidWhen": ["Icon + text — use label.", "Large visual element — use image."],
       "props": {
         "name": { "type": "string", "required": true, "description": "SF Symbol name." },
-        "size": { "type": "number", "required": false, "default": 20, "description": "Point size of the icon." }
+        "size": { "type": "number", "default": 20, "description": "Point size." }
       },
       "allowsChildren": false
     },
 
     "text": {
       "category": "primitive",
-      "purpose": "Static or dynamic text display. The value prop accepts a plain string or a bind expression. Supports state interpolation: 'Hello {name}' binds the 'name' state key inline.",
-      "rendererOwns": [
-        "Resolving bind expressions and interpolation in the value prop.",
-        "Applying font size and weight from props."
-      ],
-      "authorMustProvide": [
-        "value prop: the text string or bind expression."
-      ],
-      "useWhen": [
-        "Any non-interactive text display.",
-        "Displaying a dynamic state-bound value."
-      ],
-      "avoidWhen": [
-        "Icon + text combination — use label."
-      ],
+      "tier": 4,
+      "purpose": "Static or dynamic text display. Supports plain strings, bind references, and format-string interpolation.",
       "props": {
-        "value": { "type": "string|bind|format", "required": true, "description": "Text content. Accepts: (1) a plain string, (2) a { 'bind': 'key' } expression to display a state value, (3) a { 'format': 'Hello {name}!', 'binds': ['name'] } object for multi-key interpolation, or (4) a plain string with {key} placeholders when binds are listed." },
-        "fontSize": { "type": "number", "required": false, "description": "Font point size." },
-        "fontWeight": { "type": "enum", "values": ["ultraLight", "thin", "light", "regular", "medium", "semibold", "bold", "heavy", "black"], "required": false }
+        "value": {
+          "type": "string|bind|format",
+          "required": true,
+          "forms": [
+            "Plain string: \"value\": \"Hello\"",
+            "Bind: \"value\": { \"bind\": \"stateKey\" }",
+            "Format interpolation: \"value\": { \"format\": \"Hello {name}\", \"binds\": [\"name\"] }"
+          ]
+        },
+        "fontSize": { "type": "number" },
+        "fontWeight": { "type": "enum", "values": ["ultraLight", "thin", "light", "regular", "medium", "semibold", "bold", "heavy", "black"] }
       },
       "allowsChildren": false
     },
 
     "badge": {
       "category": "primitive",
-      "purpose": "Status label displayed in a capsule background. Commonly used for tags, statuses, and count indicators.",
-      "rendererOwns": [
-        "Rendering Text in a blue-tinted Capsule background with caption font."
-      ],
-      "authorMustProvide": [
-        "text prop or value prop: the badge text."
-      ],
-      "useWhen": [
-        "Tag-style status indicators.",
-        "Count or category labels.",
-        "Short status strings needing visual emphasis."
-      ],
+      "tier": 4,
+      "purpose": "Status label in a capsule background. Use for tags, status indicators, and count labels.",
       "props": {
-        "text": { "type": "string|bind", "required": false, "description": "Badge text content." }
+        "text": { "type": "string|bind" }
       },
       "allowsChildren": false
     },
 
     "shape": {
       "category": "primitive",
-      "purpose": "Geometric shape for decorative or structural purposes. Supports fill, stroke, and dashed/dotted stroke styles. Children are rendered on top of the shape.",
-      "rendererOwns": [
-        "Drawing the shape with the specified fill and/or stroke.",
-        "Rendering children in a ZStack on top of the shape."
-      ],
-      "authorMustProvide": [
-        "type prop: the shape variant.",
+      "tier": 4,
+      "purpose": "Geometric shape for decorative or structural use. Supports fill and stroke. Children are rendered on top of the shape.",
+      "authorProvides": [
         "At least one of fill or strokeColor to make the shape visible."
       ],
-      "useWhen": [
-        "Decorative geometric elements.",
-        "Circular avatars or badges (type='circle' with fill).",
-        "Dividers, highlight regions, or background shapes."
-      ],
       "props": {
-        "type": { "type": "enum", "values": ["rectangle", "roundedRectangle", "circle", "capsule", "ellipse"], "required": false, "default": "rectangle" },
-        "fill": { "type": "string", "required": false, "description": "Fill color (hex)." },
-        "strokeColor": { "type": "string", "required": false, "description": "Stroke color (hex)." },
-        "strokeWidth": { "type": "number", "required": false, "default": 1, "description": "Stroke line width." },
-        "strokeStyle": { "type": "enum", "values": ["solid", "dashed", "dotted"], "required": false, "default": "solid" },
-        "cornerRadius": { "type": "number", "required": false, "description": "Corner radius for roundedRectangle." }
+        "type": { "type": "enum", "values": ["rectangle", "roundedRectangle", "circle", "capsule", "ellipse"], "default": "rectangle" },
+        "fill": { "type": "string", "note": "Hex color fill." },
+        "strokeColor": { "type": "string", "note": "Hex color stroke." },
+        "strokeWidth": { "type": "number", "default": 1 },
+        "strokeStyle": { "type": "enum", "values": ["solid", "dashed", "dotted"], "default": "solid" },
+        "cornerRadius": { "type": "number", "note": "For roundedRectangle type." }
       },
       "allowsChildren": true,
-      "childConstraints": {
-        "note": "Children are rendered on top of the shape in a ZStack."
-      }
+      "childNote": "Children are rendered on top of the shape."
     },
 
     "table": {
       "category": "content",
-      "purpose": "Tabular data display with column headers, alternating row backgrounds, and optional selection. Children are rows; section children group rows.",
-      "rendererOwns": [
-        "Rendering column header row from the columns prop.",
-        "Applying alternating row background when alternatingRows=true.",
-        "Applying row height from rowHeight prop."
+      "tier": 2,
+      "purpose": "Tabular data display with column headers, alternating row backgrounds, and optional row selection. Children are rows; section children group rows under named headers.",
+      "containerManages": [
+        "Column header row from the columns prop — do not add a manual header hstack."
       ],
-      "authorMustProvide": [
-        "columns prop: comma-separated column header names.",
-        "Row children (typically hstack with one text/badge child per column)."
+      "authorProvides": [
+        "columns prop for named column headers.",
+        "Row children (typically hstack with one cell per column)."
       ],
       "useWhen": [
-        "Displaying structured data in named columns (leaderboards, data grids, reports).",
-        "Data that is inherently tabular with fixed column structure."
+        "Structured data with fixed named columns.",
+        "Data that is inherently tabular (leaderboards, reports, grids)."
       ],
-      "avoidWhen": [
-        "Simple lists of items — use list + section instead.",
-        "Data with variable structure — use list rows with hstack instead."
-      ],
+      "avoidWhen": ["Simple lists of items — use list + section."],
       "props": {
-        "columns": { "type": "string", "required": false, "description": "Comma-separated column header names, e.g. 'Name, Score, Level'." },
-        "rowHeight": { "type": "number", "required": false, "default": 44, "description": "Row height in points." },
-        "alternatingRows": { "type": "boolean", "required": false, "default": false },
-        "selectionMode": { "type": "enum", "values": ["none", "single", "multiple"], "required": false, "default": "none" },
-        "headerVisible": { "type": "boolean", "required": false, "default": true }
+        "columns": { "type": "string", "note": "Comma-separated column header names." },
+        "rowHeight": { "type": "number", "default": 44 },
+        "alternatingRows": { "type": "boolean", "default": false },
+        "selectionMode": { "type": "enum", "values": ["none", "single", "multiple"], "default": "none", "note": "multiple is declared but not yet implemented." },
+        "headerVisible": { "type": "boolean", "default": true },
+        "sortable": { "type": "boolean", "default": false, "note": "Declared for forward compatibility. Not yet implemented in the runtime." }
       },
       "allowsChildren": true
     },
 
     "scroll": {
       "category": "layout",
-      "purpose": "Scrollable container for content that may overflow the viewport. The renderer automatically wraps children in a VStack — do NOT add a vstack wrapper inside scroll.",
-      "rendererOwns": [
-        "Wrapping children in a VStack (vertical axis) or HStack (horizontal axis) internally.",
-        "Applying the padding prop to the internal stack."
+      "tier": 2,
+      "purpose": "Scrollable container for content that may exceed the viewport. Provides vertical flow for its children. Do not add a vstack as the only child — the vertical arrangement is managed by the container.",
+      "containerManages": [
+        "Vertical (or horizontal) flow of children — do not wrap all children in a vstack."
       ],
-      "authorMustProvide": [
-        "Content children directly (no extra vstack wrapper).",
-        "axis='horizontal' prop for horizontal scrolling."
+      "authorProvides": [
+        "Content children directly.",
+        "axis='horizontal' for horizontal scrolling."
       ],
       "useWhen": [
         "Custom-layout content that may overflow the viewport vertically.",
-        "Horizontal scrolling content (axis='horizontal').",
-        "A form or long page built from custom vstack/hstack composition."
+        "Horizontal scrolling content."
       ],
       "avoidWhen": [
-        "Wrapping a list node — list is already scrollable.",
-        "Wrapping a tabview — tab content should scroll internally if needed.",
-        "Short content that does not need to scroll."
+        "Wrapping a list — list is already scrollable.",
+        "Short content that does not need scrolling."
       ],
       "props": {
-        "axis": { "type": "enum", "values": ["vertical", "horizontal"], "required": false, "default": "vertical" },
-        "spacing": { "type": "number", "required": false, "description": "Spacing applied to the internal VStack." },
-        "padding": { "type": "number", "required": false, "description": "Padding applied to the internal VStack." }
+        "axis": { "type": "enum", "values": ["vertical", "horizontal"], "default": "vertical" },
+        "spacing": { "type": "number" },
+        "padding": { "type": "number" }
       },
-      "allowsChildren": true,
-      "childConstraints": {
-        "note": "Do NOT add a vstack as the only child of scroll. The renderer inserts a VStack internally."
-      }
+      "allowsChildren": true
     },
 
     "vstack": {
       "category": "layout",
-      "purpose": "Vertical layout stack. A low-level composition primitive. Use when no semantic container (list, group, section, navigationstack) fits the intent.",
-      "rendererOwns": [
-        "Vertical stacking of children.",
-        "Applying alignment and spacing from props."
-      ],
-      "authorMustProvide": [
-        "Content children."
-      ],
+      "tier": 5,
+      "purpose": "Vertical layout stack. A local composition primitive. Use when no semantic container fits the intent. Not a whole-screen structural choice.",
       "useWhen": [
         "Custom vertical layout that is not row-based list content.",
         "Mixed content that does not match any semantic container.",
-        "Hero sections, banners, or composed form areas."
+        "Local vertical composition inside a tab, section, or group."
       ],
       "avoidWhen": [
-        "The content is a list of rows — use list + section instead.",
-        "The screen needs a navigation bar — use navigationstack as root.",
-        "Inside scroll as the only child — scroll already provides a VStack.",
-        "Inside a list to simulate section groups — use section instead."
+        "Content is row-based — use list.",
+        "Screen needs navigation chrome — use navigationstack.",
+        "As the only child of scroll — scroll manages vertical flow."
       ],
       "props": {
-        "spacing": { "type": "number", "required": false, "default": 0, "description": "Spacing between children." },
-        "alignment": { "type": "enum", "values": ["leading", "center", "trailing"], "required": false, "default": "leading" }
+        "spacing": { "type": "number", "default": 0 },
+        "alignment": { "type": "enum", "values": ["leading", "center", "trailing"], "default": "leading" }
       },
       "allowsChildren": true
     },
 
     "hstack": {
       "category": "layout",
-      "purpose": "Horizontal layout stack. A low-level composition primitive for custom horizontal arrangements.",
-      "rendererOwns": [
-        "Horizontal stacking of children.",
-        "Applying spacing from props."
-      ],
-      "authorMustProvide": [
-        "Content children."
-      ],
+      "tier": 5,
+      "purpose": "Horizontal layout stack. Local composition primitive for custom side-by-side arrangements.",
       "useWhen": [
-        "Side-by-side layout of different element types.",
-        "Table row cells (one per column).",
+        "Side-by-side elements with custom layout.",
+        "Table row cells.",
         "Custom horizontal compositions not covered by label or button."
       ],
-      "avoidWhen": [
-        "Icon + text combination — use label instead."
-      ],
+      "avoidWhen": ["Icon + text combination — use label."],
       "props": {
-        "spacing": { "type": "number", "required": false, "default": 0, "description": "Spacing between children." }
+        "spacing": { "type": "number", "default": 0 }
       },
       "allowsChildren": true
     },
 
     "zstack": {
       "category": "layout",
-      "purpose": "Depth-based overlay stack. Renders children on top of each other. Use for overlaying elements, background/foreground compositions, and badge-over-icon patterns.",
+      "tier": 5,
+      "purpose": "Depth-based overlay stack. Renders children on top of each other. Use for overlaying elements, background/foreground compositions.",
       "allowsChildren": true,
       "props": {}
     },
 
     "frame": {
       "category": "layout",
-      "purpose": "Applies explicit frame constraints and alignment to its children. Rendered as a ZStack with the specified alignment. Use for precise sizing and alignment, not for content grouping.",
-      "rendererOwns": [
-        "Wrapping children in a ZStack with the specified alignment.",
-        "Applying frame constraints from style props."
-      ],
+      "tier": 5,
+      "purpose": "Applies explicit frame constraints and alignment to its children. Use for precise sizing and alignment, not for semantic content grouping.",
       "useWhen": [
         "Precise width/height constraints on a subtree.",
-        "Overriding the default alignment of a child element.",
-        "Fixed-size containers."
+        "Overriding the default alignment of a child element."
       ],
-      "avoidWhen": [
-        "Content grouping with a title — use group instead.",
-        "Row grouping in a list — use section instead."
-      ],
+      "avoidWhen": ["Content grouping with title — use group.", "Row grouping in list — use section."],
       "props": {
-        "alignment": { "type": "enum", "values": ["topLeading", "top", "topTrailing", "leading", "center", "trailing", "bottomLeading", "bottom", "bottomTrailing"], "required": false, "default": "center" },
-        "idealWidth": { "type": "number", "required": false },
-        "idealHeight": { "type": "number", "required": false },
-        "fixedSize": { "type": "string|boolean", "values": ["horizontal", "vertical", "both", true], "required": false },
-        "clip": { "type": "boolean", "required": false },
-        "clipShape": { "type": "enum", "values": ["circle", "capsule", "ellipse", "roundedRectangle", "rectangle"], "required": false }
+        "alignment": { "type": "enum", "values": ["topLeading", "top", "topTrailing", "leading", "center", "trailing", "bottomLeading", "bottom", "bottomTrailing"], "default": "center" },
+        "idealWidth": { "type": "number" },
+        "idealHeight": { "type": "number" },
+        "fixedSize": { "type": "enum|boolean", "values": ["horizontal", "vertical", "both", true] },
+        "clip": { "type": "boolean" },
+        "clipShape": { "type": "enum", "values": ["circle", "capsule", "ellipse", "roundedRectangle", "rectangle"] }
       },
       "allowsChildren": true
     },
 
     "spacer": {
       "category": "layout",
+      "tier": 5,
       "purpose": "Flexible whitespace that fills available space. Use inside hstack or vstack to push elements apart.",
       "allowsChildren": false,
       "props": {}
@@ -732,237 +851,82 @@
   },
 
   "styleProps": {
-    "description": "Style properties available on all nodes via the props map. Applied by NodeStyle.apply().",
-    "padding": { "type": "number", "description": "Uniform padding on all sides." },
-    "paddingTop": { "type": "number", "description": "Top padding (overrides uniform padding)." },
-    "paddingBottom": { "type": "number", "description": "Bottom padding (overrides uniform padding)." },
-    "paddingLeading": { "type": "number", "description": "Leading (left) padding (overrides uniform padding)." },
-    "paddingTrailing": { "type": "number", "description": "Trailing (right) padding (overrides uniform padding)." },
-    "width": { "type": "number", "description": "Fixed width." },
-    "height": { "type": "number", "description": "Fixed height." },
-    "minWidth": { "type": "number" },
-    "minHeight": { "type": "number" },
-    "maxWidth": { "type": "number|string", "description": "Maximum width. Use the literal string 'infinity' (not a number) for .infinity — this is the only string value accepted for this prop. Use a number for any other constraint.", "example": "\"maxWidth\": \"infinity\"" },
-    "maxHeight": { "type": "number" },
-    "idealWidth": { "type": "number" },
-    "idealHeight": { "type": "number" },
-    "fixedSize": { "type": "string|boolean", "values": ["horizontal", "vertical", "both", true] },
-    "opacity": { "type": "number", "description": "0.0 (transparent) to 1.0 (opaque)." },
-    "backgroundColor": { "type": "string", "description": "Hex color string, e.g. '#FF3B30'." },
-    "foregroundColor": { "type": "string", "description": "Hex color for text and icons, e.g. '#1C1C1E'." },
-    "cornerRadius": { "type": "number", "description": "Rounded corner radius." },
-    "clipShape": { "type": "enum", "values": ["circle", "capsule", "ellipse", "roundedRectangle", "rectangle"] },
-    "clip": { "type": "boolean", "description": "Clips content to bounds." },
-    "borderColor": { "type": "string", "description": "Hex color for border overlay." },
-    "borderWidth": { "type": "number", "default": 1 },
-    "shadowColor": { "type": "string", "description": "Hex color for shadow." },
-    "shadowRadius": { "type": "number", "description": "Shadow blur radius. Shadow is only applied when this is set." },
-    "shadowX": { "type": "number", "default": 0 },
-    "shadowY": { "type": "number", "default": 0 },
+    "description": "Style properties available on all nodes via the props map.",
+    "padding": "number — uniform padding on all sides.",
+    "paddingTop": "number — top padding (overrides uniform).",
+    "paddingBottom": "number — bottom padding (overrides uniform).",
+    "paddingLeading": "number — leading padding (overrides uniform).",
+    "paddingTrailing": "number — trailing padding (overrides uniform).",
+    "width": "number — fixed width.",
+    "height": "number — fixed height.",
+    "minWidth": "number",
+    "minHeight": "number",
+    "maxWidth": "number or the literal string 'infinity' for full-width expansion.",
+    "maxHeight": "number",
+    "idealWidth": "number",
+    "idealHeight": "number",
+    "fixedSize": "'horizontal' | 'vertical' | 'both' | true",
+    "opacity": "number 0.0–1.0",
+    "backgroundColor": "hex color string, e.g. '#FF3B30'",
+    "foregroundColor": "hex color string for text and icons",
+    "cornerRadius": "number — rounded corner radius",
+    "clipShape": "'circle' | 'capsule' | 'ellipse' | 'roundedRectangle' | 'rectangle'",
+    "clip": "boolean — clips content to bounds",
+    "borderColor": "hex color string — renders as an overlay border",
+    "borderWidth": "number, default 1",
+    "shadowColor": "hex color string",
+    "shadowRadius": "number — shadow is only rendered when this is set",
+    "shadowX": "number, default 0",
+    "shadowY": "number, default 0",
     "notes": [
-      "Side-specific padding (paddingTop etc.) takes priority over uniform padding.",
+      "Side-specific padding overrides uniform padding.",
       "backgroundColor is applied before clipShape/cornerRadius so the background clips correctly.",
-      "Shadow is only rendered when shadowRadius is present.",
-      "borderColor renders as a RoundedRectangle overlay — uses cornerRadius if set."
+      "Shadow only renders when shadowRadius is present."
     ]
   },
 
   "expressions": {
-    "description": "Expression objects used in visibleWhen, enabledWhen, and conditional action fields.",
-    "bind": {
-      "syntax": { "bind": "stateKey" },
-      "description": "References the current value of a state variable."
+    "description": "Expression objects used in visibleWhen, enabledWhen, and the when field of actions. These are JSON objects with a single operator key.",
+    "syntax": {
+      "bind": { "form": "{ \"bind\": \"stateKey\" }", "description": "Resolves to the current value of a state variable." },
+      "eq":   { "form": "{ \"eq\":  [leftExpr, rightExpr] }", "description": "True when left equals right." },
+      "neq":  { "form": "{ \"neq\": [leftExpr, rightExpr] }", "description": "True when left does not equal right." },
+      "gt":   { "form": "{ \"gt\":  [leftExpr, rightExpr] }", "description": "True when left > right (numeric)." },
+      "gte":  { "form": "{ \"gte\": [leftExpr, rightExpr] }", "description": "True when left >= right (numeric)." },
+      "lt":   { "form": "{ \"lt\":  [leftExpr, rightExpr] }", "description": "True when left < right (numeric)." },
+      "lte":  { "form": "{ \"lte\": [leftExpr, rightExpr] }", "description": "True when left <= right (numeric)." },
+      "and":  { "form": "{ \"and\": [expr, expr, ...] }",     "description": "True when all sub-expressions are true." },
+      "or":   { "form": "{ \"or\":  [expr, expr, ...] }",     "description": "True when any sub-expression is true." },
+      "not":  { "form": "{ \"not\": expr }",                  "description": "Negates the sub-expression." }
     },
-    "comparisons": {
-      "eq":  { "syntax": { "eq":  ["expr", "expr"] }, "description": "Equality check." },
-      "neq": { "syntax": { "neq": ["expr", "expr"] }, "description": "Inequality check." },
-      "gt":  { "syntax": { "gt":  ["expr", "expr"] }, "description": "Greater than." },
-      "gte": { "syntax": { "gte": ["expr", "expr"] }, "description": "Greater than or equal." },
-      "lt":  { "syntax": { "lt":  ["expr", "expr"] }, "description": "Less than." },
-      "lte": { "syntax": { "lte": ["expr", "expr"] }, "description": "Less than or equal." }
-    },
-    "logical": {
-      "and": { "syntax": { "and": ["expr", "expr"] }, "description": "Logical AND." },
-      "or":  { "syntax": { "or":  ["expr", "expr"] }, "description": "Logical OR." },
-      "not": { "syntax": { "not": "expr" },           "description": "Logical NOT." }
-    },
-    "literals": "Plain JSON values (strings, numbers, booleans) are valid expressions.",
-    "usageNotes": [
-      "visibleWhen: node is hidden (EmptyView) when the expression evaluates to false.",
-      "enabledWhen: node interactions are disabled when the expression evaluates to false.",
-      "Text simple bind: use { 'bind': 'key' } as the entire value prop to display a single state value.",
-      "Text format interpolation: use { 'format': 'Hello {name}, you have {count} messages', 'binds': ['name', 'count'] } to embed multiple state values in a string. The {key} placeholders in format are replaced with the corresponding state values.",
-      "There is no escape sequence for literal braces in format strings. If a literal '{' or '}' is needed, use a plain string value without the format object."
+    "canonicalExamples": [
+      "{ \"bind\": \"wifiEnabled\" }                                              — true when wifiEnabled is true",
+      "{ \"not\": { \"bind\": \"wifiEnabled\" } }                                — true when wifiEnabled is false",
+      "{ \"eq\": [{ \"bind\": \"counter\" }, 0] }                                — true when counter equals 0",
+      "{ \"gt\": [{ \"bind\": \"counter\" }, 0] }                                — true when counter > 0",
+      "{ \"lt\": [{ \"bind\": \"counter\" }, { \"bind\": \"counterMax\" }] }      — true when counter < counterMax",
+      "{ \"neq\": [{ \"bind\": \"formName\" }, \"\"] }                           — true when formName is not empty"
+    ],
+    "notes": [
+      "Comparison arrays always have exactly 2 elements.",
+      "Each element can be a bind expression or a literal value (string, number, boolean).",
+      "Literals are valid expressions: true, false, 0, 'someString'.",
+      "There is no { \"op\": ... } form — use the direct operator key form shown above."
     ]
   },
 
   "actions": {
-    "description": "Action objects in event handler arrays. Each action has a 'do' field specifying the operation.",
-    "state.set":    { "fields": ["key", "value"],              "description": "Sets a state variable to the given value. The runtime stores values as DynamicValue (string, number, bool). Type coercion is permissive — setting a string to a previously-numeric key is allowed but may cause bind inconsistencies. Prefer matching the initial type declared in state.vars." },
-    "state.inc":    { "fields": ["key", "max?"],               "description": "Increments a numeric state variable. Optional max cap." },
-    "state.dec":    { "fields": ["key", "min?"],               "description": "Decrements a numeric state variable. Optional min floor." },
-    "state.toggle": { "fields": ["key"],                       "description": "Toggles a boolean state variable." },
-    "ui.toast":     { "fields": ["message"],                   "description": "Shows a temporary toast notification." },
-    "ui.alert":     { "fields": ["title", "message?"],         "description": "Shows an alert dialog." },
-    "ai.request":   { "fields": ["prompt", "resultKey?"],      "description": "Sends a prompt to the AI and optionally stores the response in a state key. The prompt string is passed to the AI runtime as-is. Author is responsible for keeping prompts appropriate and bounded in scope." },
-    "conditionalExecution": "Each action may have a 'when' field with an expression. The action is skipped when the expression evaluates to false."
-  },
-
-  "decisionRules": [
-    {
-      "question": "What should be the root container of the screen?",
-      "rules": [
-        { "if": "Screen needs a navigation bar, navigation title, or toolbar buttons", "then": "Use navigationstack as root. All screen content goes inside it as children." },
-        { "if": "Screen has multiple primary tab destinations", "then": "Use tabview as root. Each destination is a tab child." },
-        { "if": "Screen is a form or long content page without navigation chrome", "then": "Use scroll as root so content is scrollable. Do NOT add a vstack inside scroll." },
-        { "if": "Screen is a settings or options list", "then": "Use list as root (or inside navigationstack). Add section children for grouping." },
-        { "if": "Screen is a short custom-layout page", "then": "Use vstack as root." }
-      ]
-    },
-    {
-      "question": "Should I use list or vstack for vertical content?",
-      "rules": [
-        { "if": "Content is a collection of similar rows (settings, options, items, contacts, tasks)", "then": "Use list. Add section children for grouping." },
-        { "if": "Content is custom-layout with varied elements and no row structure", "then": "Use vstack." },
-        { "if": "Content is inside a navigationstack and represents document-style rows", "then": "Use list inside navigationstack." }
-      ]
-    },
-    {
-      "question": "How should I group rows inside a list?",
-      "rules": [
-        { "if": "Rows belong to a named category (Account, Settings, Support)", "then": "Use section with title inside list." },
-        { "if": "No named grouping is needed", "then": "Place children directly in list without section." },
-        { "DO NOT": "Use vstack to simulate section groups inside a list." }
-      ]
-    },
-    {
-      "question": "Should I use label or manually compose hstack + icon + text?",
-      "rules": [
-        { "if": "You need icon + text as a semantic unit (list row, menu item, button content)", "then": "Always use label." },
-        { "if": "The icon and text need independent styles or unrelated positions", "then": "Use hstack with icon and text children." }
-      ]
-    },
-    {
-      "question": "Where do toolbar buttons go?",
-      "rules": [
-        { "if": "Screen uses navigationstack", "then": "Place toolbaritem as a direct child of navigationstack. Put the button inside toolbaritem as a child." },
-        { "if": "toolbaritem is placed outside navigationstack", "then": "Its children render flat — no toolbar behavior." }
-      ]
-    },
-    {
-      "question": "Should I use group or section?",
-      "rules": [
-        { "if": "Grouping rows inside a list", "then": "Use section." },
-        { "if": "Grouping standalone content outside a list, with optional card/inset style or collapsible behavior", "then": "Use group." }
-      ]
-    },
-    {
-      "question": "Should I wrap content in scroll?",
-      "rules": [
-        { "if": "Content may overflow the viewport and is NOT inside a list or tabview", "then": "Use scroll as the container." },
-        { "if": "Content is a list", "then": "Do NOT wrap list in scroll — list is already scrollable." },
-        { "if": "Content is inside a tab inside tabview", "then": "Use scroll inside the tab if the tab content is long." }
-      ]
-    },
-    {
-      "question": "Should I use image or icon?",
-      "rules": [
-        { "if": "Large standalone image, hero image, or large SF Symbol as a visual element", "then": "Use image. Set width/height props to constrain the size." },
-        { "if": "Small inline decorative SF Symbol glyph", "then": "Use icon." },
-        { "if": "Icon + label text together", "then": "Use label (not icon + text composed manually)." }
-      ]
-    },
-    {
-      "question": "When is vstack still appropriate?",
-      "rules": [
-        { "use": "vstack for custom vertical layouts that are not row-based lists." },
-        { "use": "vstack inside a tab's children for custom tab content layout." },
-        { "use": "vstack for hero/banner sections, form areas, or mixed content without row structure." },
-        { "DO NOT": "Use vstack as a substitute for list, section, group, or navigationstack." }
-      ]
-    }
-  ],
-
-  "antiPatterns": [
-    {
-      "name": "vstack_inside_scroll",
-      "description": "Adding a vstack as the only child of a scroll node.",
-      "problem": "The renderer already inserts a VStack inside scroll internally. Adding another vstack creates a redundant double-wrap.",
-      "fix": "Place content children directly inside scroll without a vstack wrapper.",
-      "example": {
-        "bad":  { "type": "scroll", "children": [{ "type": "vstack", "children": ["..."] }] },
-        "good": { "type": "scroll", "children": ["...content children directly..."] }
-      }
-    },
-    {
-      "name": "manual_label_composition",
-      "description": "Composing hstack + icon + text instead of using the label node.",
-      "problem": "label is a semantic node that correctly expresses icon+text unity and handles platform layout. Manual hstack+icon+text bypasses this.",
-      "fix": "Use label with title and icon props whenever icon+text is a single semantic unit.",
-      "example": {
-        "bad":  { "type": "hstack", "children": [{ "type": "icon", "props": { "name": "gearshape" } }, { "type": "text", "props": { "value": "Settings" } }] },
-        "good": { "type": "label", "props": { "title": "Settings", "icon": "gearshape" } }
-      }
-    },
-    {
-      "name": "vstack_as_list",
-      "description": "Using vstack to render a list of similar content rows instead of list.",
-      "problem": "vstack produces custom layout without list styling. Rows lack separators, inset grouping, and platform-standard list appearance.",
-      "fix": "Use list with optional section children for row-based content."
-    },
-    {
-      "name": "vstack_simulating_sections",
-      "description": "Using vstack children inside a list to simulate section groups.",
-      "problem": "list's section child provides semantic grouping with a visible header. A vstack inside list renders flat without section behavior.",
-      "fix": "Use section with a title prop directly inside list for grouped rows."
-    },
-    {
-      "name": "toolbaritem_outside_navigationstack",
-      "description": "Placing toolbaritem as a child of vstack, hstack, or any container other than navigationstack.",
-      "problem": "toolbaritem only gains toolbar behavior when lifted by navigationstack. Outside that context, children render inline.",
-      "fix": "toolbaritem must be a direct child of navigationstack."
-    },
-    {
-      "name": "tab_outside_tabview",
-      "description": "Using a tab node outside of a tabview.",
-      "problem": "tab renders as a plain VStack with no tabItem modifier when not inside tabview.",
-      "fix": "tab nodes must be direct children of tabview."
-    },
-    {
-      "name": "nested_navigationstack",
-      "description": "Placing a navigationstack inside another navigationstack.",
-      "problem": "Nested navigation stacks produce conflicting navigation bars and undefined behavior.",
-      "fix": "Use a single navigationstack at the appropriate root level."
-    },
-    {
-      "name": "list_wrapped_in_scroll",
-      "description": "Wrapping a list node inside a scroll container.",
-      "problem": "list is already a scrollable container. Wrapping it in scroll creates conflicting scroll areas.",
-      "fix": "Use list directly. Do not wrap it in scroll."
-    },
-    {
-      "name": "vstack_root_with_nav_intent",
-      "description": "Using vstack as the root when the screen clearly requires a navigation bar, title, or toolbar.",
-      "problem": "vstack does not provide navigation chrome. The title and toolbar buttons will be absent.",
-      "fix": "Use navigationstack as the root container. Place the vstack content inside navigationstack."
-    },
-    {
-      "name": "missing_state_declaration",
-      "description": "Using a bind prop that references a state key not declared in state.vars.",
-      "problem": "The runtime will produce an empty/nil value for the binding. The initial state is undefined.",
-      "fix": "Declare every state key referenced in bind props in state.vars with an appropriate initial value."
-    },
-    {
-      "name": "empty_events_omitted",
-      "description": "Omitting the events field when no events are defined.",
-      "problem": "events is a required field. Omitting it will cause document validation failure.",
-      "fix": "Always include events: {} even when there are no event handlers."
-    },
-    {
-      "name": "frame_as_group_substitute",
-      "description": "Using frame as a general content grouping container instead of group.",
-      "problem": "frame is for sizing and alignment constraints. It provides no title, footer, or semantic grouping.",
-      "fix": "Use group with the appropriate style prop for semantic content grouping."
-    }
-  ]
+    "description": "Action objects in event handler arrays. The 'do' field specifies the operation. An optional 'when' expression field conditionally skips the action.",
+    "state.set":    { "requiredFields": ["key", "value"],          "description": "Sets a state variable to the given value." },
+    "state.inc":    { "requiredFields": ["key"],       "optionalFields": ["max"], "description": "Increments a numeric state variable. Optional max cap." },
+    "state.dec":    { "requiredFields": ["key"],       "optionalFields": ["min"], "description": "Decrements a numeric state variable. Optional min floor." },
+    "state.toggle": { "requiredFields": ["key"],                   "description": "Toggles a boolean state variable." },
+    "nav.push":     { "requiredFields": ["screenId"],              "description": "Pushes a screen by its screenId onto the navigation stack." },
+    "nav.pop":      { "requiredFields": [],                        "description": "Pops the current screen from the navigation stack." },
+    "ui.toast":     { "requiredFields": ["message"],               "description": "Shows a temporary toast notification." },
+    "ui.alert":     { "requiredFields": ["title", "message"],      "description": "Shows an alert dialog." },
+    "ai.request":   { "requiredFields": ["id", "input"],           "description": "Sends an AI request. 'id' identifies the request; 'input' is a key-value map of inputs." },
+    "flow.emit":    { "requiredFields": ["event"],                 "description": "Emits a flow event. Declared; current runtime implementation is a no-op." },
+    "conditionalExecution": "Add a 'when' expression field to any action to skip it when the expression evaluates to false."
+  }
 }
