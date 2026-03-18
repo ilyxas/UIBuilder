@@ -23,7 +23,7 @@ struct UIRenderer: View {
         case "vstack":
             NodeStyle.apply(
             VStack(
-                alignment: alignment(from: node.props?["alignment"]),
+                alignment: NodeStyle.horizontalAlignment(from: node.props?["alignment"]),
                 spacing: CGFloat(node.props?["spacing"]?.doubleValue ?? 0)
             ) {
                 ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
@@ -38,7 +38,7 @@ struct UIRenderer: View {
                 node.props?["axis"]?.stringValue == "horizontal" ? .horizontal : .vertical
             ) {
                 VStack(
-                    alignment: alignment(from: node.props?["alignment"]),
+                    alignment: NodeStyle.horizontalAlignment(from: node.props?["alignment"]),
                     spacing: CGFloat(node.props?["spacing"]?.doubleValue ?? 0)
                 ) {
                     ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
@@ -300,6 +300,57 @@ struct UIRenderer: View {
                 UIRenderer(node: child, document: document, state: state, executor: executor)
             }
 
+        // MARK: - frame
+
+        case "frame":
+            // Container that applies explicit frame constraints and alignment to its children.
+            // Props: alignment, idealWidth, idealHeight, fixedSize, clip, clipShape + common style props.
+            let frameAlignment = NodeStyle.frameAlignment(from: node.props?["alignment"])
+            NodeStyle.apply(
+                ZStack(alignment: frameAlignment) {
+                    ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
+                        UIRenderer(node: child, document: document, state: state, executor: executor)
+                    }
+                },
+                props: node.props
+            )
+
+        // MARK: - textfield
+
+        case "textfield":
+            // Single-line text input bound to a state key.
+            // Required: bind. Optional: placeholder, keyboardType, secure, autocapitalization,
+            // autocorrectionDisabled, returnKeyType, maxLength, prefixIcon, suffixIcon.
+            textFieldView(evaluator: evaluator)
+
+        // MARK: - slider
+
+        case "slider":
+            // Continuous or stepped value slider bound to a state key.
+            // Required: bind, min, max. Optional: step, label, accentColor.
+            sliderView(evaluator: evaluator)
+
+        // MARK: - shape
+
+        case "shape":
+            // Geometric shape node. Props: type, fill, strokeColor, strokeWidth, strokeStyle,
+            // cornerRadius, cornerStyle. May contain children (rendered on top via ZStack).
+            shapeView(evaluator: evaluator)
+
+        // MARK: - group
+
+        case "group":
+            // Semantic grouping with optional title, footer, and collapsible behaviour.
+            // Styles: plain (default), card, inset.
+            groupView(evaluator: evaluator)
+
+        // MARK: - table
+
+        case "table":
+            // Table container. Children of type "section" group rows; plain children are rows.
+            // Props: rowHeight, selectionMode, alternatingRows, headerVisible, columns.
+            tableView(evaluator: evaluator)
+
         default:
             Text("Unsupported node: \(node.type)")
         }
@@ -329,6 +380,316 @@ struct UIRenderer: View {
     private func trigger(eventName: String?, evaluator: ExpressionEvaluator) {
         guard let eventName, let actions = document.events[eventName] else { return }
         executor.execute(actions, evaluator: evaluator)
+    }
+
+    // MARK: - TextField helper
+
+    @ViewBuilder
+    private func textFieldView(evaluator: ExpressionEvaluator) -> some View {
+        let key         = node.props?["bind"]?.stringValue ?? ""
+        let placeholder = node.props?["placeholder"]?.stringValue ?? ""
+        let isSecure    = node.props?["secure"]?.boolValue ?? false
+        let maxLength   = node.props?["maxLength"]?.doubleValue.map { Int($0) }
+
+        let binding = Binding<String>(
+            get: { state.get(key)?.stringValue ?? "" },
+            set: { newValue in
+                let capped = maxLength.map { String(newValue.prefix($0)) } ?? newValue
+                state.set(key, value: .string(capped))
+                trigger(eventName: node.event?["change"], evaluator: evaluator)
+            }
+        )
+
+        let prefixIcon  = node.props?["prefixIcon"]?.stringValue
+        let suffixIcon  = node.props?["suffixIcon"]?.stringValue
+
+        let keyboardType = keyboardTypeValue(from: node.props?["keyboardType"])
+        let submitLabel  = returnKeyTypeValue(from: node.props?["returnKeyType"])
+        let autoCapitalization = autoCapitalizationValue(from: node.props?["autocapitalization"])
+        let autocorrDisabled = node.props?["autocorrectionDisabled"]?.boolValue ?? false
+
+        NodeStyle.apply(
+            HStack(spacing: 4) {
+                if let icon = prefixIcon, !icon.isEmpty {
+                    Image(systemName: icon)
+                }
+                Group {
+                    if isSecure {
+                        SecureField(placeholder, text: binding)
+                    } else {
+                        TextField(placeholder, text: binding)
+                            .keyboardType(keyboardType)
+                            .submitLabel(submitLabel)
+                            .textInputAutocapitalization(autoCapitalization)
+                            .autocorrectionDisabled(autocorrDisabled)
+                    }
+                }
+                if let icon = suffixIcon, !icon.isEmpty {
+                    Image(systemName: icon)
+                }
+            },
+            props: node.props
+        )
+    }
+
+    // MARK: - Slider helper
+
+    private func sliderView(evaluator: ExpressionEvaluator) -> AnyView {
+        let key         = node.props?["bind"]?.stringValue ?? ""
+        let minVal      = node.props?["min"]?.doubleValue ?? 0
+        let maxVal      = node.props?["max"]?.doubleValue ?? 1
+        let step        = node.props?["step"]?.doubleValue
+        let label       = node.props?["label"]?.stringValue ?? ""
+        let accentColor = Color.fromDynamic(node.props?["accentColor"])
+
+        let binding = Binding<Double>(
+            get: { self.state.get(key)?.doubleValue ?? minVal },
+            set: { newValue in
+                self.state.set(key, value: .number(newValue))
+                self.trigger(eventName: self.node.event?["change"], evaluator: evaluator)
+            }
+        )
+
+        let base: AnyView
+        if let step {
+            base = AnyView(
+                Slider(value: binding, in: minVal...maxVal, step: step) { Text(label) }
+            )
+        } else {
+            base = AnyView(
+                Slider(value: binding, in: minVal...maxVal) { Text(label) }
+            )
+        }
+
+        let tinted: AnyView = accentColor.map { AnyView(base.tint($0)) } ?? base
+        return NodeStyle.apply(tinted, props: node.props)
+    }
+
+    // MARK: - Shape helper
+
+    @ViewBuilder
+    private func shapeView(evaluator: ExpressionEvaluator) -> some View {
+        let shapeType   = node.props?["type"]?.stringValue ?? "rectangle"
+        let fillColor   = Color.fromDynamic(node.props?["fill"])
+        let strokeColor = Color.fromDynamic(node.props?["strokeColor"])
+        let strokeWidth = CGFloat(node.props?["strokeWidth"]?.doubleValue ?? 1)
+        let strokeStyleStr = node.props?["strokeStyle"]?.stringValue ?? "solid"
+        let radius      = CGFloat(node.props?["cornerRadius"]?.doubleValue ?? 0)
+        let children    = node.children ?? []
+
+        let shapeStyle  = buildStrokeStyle(styleStr: strokeStyleStr, width: strokeWidth)
+
+        let baseShape = AnyView(
+            ZStack {
+                builtShape(type: shapeType, radius: radius, fill: fillColor,
+                           strokeColor: strokeColor, strokeStyle: shapeStyle)
+                if !children.isEmpty {
+                    ForEach(Array(children.enumerated()), id: \.offset) { _, child in
+                        UIRenderer(node: child, document: document, state: state, executor: executor)
+                    }
+                }
+            }
+        )
+
+        NodeStyle.apply(baseShape, props: node.props)
+    }
+
+    @ViewBuilder
+    private func builtShape(type: String, radius: CGFloat, fill: Color?,
+                            strokeColor: Color?, strokeStyle: StrokeStyle) -> some View {
+        // Each case uses ZStack so @ViewBuilder always has a concrete View result,
+        // even when both fill and strokeColor are nil.
+        switch type {
+        case "circle":
+            ZStack {
+                if let fill { Circle().fill(fill) }
+                if let strokeColor { Circle().stroke(strokeColor, style: strokeStyle) }
+            }
+        case "capsule":
+            ZStack {
+                if let fill { Capsule().fill(fill) }
+                if let strokeColor { Capsule().stroke(strokeColor, style: strokeStyle) }
+            }
+        case "ellipse":
+            ZStack {
+                if let fill { Ellipse().fill(fill) }
+                if let strokeColor { Ellipse().stroke(strokeColor, style: strokeStyle) }
+            }
+        case "roundedRectangle":
+            ZStack {
+                if let fill { RoundedRectangle(cornerRadius: radius).fill(fill) }
+                if let strokeColor { RoundedRectangle(cornerRadius: radius).stroke(strokeColor, style: strokeStyle) }
+            }
+        default: // rectangle
+            ZStack {
+                if let fill { Rectangle().fill(fill) }
+                if let strokeColor { Rectangle().stroke(strokeColor, style: strokeStyle) }
+            }
+        }
+    }
+
+    private func buildStrokeStyle(styleStr: String, width: CGFloat) -> StrokeStyle {
+        switch styleStr {
+        case "dashed":  return StrokeStyle(lineWidth: width, dash: [6, 3])
+        case "dotted":  return StrokeStyle(lineWidth: width, dash: [2, 3])
+        default:        return StrokeStyle(lineWidth: width)
+        }
+    }
+
+    // MARK: - Group helper
+
+    @ViewBuilder
+    private func groupView(evaluator: ExpressionEvaluator) -> some View {
+        let title       = node.props?["title"]?.stringValue
+        let footer      = node.props?["footer"]?.stringValue
+        let collapsible = node.props?["collapsible"]?.boolValue ?? false
+        let style       = node.props?["style"]?.stringValue ?? "plain"
+        let stateKey    = (node.id ?? "group") + ".isExpanded"
+        let defaultExpanded = node.props?["isExpanded"]?.boolValue ?? true
+
+        let content = AnyView(
+            ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
+                UIRenderer(node: child, document: document, state: state, executor: executor)
+            }
+        )
+
+        let groupBody = AnyView(
+            VStack(alignment: .leading, spacing: 0) {
+                if collapsible {
+                    let expanded = Binding<Bool>(
+                        get: { state.get(stateKey)?.boolValue ?? defaultExpanded },
+                        set: { state.set(stateKey, value: .bool($0)) }
+                    )
+                    DisclosureGroup(isExpanded: expanded) {
+                        content
+                    } label: {
+                        Text(title ?? "").font(.headline)
+                    }
+                } else {
+                    if let title {
+                        Text(title).font(.headline).padding(.bottom, 4)
+                    }
+                    content
+                    if let footer {
+                        Text(footer).font(.caption).foregroundStyle(.secondary).padding(.top, 4)
+                    }
+                }
+            }
+        )
+
+        switch style {
+        case "card":
+            NodeStyle.apply(
+                groupBody
+                    .padding(12)
+                    .background(Color(.secondarySystemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12)),
+                props: node.props
+            )
+        case "inset":
+            NodeStyle.apply(
+                groupBody
+                    .padding(.horizontal, 16),
+                props: node.props
+            )
+        default: // plain
+            NodeStyle.apply(groupBody, props: node.props)
+        }
+    }
+
+    // MARK: - Table helper
+
+    @ViewBuilder
+    private func tableView(evaluator: ExpressionEvaluator) -> some View {
+        // Table renders as a List with optional alternating row backgrounds.
+        // Props: rowHeight, selectionMode, alternatingRows, headerVisible, columns.
+        // Children of type "section" group rows; other children are direct rows.
+        let rowHeight       = node.props?["rowHeight"]?.doubleValue.map { CGFloat($0) }
+        let alternating     = node.props?["alternatingRows"]?.boolValue ?? false
+        let headerVisible   = node.props?["headerVisible"]?.boolValue ?? true
+        let columns         = node.props?["columns"]?.stringValue  // comma-separated column titles
+        let selectionMode   = node.props?["selectionMode"]?.stringValue ?? "none"
+        let children        = node.children ?? []
+
+        // Selection binding (single mode uses a string key stored in state)
+        let selectionKey = (node.id ?? "table") + ".selection"
+
+        NodeStyle.apply(
+            VStack(spacing: 0) {
+                // Optional column header row
+                if headerVisible, let columns {
+                    let cols = columns.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+                    HStack {
+                        ForEach(cols, id: \.self) { col in
+                            Text(col)
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color(.secondarySystemBackground))
+
+                    Divider()
+                }
+
+                // Rows
+                List {
+                    ForEach(Array(children.enumerated()), id: \.offset) { index, child in
+                        let rowView = UIRenderer(node: child, document: document, state: state, executor: executor)
+                        Group {
+                            if alternating && index % 2 != 0 {
+                                rowView
+                                    .listRowBackground(Color(.systemFill))
+                            } else {
+                                rowView
+                            }
+                        }
+                        .if(rowHeight != nil) { $0.frame(minHeight: rowHeight!) }
+                        .if(selectionMode == "single") {
+                            $0.onTapGesture {
+                                state.set(selectionKey, value: .string(child.id ?? "\(index)"))
+                            }
+                        }
+                    }
+                }
+                .listStyle(.plain)
+            },
+            props: node.props
+        )
+    }
+
+    // MARK: - Keyboard / input helpers
+
+    private func keyboardTypeValue(from value: DynamicValue?) -> UIKeyboardType {
+        switch value?.stringValue {
+        case "numberPad":   return .numberPad
+        case "decimalPad":  return .decimalPad
+        case "email":       return .emailAddress
+        case "phone":       return .phonePad
+        case "url":         return .URL
+        default:            return .default
+        }
+    }
+
+    private func returnKeyTypeValue(from value: DynamicValue?) -> SubmitLabel {
+        switch value?.stringValue {
+        case "done":   return .done
+        case "go":     return .go
+        case "search": return .search
+        case "next":   return .next
+        default:       return .done
+        }
+    }
+
+    private func autoCapitalizationValue(from value: DynamicValue?) -> TextInputAutocapitalization {
+        switch value?.stringValue {
+        case "words":      return .words
+        case "sentences":  return .sentences
+        case "characters": return .characters
+        default:           return .never
+        }
     }
 
     private func resolveText(from value: DynamicValue?, evaluator: ExpressionEvaluator) -> String {
@@ -367,14 +728,6 @@ struct UIRenderer: View {
 
         default:
             return ""
-        }
-    }
-
-    private func alignment(from value: DynamicValue?) -> HorizontalAlignment {
-        switch value?.stringValue {
-        case "center": return .center
-        case "trailing": return .trailing
-        default: return .leading
         }
     }
 

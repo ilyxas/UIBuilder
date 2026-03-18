@@ -1,0 +1,722 @@
+{
+  "schema": "com.ilya.ui/1.0",
+  "screenId": "cap-example-v4",
+  "title": "Engine Capability Showcase",
+  "state": {
+    "vars": {
+      "activeTab": "layout",
+      "counter": 0,
+      "toggleA": true,
+      "toggleB": false,
+      "searchQuery": "",
+      "sliderVolume": 40,
+      "sliderRating": 3,
+      "password": "",
+      "formName": "",
+      "formEmail": "",
+      "selectedRow": "",
+      "shapeExpanded": false
+    }
+  },
+  "root": {
+    "type": "tabview",
+    "id": "root",
+    "props": {
+      "selection": "activeTab"
+    },
+    "children": [
+
+      {
+        "type": "tab",
+        "id": "layout",
+        "props": { "title": "Layout", "icon": "square.3.layers.3d" },
+        "children": [
+          {
+            "type": "scroll",
+            "props": { "padding": 16 },
+            "children": [
+              {
+                "type": "text",
+                "props": {
+                  "value": "Layout Nodes",
+                  "foregroundColor": "#1C1C1E"
+                }
+              },
+
+              {
+                "type": "vstack",
+                "props": { "spacing": 8 },
+                "children": [
+                  { "type": "text", "props": { "value": "vstack — vertical stack" } },
+                  {
+                    "type": "hstack",
+                    "props": { "spacing": 12 },
+                    "children": [
+                      {
+                        "type": "shape",
+                        "props": { "type": "circle", "fill": "#2563EB", "width": 32, "height": 32 }
+                      },
+                      {
+                        "type": "shape",
+                        "props": { "type": "circle", "fill": "#16A34A", "width": 32, "height": 32 }
+                      },
+                      {
+                        "type": "shape",
+                        "props": { "type": "circle", "fill": "#DC2626", "width": 32, "height": 32 }
+                      },
+                      { "type": "spacer" }
+                    ]
+                  },
+                  { "type": "text", "props": { "value": "hstack — horizontal stack with spacer" } }
+                ]
+              },
+
+              {
+                "type": "zstack",
+                "props": { "width": 220, "height": 80 },
+                "children": [
+                  {
+                    "type": "shape",
+                    "props": {
+                      "type": "roundedRectangle",
+                      "cornerRadius": 14,
+                      "fill": "#EEF2FF",
+                      "width": 220,
+                      "height": 80
+                    }
+                  },
+                  {
+                    "type": "label",
+                    "props": {
+                      "title": "zstack layering",
+                      "icon": "square.2.layers.3d",
+                      "foregroundColor": "#2563EB"
+                    }
+                  }
+                ]
+              },
+
+              {
+                "type": "frame",
+                "props": {
+                  "alignment": "bottomTrailing",
+                  "width": 220,
+                  "height": 80,
+                  "backgroundColor": "#F0FDF4",
+                  "cornerRadius": 12,
+                  "clip": true
+                },
+                "children": [
+                  {
+                    "type": "label",
+                    "props": {
+                      "title": "frame — bottomTrailing",
+                      "icon": "arrow.down.right",
+                      "foregroundColor": "#16A34A"
+                    }
+                  }
+                ]
+              },
+
+              {
+                "type": "scroll",
+                "props": { "axis": "horizontal" },
+                "children": [
+                  {
+                    "type": "hstack",
+                    "props": { "spacing": 10 },
+                    "children": [
+                      {
+                        "type": "shape",
+                        "props": { "type": "roundedRectangle", "cornerRadius": 10, "fill": "#DBEAFE", "width": 80, "height": 48 }
+                      },
+                      {
+                        "type": "shape",
+                        "props": { "type": "roundedRectangle", "cornerRadius": 10, "fill": "#DCFCE7", "width": 80, "height": 48 }
+                      },
+                      {
+                        "type": "shape",
+                        "props": { "type": "roundedRectangle", "cornerRadius": 10, "fill": "#FEF9C3", "width": 80, "height": 48 }
+                      },
+                      {
+                        "type": "shape",
+                        "props": { "type": "roundedRectangle", "cornerRadius": 10, "fill": "#FCE7F3", "width": 80, "height": 48 }
+                      },
+                      {
+                        "type": "shape",
+                        "props": { "type": "roundedRectangle", "cornerRadius": 10, "fill": "#EDE9FE", "width": 80, "height": 48 }
+                      }
+                    ]
+                  }
+                ]
+              },
+              { "type": "text", "props": { "value": "scroll — horizontal axis" } }
+            ]
+          }
+        ]
+      },
+
+      {
+        "type": "tab",
+        "id": "controls",
+        "props": { "title": "Controls", "icon": "slider.horizontal.3" },
+        "children": [
+          {
+            "type": "scroll",
+            "props": { "padding": 16 },
+            "children": [
+              {
+                "type": "text",
+                "props": { "value": "Interactive Controls", "foregroundColor": "#1C1C1E" }
+              },
+
+              {
+                "type": "group",
+                "props": { "title": "Counter", "style": "card" },
+                "children": [
+                  {
+                    "type": "hstack",
+                    "props": { "spacing": 16 },
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": "Decrement",
+                          "icon": "minus.circle",
+                          "foregroundColor": "#DC2626"
+                        },
+                        "event": { "tap": "decrementCounter" }
+                      },
+                      {
+                        "type": "text",
+                        "props": { "value": { "bind": "counter" }, "foregroundColor": "#1C1C1E" }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": "Increment",
+                          "icon": "plus.circle",
+                          "foregroundColor": "#2563EB"
+                        },
+                        "event": { "tap": "incrementCounter" }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": "Reset",
+                      "icon": "arrow.counterclockwise",
+                      "padding": 10,
+                      "backgroundColor": "#F2F2F7",
+                      "cornerRadius": 8,
+                      "maxWidth": "infinity"
+                    },
+                    "event": { "tap": "resetCounter" }
+                  }
+                ]
+              },
+
+              {
+                "type": "group",
+                "props": { "title": "Toggles", "style": "card" },
+                "children": [
+                  {
+                    "type": "toggle",
+                    "props": { "title": "Feature A", "bind": "toggleA" },
+                    "event": { "change": "onToggleA" }
+                  },
+                  {
+                    "type": "toggle",
+                    "props": { "title": "Feature B", "bind": "toggleB" },
+                    "visibleWhen": { "op": "eq", "left": { "bind": "toggleA" }, "right": true }
+                  }
+                ]
+              },
+
+              {
+                "type": "group",
+                "props": { "title": "Sliders", "style": "card" },
+                "children": [
+                  {
+                    "type": "text",
+                    "props": { "value": { "format": "Volume: {sliderVolume}", "binds": ["sliderVolume"] } }
+                  },
+                  {
+                    "type": "slider",
+                    "props": {
+                      "bind": "sliderVolume",
+                      "min": 0,
+                      "max": 100,
+                      "label": "Volume",
+                      "accentColor": "#2563EB"
+                    }
+                  },
+                  {
+                    "type": "text",
+                    "props": { "value": { "format": "Rating: {sliderRating}", "binds": ["sliderRating"] } }
+                  },
+                  {
+                    "type": "slider",
+                    "props": {
+                      "bind": "sliderRating",
+                      "min": 1,
+                      "max": 5,
+                      "step": 1,
+                      "label": "Rating",
+                      "accentColor": "#F59E0B"
+                    }
+                  }
+                ]
+              },
+
+              {
+                "type": "group",
+                "props": { "title": "Menu", "style": "plain" },
+                "children": [
+                  {
+                    "type": "menu",
+                    "props": { "title": "Actions", "icon": "ellipsis.circle" },
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": { "label": "Save", "icon": "square.and.arrow.down" },
+                        "event": { "tap": "menuSave" }
+                      },
+                      {
+                        "type": "button",
+                        "props": { "label": "Share", "icon": "square.and.arrow.up" },
+                        "event": { "tap": "menuShare" }
+                      },
+                      {
+                        "type": "button",
+                        "props": { "label": "Delete", "icon": "trash" },
+                        "event": { "tap": "menuDelete" }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+
+      {
+        "type": "tab",
+        "id": "forms",
+        "props": { "title": "Forms", "icon": "doc.text" },
+        "children": [
+          {
+            "type": "scroll",
+            "props": { "padding": 16 },
+            "children": [
+              {
+                "type": "text",
+                "props": { "value": "Form Inputs", "foregroundColor": "#1C1C1E" }
+              },
+
+              {
+                "type": "group",
+                "props": { "title": "Text Fields", "style": "plain" },
+                "children": [
+                  {
+                    "type": "textfield",
+                    "props": {
+                      "bind": "formName",
+                      "placeholder": "Full name",
+                      "keyboardType": "default",
+                      "returnKeyType": "next",
+                      "autocapitalization": "words",
+                      "prefixIcon": "person",
+                      "padding": 12,
+                      "backgroundColor": "#F2F2F7",
+                      "cornerRadius": 10
+                    }
+                  },
+                  {
+                    "type": "textfield",
+                    "props": {
+                      "bind": "formEmail",
+                      "placeholder": "Email address",
+                      "keyboardType": "email",
+                      "returnKeyType": "next",
+                      "autocapitalization": "none",
+                      "autocorrectionDisabled": true,
+                      "prefixIcon": "envelope",
+                      "padding": 12,
+                      "backgroundColor": "#F2F2F7",
+                      "cornerRadius": 10
+                    }
+                  },
+                  {
+                    "type": "textfield",
+                    "props": {
+                      "bind": "password",
+                      "placeholder": "Password",
+                      "secure": true,
+                      "maxLength": 32,
+                      "prefixIcon": "lock",
+                      "padding": 12,
+                      "backgroundColor": "#F2F2F7",
+                      "cornerRadius": 10
+                    }
+                  },
+                  {
+                    "type": "textfield",
+                    "props": {
+                      "bind": "searchQuery",
+                      "placeholder": "Search...",
+                      "keyboardType": "default",
+                      "returnKeyType": "search",
+                      "autocorrectionDisabled": true,
+                      "prefixIcon": "magnifyingglass",
+                      "suffixIcon": "xmark.circle",
+                      "padding": 12,
+                      "backgroundColor": "#F2F2F7",
+                      "cornerRadius": 10
+                    },
+                    "event": { "change": "onSearchChange" }
+                  }
+                ]
+              },
+
+              {
+                "type": "text",
+                "props": {
+                  "value": { "format": "Name: {formName}", "binds": ["formName"] },
+                  "foregroundColor": "#6B7280"
+                },
+                "visibleWhen": { "op": "neq", "left": { "bind": "formName" }, "right": "" }
+              },
+              {
+                "type": "text",
+                "props": {
+                  "value": { "format": "Email: {formEmail}", "binds": ["formEmail"] },
+                  "foregroundColor": "#6B7280"
+                },
+                "visibleWhen": { "op": "neq", "left": { "bind": "formEmail" }, "right": "" }
+              },
+
+              {
+                "type": "button",
+                "props": {
+                  "label": "Submit Form",
+                  "icon": "checkmark.circle.fill",
+                  "padding": 14,
+                  "backgroundColor": "#2563EB",
+                  "foregroundColor": "#FFFFFF",
+                  "cornerRadius": 12,
+                  "maxWidth": "infinity"
+                },
+                "enabledWhen": { "op": "neq", "left": { "bind": "formName" }, "right": "" },
+                "event": { "tap": "submitForm" }
+              }
+            ]
+          }
+        ]
+      },
+
+      {
+        "type": "tab",
+        "id": "visual",
+        "props": { "title": "Visual", "icon": "paintbrush" },
+        "children": [
+          {
+            "type": "scroll",
+            "props": { "padding": 16 },
+            "children": [
+              {
+                "type": "text",
+                "props": { "value": "Visual Nodes & Navigation", "foregroundColor": "#1C1C1E" }
+              },
+
+              {
+                "type": "group",
+                "props": { "title": "Shapes", "style": "plain" },
+                "children": [
+                  {
+                    "type": "hstack",
+                    "props": { "spacing": 12 },
+                    "children": [
+                      {
+                        "type": "shape",
+                        "props": { "type": "circle", "fill": "#2563EB", "width": 48, "height": 48 }
+                      },
+                      {
+                        "type": "shape",
+                        "props": { "type": "capsule", "fill": "#16A34A", "width": 80, "height": 36 }
+                      },
+                      {
+                        "type": "shape",
+                        "props": {
+                          "type": "roundedRectangle",
+                          "cornerRadius": 12,
+                          "fill": "#F59E0B",
+                          "width": 48,
+                          "height": 48
+                        }
+                      },
+                      {
+                        "type": "shape",
+                        "props": {
+                          "type": "ellipse",
+                          "strokeColor": "#DC2626",
+                          "strokeWidth": 2,
+                          "strokeStyle": "dashed",
+                          "width": 56,
+                          "height": 40
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "shape",
+                    "props": {
+                      "type": "roundedRectangle",
+                      "cornerRadius": 16,
+                      "fill": "#EEF2FF",
+                      "strokeColor": "#C7D2FE",
+                      "strokeWidth": 1,
+                      "width": 64,
+                      "height": 64
+                    },
+                    "children": [
+                      {
+                        "type": "icon",
+                        "props": { "name": "star.fill", "foregroundColor": "#2563EB", "size": 28 }
+                      }
+                    ]
+                  }
+                ]
+              },
+
+              {
+                "type": "group",
+                "id": "advancedVisual",
+                "props": {
+                  "title": "Advanced Options",
+                  "collapsible": true,
+                  "isExpanded": false,
+                  "style": "plain"
+                },
+                "children": [
+                  {
+                    "type": "label",
+                    "props": {
+                      "title": "Shadow & Border",
+                      "icon": "square.shadow",
+                      "foregroundColor": "#374151"
+                    }
+                  },
+                  {
+                    "type": "frame",
+                    "props": {
+                      "alignment": "center",
+                      "idealWidth": 240,
+                      "idealHeight": 80,
+                      "backgroundColor": "#FFFFFF",
+                      "cornerRadius": 14,
+                      "shadowColor": "#00000033",
+                      "shadowRadius": 8,
+                      "shadowY": 4,
+                      "borderColor": "#E5E7EB",
+                      "borderWidth": 1
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "props": { "value": "shadow + border via NodeStyle", "foregroundColor": "#374151" }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "label",
+                    "props": {
+                      "title": "Fixed size frame",
+                      "icon": "arrow.up.left.and.arrow.down.right",
+                      "foregroundColor": "#374151"
+                    }
+                  },
+                  {
+                    "type": "frame",
+                    "props": {
+                      "fixedSize": "horizontal",
+                      "backgroundColor": "#F0FDF4",
+                      "cornerRadius": 8,
+                      "padding": 12
+                    },
+                    "children": [
+                      { "type": "text", "props": { "value": "fixedSize: horizontal" } }
+                    ]
+                  }
+                ]
+              },
+
+              {
+                "type": "group",
+                "props": { "title": "List & Navigation", "style": "plain" },
+                "children": [
+                  {
+                    "type": "navigationstack",
+                    "props": { "title": "Items" },
+                    "children": [
+                      {
+                        "type": "toolbaritem",
+                        "props": { "placement": "trailing" },
+                        "children": [
+                          {
+                            "type": "button",
+                            "props": { "label": "Add", "icon": "plus" },
+                            "event": { "tap": "navAddPressed" }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "list",
+                        "children": [
+                          {
+                            "type": "section",
+                            "props": { "title": "Primitives" },
+                            "children": [
+                              { "type": "label", "props": { "title": "text", "icon": "t.square" } },
+                              { "type": "label", "props": { "title": "icon", "icon": "star" } },
+                              { "type": "label", "props": { "title": "image", "icon": "photo" } },
+                              { "type": "label", "props": { "title": "badge", "icon": "seal" } }
+                            ]
+                          },
+                          {
+                            "type": "section",
+                            "props": { "title": "Interactive" },
+                            "children": [
+                              { "type": "label", "props": { "title": "button", "icon": "hand.tap" } },
+                              { "type": "label", "props": { "title": "toggle", "icon": "switch.2" } },
+                              { "type": "label", "props": { "title": "textfield", "icon": "text.cursor" } },
+                              { "type": "label", "props": { "title": "slider", "icon": "slider.horizontal.3" } },
+                              { "type": "label", "props": { "title": "menu", "icon": "ellipsis.circle" } }
+                            ]
+                          },
+                          {
+                            "type": "section",
+                            "props": { "title": "Structure" },
+                            "children": [
+                              { "type": "label", "props": { "title": "frame", "icon": "rectangle.dashed" } },
+                              { "type": "label", "props": { "title": "shape", "icon": "square.on.circle" } },
+                              { "type": "label", "props": { "title": "group", "icon": "folder" } },
+                              { "type": "label", "props": { "title": "table", "icon": "tablecells" } }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+
+              {
+                "type": "group",
+                "props": { "title": "Table", "style": "plain" },
+                "children": [
+                  {
+                    "type": "table",
+                    "id": "capTable",
+                    "props": {
+                      "columns": "Node, Category",
+                      "headerVisible": true,
+                      "alternatingRows": true,
+                      "selectionMode": "single",
+                      "rowHeight": 40
+                    },
+                    "children": [
+                      {
+                        "type": "hstack",
+                        "id": "trow1",
+                        "props": { "spacing": 8, "padding": 8 },
+                        "children": [
+                          { "type": "text", "props": { "value": "textfield" } },
+                          { "type": "text", "props": { "value": "primitive" } }
+                        ]
+                      },
+                      {
+                        "type": "hstack",
+                        "id": "trow2",
+                        "props": { "spacing": 8, "padding": 8 },
+                        "children": [
+                          { "type": "text", "props": { "value": "slider" } },
+                          { "type": "text", "props": { "value": "primitive" } }
+                        ]
+                      },
+                      {
+                        "type": "hstack",
+                        "id": "trow3",
+                        "props": { "spacing": 8, "padding": 8 },
+                        "children": [
+                          { "type": "text", "props": { "value": "shape" } },
+                          { "type": "text", "props": { "value": "primitive" } }
+                        ]
+                      },
+                      {
+                        "type": "hstack",
+                        "id": "trow4",
+                        "props": { "spacing": 8, "padding": 8 },
+                        "children": [
+                          { "type": "text", "props": { "value": "group" } },
+                          { "type": "text", "props": { "value": "composite" } }
+                        ]
+                      },
+                      {
+                        "type": "hstack",
+                        "id": "trow5",
+                        "props": { "spacing": 8, "padding": 8 },
+                        "children": [
+                          { "type": "text", "props": { "value": "frame" } },
+                          { "type": "text", "props": { "value": "layout" } }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+
+    ]
+  },
+  "events": {
+    "incrementCounter": [
+      { "do": "state.inc", "key": "counter" }
+    ],
+    "decrementCounter": [
+      { "do": "state.dec", "key": "counter" }
+    ],
+    "resetCounter": [
+      { "do": "state.set", "key": "counter", "value": 0 }
+    ],
+    "onToggleA": [
+      { "do": "ui.toast", "message": "Feature A toggled" }
+    ],
+    "menuSave": [
+      { "do": "ui.toast", "message": "Saved" }
+    ],
+    "menuShare": [
+      { "do": "ui.toast", "message": "Shared" }
+    ],
+    "menuDelete": [
+      { "do": "ui.toast", "message": "Deleted" }
+    ],
+    "onSearchChange": [
+      { "do": "ui.toast", "message": "Search updated" }
+    ],
+    "submitForm": [
+      { "do": "ui.toast", "message": "Form submitted" },
+      { "do": "state.set", "key": "formName", "value": "" },
+      { "do": "state.set", "key": "formEmail", "value": "" },
+      { "do": "state.set", "key": "password", "value": "" }
+    ],
+    "navAddPressed": [
+      { "do": "ui.toast", "message": "Add tapped from toolbar" }
+    ]
+  }
+}

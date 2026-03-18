@@ -1,6 +1,6 @@
 {
-  "version": 3,
-  "status": "base-stable-strict",
+  "version": 4,
+  "status": "base-stable-extended",
   "engine": {
     "name": "UIBuilder Base Runtime",
     "authoringMode": "base-json",
@@ -9,7 +9,8 @@
       "Use native SwiftUI-like composition. Do not invent unsupported node types.",
       "Prefer semantic nodes over manual primitive composition wherever possible.",
       "The renderer owns structural wrapping (VStack inside scroll/tab, toolbar lifting in navigationstack).",
-      "JSON authors own the content tree, props, state bindings, and event wiring."
+      "JSON authors own the content tree, props, state bindings, and event wiring.",
+      "Styling and layout props are applied through NodeStyle.apply(). Node-specific behavior is in UIRenderer."
     ]
   },
   "documents": {
@@ -35,11 +36,11 @@
     }
   },
   "nodeTypes": {
-    "layout": ["vstack", "hstack", "zstack", "scroll", "spacer"],
-    "primitive": ["text", "icon", "image", "toggle", "badge", "label"],
-    "composite": ["button", "menu", "tabview", "tab"],
+    "layout":     ["vstack", "hstack", "zstack", "scroll", "spacer", "frame"],
+    "primitive":  ["text", "icon", "image", "toggle", "badge", "label", "textfield", "slider", "shape"],
+    "composite":  ["button", "menu", "tabview", "tab", "group"],
     "navigation": ["navigationstack", "toolbaritem"],
-    "content": ["list", "section"]
+    "content":    ["list", "section", "table"]
   },
   "nodeRules": {
     "vstack": {
@@ -61,6 +62,15 @@
     },
     "spacer": {
       "childrenAllowed": false
+    },
+    "frame": {
+      "childrenAllowed": true,
+      "notes": [
+        "Container that applies explicit frame constraints and alignment to children.",
+        "Rendered as ZStack with the specified alignment.",
+        "Use alignment, idealWidth, idealHeight, fixedSize, clip, clipShape props.",
+        "Common style props (backgroundColor, cornerRadius, etc.) are also supported."
+      ]
     },
     "text": {
       "childrenAllowed": false,
@@ -103,6 +113,39 @@
         "Use instead of manually composing hstack with icon and text."
       ]
     },
+    "textfield": {
+      "childrenAllowed": false,
+      "requiredProps": ["bind"],
+      "optionalProps": ["placeholder", "keyboardType", "secure", "autocapitalization", "autocorrectionDisabled", "returnKeyType", "maxLength", "prefixIcon", "suffixIcon"],
+      "notes": [
+        "Single-line text input bound to a state key.",
+        "Use secure=true for password fields (renders SecureField).",
+        "prefixIcon and suffixIcon accept SF Symbol names.",
+        "maxLength caps the string length at the binding level.",
+        "keyboardType, returnKeyType, autocapitalization accept only documented enum values."
+      ]
+    },
+    "slider": {
+      "childrenAllowed": false,
+      "requiredProps": ["bind", "min", "max"],
+      "optionalProps": ["step", "label", "accentColor", "thumbColor", "trackColorActive", "trackColorInactive"],
+      "notes": [
+        "Continuous or stepped slider bound to a state key.",
+        "step makes the slider discrete. Omit for continuous.",
+        "accentColor tints the slider track and thumb.",
+        "thumbColor, trackColorActive, trackColorInactive are declared but have limited SwiftUI support on iOS."
+      ]
+    },
+    "shape": {
+      "childrenAllowed": true,
+      "optionalProps": ["type", "fill", "strokeColor", "strokeWidth", "strokeStyle", "cornerRadius", "cornerStyle"],
+      "notes": [
+        "Geometric shape node. type defaults to 'rectangle'.",
+        "fill and strokeColor accept hex color strings.",
+        "Children are rendered on top of the shape via ZStack.",
+        "Use as decorative background, icon container, or progress ring."
+      ]
+    },
     "button": {
       "childrenAllowed": false,
       "requiredProps": ["label"],
@@ -123,6 +166,16 @@
         "A child with id='label' or type='label' will be used as the menu trigger label.",
         "If no label child is provided, props title and icon are used to build the trigger.",
         "Renderer must not auto-create label from props if a label child is present."
+      ]
+    },
+    "group": {
+      "childrenAllowed": true,
+      "optionalProps": ["title", "footer", "collapsible", "isExpanded", "style"],
+      "notes": [
+        "Semantic grouping of related content with optional header and footer.",
+        "collapsible=true renders as DisclosureGroup; isExpanded is bound to an auto-created state key.",
+        "style: 'plain' (default) renders as VStack; 'card' adds background/cornerRadius; 'inset' adds horizontal padding.",
+        "footer text is shown below children in non-collapsible mode."
       ]
     },
     "tabview": {
@@ -190,6 +243,20 @@
         "Fits naturally inside list. Can also be used inside other container types.",
         "section header is renderer-owned when title prop is provided."
       ]
+    },
+    "table": {
+      "childrenAllowed": true,
+      "optionalProps": ["columns", "rowHeight", "sortable", "selectionMode", "alternatingRows", "headerVisible"],
+      "notes": [
+        "Table container rendered as a plain List with optional column header row.",
+        "columns: comma-separated column title strings shown in the header row.",
+        "headerVisible: true (default) shows the column header; false hides it.",
+        "alternatingRows: true alternates row background colors.",
+        "selectionMode: 'none' (default), 'single' (tap stores child id in state), 'multiple' (not yet implemented).",
+        "rowHeight: minimum row height in points.",
+        "Children of type 'section' group rows; other children are direct rows.",
+        "sortable is declared for forward compatibility but not yet implemented in the runtime."
+      ]
     }
   },
   "props": {
@@ -198,23 +265,102 @@
       "foregroundColor",
       "opacity",
       "padding",
+      "paddingTop",
+      "paddingBottom",
+      "paddingLeading",
+      "paddingTrailing",
       "width",
       "height",
       "minWidth",
       "minHeight",
       "maxWidth",
       "maxHeight",
-      "cornerRadius"
+      "cornerRadius",
+      "shadowColor",
+      "shadowRadius",
+      "shadowX",
+      "shadowY",
+      "borderColor",
+      "borderWidth"
     ],
     "layout": ["spacing", "alignment"],
+    "frame": [
+      "alignment",
+      "idealWidth",
+      "idealHeight",
+      "fixedSize",
+      "clip",
+      "clipShape"
+    ],
     "text": ["value"],
     "icon": ["name", "size"],
     "image": ["systemName", "name", "contentMode"],
     "toggle": ["title", "bind"],
+    "textfield": [
+      "bind",
+      "placeholder",
+      "keyboardType",
+      "secure",
+      "autocapitalization",
+      "autocorrectionDisabled",
+      "returnKeyType",
+      "maxLength",
+      "prefixIcon",
+      "suffixIcon"
+    ],
+    "slider": [
+      "bind",
+      "min",
+      "max",
+      "step",
+      "label",
+      "accentColor",
+      "thumbColor",
+      "trackColorActive",
+      "trackColorInactive"
+    ],
+    "shape": [
+      "type",
+      "cornerRadius",
+      "cornerStyle",
+      "fill",
+      "strokeColor",
+      "strokeWidth",
+      "strokeStyle"
+    ],
+    "group": [
+      "title",
+      "footer",
+      "collapsible",
+      "isExpanded",
+      "style"
+    ],
+    "table": [
+      "columns",
+      "rowHeight",
+      "sortable",
+      "selectionMode",
+      "alternatingRows",
+      "headerVisible"
+    ],
     "button": ["label", "icon"],
     "navigationstack": ["title"],
     "toolbaritem": ["placement"],
     "section": ["title"]
+  },
+  "propValues": {
+    "keyboardType":       ["default", "numberPad", "decimalPad", "email", "phone", "url"],
+    "returnKeyType":      ["default", "done", "go", "search", "next"],
+    "autocapitalization": ["none", "words", "sentences", "characters"],
+    "shapeType":          ["rectangle", "roundedRectangle", "circle", "capsule", "ellipse"],
+    "strokeStyle":        ["solid", "dashed", "dotted"],
+    "groupStyle":         ["plain", "card", "inset"],
+    "selectionMode":      ["none", "single", "multiple"],
+    "fixedSize":          ["both", "horizontal", "vertical"],
+    "clipShape":          ["rectangle", "roundedRectangle", "circle", "capsule", "ellipse"],
+    "frameAlignment":     ["topLeading", "top", "topTrailing", "leading", "center", "trailing", "bottomLeading", "bottom", "bottomTrailing"],
+    "contentMode":        ["fit", "fill"],
+    "axis":               ["vertical", "horizontal"]
   },
   "strictFormats": {
     "nodeEventFormat": {
@@ -275,6 +421,7 @@
       "state.dec",
       "state.toggle",
       "ui.toast",
+      "ui.alert",
       "ai.request"
     ]
   },
@@ -282,7 +429,7 @@
     "supportedContexts": ["visibleWhen", "enabledWhen"]
   },
   "baseModeConstraints": {
-    "disallowedNodeTypes": ["frame", "box", "columns", "toolbar"],
+    "disallowedNodeTypes": ["box", "columns", "toolbar"],
     "notes": [
       "Do not generate these node types for base runtime documents."
     ]
@@ -295,7 +442,11 @@
       "navigation bar title binding from navigationstack.title prop",
       "toolbar item placement from toolbaritem children inside navigationstack",
       "tab item label from tab.title and tab.icon props",
-      "section header from section.title prop"
+      "section header from section.title prop",
+      "ZStack alignment in frame node",
+      "table column header row from table.columns prop",
+      "group card/inset visual styling from group.style prop",
+      "DisclosureGroup behavior from group.collapsible prop"
     ],
     "jsonOwns": [
       "content tree",
@@ -322,13 +473,19 @@
     "Do not invent aliases for action fields.",
     "Do not use unsupported dynamic text syntaxes.",
     "Prefer local props over artificial wrapper nodes.",
-    "Do not generate deprecated or experimental layout abstractions in base mode."
+    "textfield requires bind prop; slider requires bind, min, and max props.",
+    "Use frame node to apply explicit alignment and ideal/fixed sizing to a subtree.",
+    "Use shape node for decorative geometric elements (backgrounds, dividers, indicators).",
+    "Use group node for semantic content sections with title/footer; prefer collapsible for accordions.",
+    "Use table for tabular data with columns; use section inside table to group rows.",
+    "Prop enum values must match the documented propValues — use exact string values only."
   ],
   "knownProjectFacts": {
-    "layoutSupportUsed": false,
-    "documentValidatorActive": false,
+    "layoutSupportUsed": true,
+    "documentValidatorActive": true,
     "buttonSemanticLabelActive": true,
-    "buttonCompositeModeActive": false
+    "buttonCompositeModeActive": false,
+    "nodeStylingViaNodeStyleApply": true
   },
   "nodeExamples": {
     "image": {
@@ -357,6 +514,213 @@
           "cornerRadius": 10
         },
         "event": { "tap": "savePressed" }
+      }
+    },
+    "frame": {
+      "description": "Frame container applying alignment and ideal sizing to children.",
+      "example": {
+        "type": "frame",
+        "props": {
+          "alignment": "center",
+          "idealWidth": 200,
+          "idealHeight": 120,
+          "backgroundColor": "#F0F4FF",
+          "cornerRadius": 12,
+          "clip": true
+        },
+        "children": [
+          { "type": "text", "props": { "value": "Centered content" } }
+        ]
+      }
+    },
+    "textfield": {
+      "description": "Text input bound to a state key with keyboard and prefix icon.",
+      "example": {
+        "type": "textfield",
+        "props": {
+          "bind": "searchQuery",
+          "placeholder": "Search...",
+          "keyboardType": "default",
+          "returnKeyType": "search",
+          "autocorrectionDisabled": true,
+          "prefixIcon": "magnifyingglass",
+          "padding": 12,
+          "backgroundColor": "#F2F2F7",
+          "cornerRadius": 10
+        },
+        "event": { "change": "onSearchChange" }
+      }
+    },
+    "textfield_secure": {
+      "description": "Secure password field with max length.",
+      "example": {
+        "type": "textfield",
+        "props": {
+          "bind": "password",
+          "placeholder": "Password",
+          "secure": true,
+          "maxLength": 32,
+          "prefixIcon": "lock",
+          "padding": 12,
+          "backgroundColor": "#F2F2F7",
+          "cornerRadius": 10
+        }
+      }
+    },
+    "slider": {
+      "description": "Continuous slider bound to a state key.",
+      "example": {
+        "type": "slider",
+        "props": {
+          "bind": "volume",
+          "min": 0,
+          "max": 100,
+          "label": "Volume",
+          "accentColor": "#2563EB"
+        },
+        "event": { "change": "onVolumeChange" }
+      }
+    },
+    "slider_stepped": {
+      "description": "Discrete stepped slider.",
+      "example": {
+        "type": "slider",
+        "props": {
+          "bind": "rating",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "label": "Rating"
+        }
+      }
+    },
+    "shape_circle": {
+      "description": "Filled circle shape with a stroke.",
+      "example": {
+        "type": "shape",
+        "props": {
+          "type": "circle",
+          "fill": "#2563EB",
+          "strokeColor": "#1D4ED8",
+          "strokeWidth": 2,
+          "width": 60,
+          "height": 60
+        }
+      }
+    },
+    "shape_rounded_with_children": {
+      "description": "Rounded rectangle as a card background containing an icon.",
+      "example": {
+        "type": "shape",
+        "props": {
+          "type": "roundedRectangle",
+          "cornerRadius": 16,
+          "fill": "#EEF2FF",
+          "strokeColor": "#C7D2FE",
+          "strokeWidth": 1,
+          "width": 80,
+          "height": 80
+        },
+        "children": [
+          {
+            "type": "icon",
+            "props": { "name": "star.fill", "foregroundColor": "#2563EB", "size": 28 }
+          }
+        ]
+      }
+    },
+    "shape_dashed": {
+      "description": "Dashed rectangle border.",
+      "example": {
+        "type": "shape",
+        "props": {
+          "type": "rectangle",
+          "strokeColor": "#9CA3AF",
+          "strokeWidth": 1.5,
+          "strokeStyle": "dashed",
+          "width": 160,
+          "height": 80
+        }
+      }
+    },
+    "group_plain": {
+      "description": "Plain group with title and footer.",
+      "example": {
+        "type": "group",
+        "props": {
+          "title": "Account",
+          "footer": "Changes are saved automatically.",
+          "style": "plain"
+        },
+        "children": [
+          { "type": "toggle", "props": { "title": "Notifications", "bind": "notificationsOn" } },
+          { "type": "toggle", "props": { "title": "Dark Mode", "bind": "darkMode" } }
+        ]
+      }
+    },
+    "group_card": {
+      "description": "Card-style group with rounded background.",
+      "example": {
+        "type": "group",
+        "props": {
+          "title": "Quick Stats",
+          "style": "card"
+        },
+        "children": [
+          { "type": "label", "props": { "title": "Streak: 7 days", "icon": "flame.fill" } },
+          { "type": "label", "props": { "title": "Points: 1240", "icon": "star.fill" } }
+        ]
+      }
+    },
+    "group_collapsible": {
+      "description": "Collapsible accordion group.",
+      "example": {
+        "type": "group",
+        "id": "advancedGroup",
+        "props": {
+          "title": "Advanced Options",
+          "collapsible": true,
+          "isExpanded": false,
+          "style": "plain"
+        },
+        "children": [
+          { "type": "toggle", "props": { "title": "Developer Mode", "bind": "devMode" } }
+        ]
+      }
+    },
+    "table": {
+      "description": "Table with column headers and alternating row colors.",
+      "example": {
+        "type": "table",
+        "props": {
+          "columns": "Name, Score, Level",
+          "headerVisible": true,
+          "alternatingRows": true,
+          "selectionMode": "single",
+          "rowHeight": 44
+        },
+        "children": [
+          {
+            "type": "hstack",
+            "id": "row1",
+            "props": { "spacing": 8, "padding": 8 },
+            "children": [
+              { "type": "text", "props": { "value": "Alice" } },
+              { "type": "text", "props": { "value": "980" } },
+              { "type": "badge", "props": {} }
+            ]
+          },
+          {
+            "type": "hstack",
+            "id": "row2",
+            "props": { "spacing": 8, "padding": 8 },
+            "children": [
+              { "type": "text", "props": { "value": "Bob" } },
+              { "type": "text", "props": { "value": "740" } },
+              { "type": "badge", "props": {} }
+            ]
+          }
+        ]
       }
     },
     "navigationstack": {
@@ -421,14 +785,8 @@
         "type": "section",
         "props": { "title": "Settings" },
         "children": [
-          {
-            "type": "toggle",
-            "props": { "title": "Dark Mode", "bind": "darkMode" }
-          },
-          {
-            "type": "toggle",
-            "props": { "title": "Notifications", "bind": "notificationsEnabled" }
-          }
+          { "type": "toggle", "props": { "title": "Dark Mode", "bind": "darkMode" } },
+          { "type": "toggle", "props": { "title": "Notifications", "bind": "notificationsEnabled" } }
         ]
       }
     },
