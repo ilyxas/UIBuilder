@@ -5,14 +5,14 @@
   "purpose": "Operational contract for AI-generated screen JSON in the UIBuilder SwiftUI runtime. Optimize for valid structure, correct semantic node choice, and minimal primitive overcomposition.",
   "authoringMindset": {
     "primaryRule": "Choose the highest-level semantic node that matches the UI intent. Use primitive layout nodes only when no semantic node expresses the intent directly.",
-    "semanticBias": [
-      "Treat list, section, navigationstack, toolbaritem, group, menu, tabview, tab, label, image, textfield, slider, shape, and table as semantic authoring tools, not decorative aliases.",
-      "Treat vstack, hstack, zstack, spacer, scroll, and frame as structural helpers. They are not the default worldview for every screen.",
-      "Prefer authoring meaning first, then layout. Start from the screen role, not from stack geometry."
-    ],
     "nonAuthoritativeInputs": [
       "Demo and example JSON files in the repository illustrate renderer features for humans, but they are not canonical AI instructions.",
       "The capabilities file is not the AI contract. It mixes runtime inventory, examples, and authoring advice."
+    ],
+    "semanticPreference": [
+      "Treat list, section, navigationstack, toolbaritem, group, menu, tabview, tab, label, image, textfield, slider, shape, and table as semantic authoring tools, not decorative aliases.",
+      "Treat vstack, hstack, zstack, spacer, scroll, and frame as structural helpers. They are not the default worldview for every screen.",
+      "Prefer authoring meaning first, then layout. Start from the screen role, not from stack geometry."
     ]
   },
   "documentContract": {
@@ -83,7 +83,7 @@
       "Applying table header rows from table.props.columns when headerVisible is true."
     ],
     "doNotAuthor": [
-      "Manual wrapper VStacks that exist only to imitate renderer-owned scroll or tab wrapping.",
+      "Manual wrapper vstack nodes that exist only to imitate renderer-owned scroll or tab wrapping.",
       "Inline actions inside node.event.",
       "Unsupported node aliases or made-up props.",
       "Alternative expression syntaxes not supported by the runtime decoder."
@@ -526,17 +526,18 @@
         "The control should be represented as one clear action element."
       ],
       "avoidWhen": [
-        "You are about to hand-build a button label from child nodes.",
+        "You are about to author button children or hand-build a button label from separate child nodes.",
         "The intent is really a row label or toolbar placement structure."
       ],
       "authorMustState": [
-        "props.label.",
+        "The label prop as props.label.",
         "props.icon only when an SF Symbol should accompany the label.",
         "event.tap when the button should perform an action."
       ],
       "rendererDoes": [
-        "Builds the visible label from props.label and props.icon."
-      ]
+        "Builds the visible button label from the label prop (props.label) and optional props.icon."
+      ],
+      "childrenPolicy": "Do not author children. Button content is defined by props.label and optional props.icon."
     },
     "label": {
       "purpose": "Semantic icon + text unit.",
@@ -792,8 +793,8 @@
         "The content is better modeled as a list of rows."
       ],
       "rendererDoes": [
-        "Wraps children in an internal vertical VStack.",
-        "Therefore do not add an extra outer VStack solely because scroll exists."
+        "Wraps children in an internal vertical vstack.",
+        "Therefore do not add an extra outer vstack solely because scroll exists."
       ]
     },
     "vstack": {
