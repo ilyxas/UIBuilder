@@ -1,407 +1,827 @@
 {
   "schema": "com.ilya.ui/1.0",
-  "screenId": "controls-selection-screen",
-  "title": "Controls",
+  "screenId": "cap-example-screen",
+  "title": "Engine Capabilities",
   "state": {
     "vars": {
-      "selectedField": "Ничего не выбрано",
-      "wifiEnabled": false,
-      "bluetoothEnabled": true,
-      "notificationsEnabled": false,
-      "locationEnabled": true
+      "activeTab": "state",
+
+      "counter": 0,
+      "counterMax": 10,
+      "counterMin": 0,
+      "wifiEnabled": true,
+      "darkModeEnabled": false,
+      "notificationsEnabled": true,
+      "statusMessage": "Tap something",
+
+      "layoutMode": "horizontal",
+
+      "menuLastPick": "Nothing selected",
+      "filterAll": true,
+      "filterActive": false,
+      "filterDone": false,
+
+      "navDemoActive": false
     }
   },
   "root": {
-    "type": "scroll",
-    "id": "rootScroll",
+    "type": "tabview",
+    "id": "rootTabs",
+    "props": { "selection": "activeTab" },
     "children": [
+
       {
-        "type": "vstack",
-        "id": "rootStack",
-        "props": {
-          "spacing": 16,
-          "padding": 16,
-          "maxWidth": "infinity"
-        },
+        "type": "tab",
+        "id": "state",
+        "props": { "title": "State", "icon": "slider.horizontal.3" },
         "children": [
           {
-            "type": "hstack",
-            "id": "topIconButtons",
-            "props": {
-              "spacing": 12,
-              "maxWidth": "infinity"
-            },
-            "children": [
-              {
-                "type": "button",
-                "id": "homeButton",
-                "props": {
-                  "padding": 12,
-                  "backgroundColor": "#F2F2F7",
-                  "cornerRadius": 12
-                },
-                "event": {
-                  "tap": "homePressed"
-                },
-                "children": [
-                  {
-                    "type": "icon",
-                    "id": "homeIcon",
-                    "props": {
-                      "name": "house",
-                      "size": 18
-                    }
-                  }
-                ]
-              },
-              {
-                "type": "button",
-                "id": "searchButton",
-                "props": {
-                  "padding": 12,
-                  "backgroundColor": "#F2F2F7",
-                  "cornerRadius": 12
-                },
-                "event": {
-                  "tap": "searchPressed"
-                },
-                "children": [
-                  {
-                    "type": "icon",
-                    "id": "searchIcon",
-                    "props": {
-                      "name": "magnifyingglass",
-                      "size": 18
-                    }
-                  }
-                ]
-              },
-              {
-                "type": "button",
-                "id": "bellButton",
-                "props": {
-                  "padding": 12,
-                  "backgroundColor": "#F2F2F7",
-                  "cornerRadius": 12
-                },
-                "event": {
-                  "tap": "bellPressed"
-                },
-                "children": [
-                  {
-                    "type": "icon",
-                    "id": "bellIcon",
-                    "props": {
-                      "name": "bell",
-                      "size": 18
-                    }
-                  }
-                ]
-              },
-              {
-                "type": "button",
-                "id": "gearButton",
-                "props": {
-                  "padding": 12,
-                  "backgroundColor": "#F2F2F7",
-                  "cornerRadius": 12
-                },
-                "event": {
-                  "tap": "gearPressed"
-                },
-                "children": [
-                  {
-                    "type": "icon",
-                    "id": "gearIcon",
-                    "props": {
-                      "name": "gearshape",
-                      "size": 18
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "type": "vstack",
-            "id": "settingsRows",
-            "props": {
-              "spacing": 12,
-              "maxWidth": "infinity"
-            },
-            "children": [
-              {
-                "type": "hstack",
-                "id": "wifiRow",
-                "props": {
-                  "spacing": 12,
-                  "padding": 12,
-                  "backgroundColor": "#FFFFFF",
-                  "cornerRadius": 12,
-                  "maxWidth": "infinity"
-                },
-                "children": [
-                  {
-                    "type": "button",
-                    "id": "wifiRowButton",
-                    "props": {
-                      "maxWidth": "infinity",
-                      "foregroundColor": "#111111"
-                    },
-                    "event": {
-                      "tap": "wifiRowPressed"
-                    },
-                    "children": [
-                      {
-                        "type": "hstack",
-                        "id": "wifiRowLabel",
-                        "props": {
-                          "spacing": 8,
-                          "alignment": "center",
-                          "maxWidth": "infinity"
-                        },
-                        "children": [
-                          {
-                            "type": "text",
-                            "id": "wifiRowText",
-                            "props": {
-                              "value": "Wi-Fi"
-                            }
-                          },
-                          {
-                            "type": "spacer",
-                            "id": "wifiRowSpacer"
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "type": "toggle",
-                    "id": "wifiToggle",
-                    "props": {
-                      "title": "",
-                      "bind": "wifiEnabled"
-                    },
-                    "event": {
-                      "change": "wifiChanged"
-                    }
-                  }
-                ]
-              },
-              {
-                "type": "hstack",
-                "id": "bluetoothRow",
-                "props": {
-                  "spacing": 12,
-                  "padding": 12,
-                  "backgroundColor": "#FFFFFF",
-                  "cornerRadius": 12,
-                  "maxWidth": "infinity"
-                },
-                "children": [
-                  {
-                    "type": "button",
-                    "id": "bluetoothRowButton",
-                    "props": {
-                      "maxWidth": "infinity",
-                      "foregroundColor": "#111111"
-                    },
-                    "event": {
-                      "tap": "bluetoothRowPressed"
-                    },
-                    "children": [
-                      {
-                        "type": "hstack",
-                        "id": "bluetoothRowLabel",
-                        "props": {
-                          "spacing": 8,
-                          "alignment": "center",
-                          "maxWidth": "infinity"
-                        },
-                        "children": [
-                          {
-                            "type": "text",
-                            "id": "bluetoothRowText",
-                            "props": {
-                              "value": "Bluetooth"
-                            }
-                          },
-                          {
-                            "type": "spacer",
-                            "id": "bluetoothRowSpacer"
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "type": "toggle",
-                    "id": "bluetoothToggle",
-                    "props": {
-                      "title": "",
-                      "bind": "bluetoothEnabled"
-                    },
-                    "event": {
-                      "change": "bluetoothChanged"
-                    }
-                  }
-                ]
-              },
-              {
-                "type": "hstack",
-                "id": "notificationsRow",
-                "props": {
-                  "spacing": 12,
-                  "padding": 12,
-                  "backgroundColor": "#FFFFFF",
-                  "cornerRadius": 12,
-                  "maxWidth": "infinity"
-                },
-                "children": [
-                  {
-                    "type": "button",
-                    "id": "notificationsRowButton",
-                    "props": {
-                      "maxWidth": "infinity",
-                      "foregroundColor": "#111111"
-                    },
-                    "event": {
-                      "tap": "notificationsRowPressed"
-                    },
-                    "children": [
-                      {
-                        "type": "hstack",
-                        "id": "notificationsRowLabel",
-                        "props": {
-                          "spacing": 8,
-                          "alignment": "center",
-                          "maxWidth": "infinity"
-                        },
-                        "children": [
-                          {
-                            "type": "text",
-                            "id": "notificationsRowText",
-                            "props": {
-                              "value": "Уведомления"
-                            }
-                          },
-                          {
-                            "type": "spacer",
-                            "id": "notificationsRowSpacer"
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "type": "toggle",
-                    "id": "notificationsToggle",
-                    "props": {
-                      "title": "",
-                      "bind": "notificationsEnabled"
-                    },
-                    "event": {
-                      "change": "notificationsChanged"
-                    }
-                  }
-                ]
-              },
-              {
-                "type": "hstack",
-                "id": "locationRow",
-                "props": {
-                  "spacing": 12,
-                  "padding": 12,
-                  "backgroundColor": "#FFFFFF",
-                  "cornerRadius": 12,
-                  "maxWidth": "infinity"
-                },
-                "children": [
-                  {
-                    "type": "button",
-                    "id": "locationRowButton",
-                    "props": {
-                      "maxWidth": "infinity",
-                      "foregroundColor": "#111111"
-                    },
-                    "event": {
-                      "tap": "locationRowPressed"
-                    },
-                    "children": [
-                      {
-                        "type": "hstack",
-                        "id": "locationRowLabel",
-                        "props": {
-                          "spacing": 8,
-                          "alignment": "center",
-                          "maxWidth": "infinity"
-                        },
-                        "children": [
-                          {
-                            "type": "text",
-                            "id": "locationRowText",
-                            "props": {
-                              "value": "Геолокация"
-                            }
-                          },
-                          {
-                            "type": "spacer",
-                            "id": "locationRowSpacer"
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "type": "toggle",
-                    "id": "locationToggle",
-                    "props": {
-                      "title": "",
-                      "bind": "locationEnabled"
-                    },
-                    "event": {
-                      "change": "locationChanged"
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "type": "card",
-            "id": "selectedFieldCard",
-            "props": {
-              "padding": 16,
-              "backgroundColor": "#F2F2F7",
-              "cornerRadius": 16,
-              "maxWidth": "infinity"
-            },
+            "type": "scroll",
+            "id": "stateScroll",
+            "props": { "padding": 16 },
             "children": [
               {
                 "type": "vstack",
-                "id": "selectedFieldCardStack",
-                "props": {
-                  "spacing": 8,
-                  "alignment": "leading",
-                  "maxWidth": "infinity"
-                },
+                "id": "stateRoot",
+                "props": { "spacing": 20, "maxWidth": "infinity" },
                 "children": [
+
                   {
                     "type": "text",
-                    "id": "selectedFieldTitle",
                     "props": {
-                      "value": "Выбранное поле"
+                      "value": "State & Reactivity",
+                      "foregroundColor": "#1C1C1E"
                     }
                   },
+
+                  {
+                    "type": "vstack",
+                    "id": "counterBlock",
+                    "props": {
+                      "spacing": 12,
+                      "padding": 16,
+                      "backgroundColor": "#F2F2F7",
+                      "cornerRadius": 12,
+                      "maxWidth": "infinity"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "props": {
+                          "value": { "format": "Counter: {counter} / {counterMax}", "binds": ["counter", "counterMax"] },
+                          "foregroundColor": "#1C1C1E"
+                        }
+                      },
+                      {
+                        "type": "hstack",
+                        "props": { "spacing": 12 },
+                        "children": [
+                          {
+                            "type": "button",
+                            "id": "decBtn",
+                            "props": {
+                              "label": "−",
+                              "padding": 12,
+                              "backgroundColor": "#E5E5EA",
+                              "cornerRadius": 8,
+                              "foregroundColor": "#1C1C1E"
+                            },
+                            "event": { "tap": "counterDec" },
+                            "enabledWhen": { "gt": [{ "bind": "counter" }, 0] }
+                          },
+                          {
+                            "type": "button",
+                            "id": "incBtn",
+                            "props": {
+                              "label": "+",
+                              "padding": 12,
+                              "backgroundColor": "#007AFF",
+                              "cornerRadius": 8,
+                              "foregroundColor": "#FFFFFF"
+                            },
+                            "event": { "tap": "counterInc" },
+                            "enabledWhen": { "lt": [{ "bind": "counter" }, { "bind": "counterMax" }] }
+                          },
+                          {
+                            "type": "button",
+                            "id": "resetBtn",
+                            "props": {
+                              "label": "Reset",
+                              "padding": 12,
+                              "backgroundColor": "#FF3B30",
+                              "cornerRadius": 8,
+                              "foregroundColor": "#FFFFFF"
+                            },
+                            "event": { "tap": "counterReset" }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "text",
+                        "id": "counterMaxNote",
+                        "props": {
+                          "value": "Reached maximum!",
+                          "foregroundColor": "#FF9500"
+                        },
+                        "visibleWhen": { "gte": [{ "bind": "counter" }, { "bind": "counterMax" }] }
+                      },
+                      {
+                        "type": "text",
+                        "id": "counterZeroNote",
+                        "props": {
+                          "value": "Counter is at zero.",
+                          "foregroundColor": "#8E8E93"
+                        },
+                        "visibleWhen": { "eq": [{ "bind": "counter" }, 0] }
+                      }
+                    ]
+                  },
+
+                  {
+                    "type": "vstack",
+                    "id": "toggleBlock",
+                    "props": {
+                      "spacing": 0,
+                      "backgroundColor": "#F2F2F7",
+                      "cornerRadius": 12,
+                      "maxWidth": "infinity"
+                    },
+                    "children": [
+                      {
+                        "type": "toggle",
+                        "props": { "title": "Wi-Fi", "bind": "wifiEnabled" },
+                        "event": { "change": "wifiToggled" }
+                      },
+                      {
+                        "type": "toggle",
+                        "props": { "title": "Dark Mode", "bind": "darkModeEnabled" },
+                        "event": { "change": "darkModeToggled" }
+                      },
+                      {
+                        "type": "toggle",
+                        "props": { "title": "Notifications", "bind": "notificationsEnabled" },
+                        "event": { "change": "notificationsToggled" }
+                      }
+                    ]
+                  },
+
+                  {
+                    "type": "vstack",
+                    "id": "conditionalBlock",
+                    "props": {
+                      "spacing": 8,
+                      "padding": 16,
+                      "backgroundColor": "#F2F2F7",
+                      "cornerRadius": 12,
+                      "maxWidth": "infinity"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "props": { "value": "Conditional visibility (visibleWhen)", "foregroundColor": "#8E8E93" }
+                      },
+                      {
+                        "type": "label",
+                        "props": { "title": "Wi-Fi is ON", "icon": "wifi", "foregroundColor": "#34C759" },
+                        "visibleWhen": { "bind": "wifiEnabled" }
+                      },
+                      {
+                        "type": "label",
+                        "props": { "title": "Wi-Fi is OFF", "icon": "wifi.slash", "foregroundColor": "#FF3B30" },
+                        "visibleWhen": { "not": { "bind": "wifiEnabled" } }
+                      },
+                      {
+                        "type": "label",
+                        "props": { "title": "Notifications active", "icon": "bell.badge", "foregroundColor": "#007AFF" },
+                        "visibleWhen": {
+                          "and": [
+                            { "bind": "notificationsEnabled" },
+                            { "bind": "wifiEnabled" }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "label",
+                        "props": { "title": "Both Wi-Fi and Notifications are off", "icon": "exclamationmark.triangle", "foregroundColor": "#FF9500" },
+                        "visibleWhen": {
+                          "and": [
+                            { "not": { "bind": "wifiEnabled" } },
+                            { "not": { "bind": "notificationsEnabled" } }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+
+                  {
+                    "type": "vstack",
+                    "id": "statusBlock",
+                    "props": {
+                      "spacing": 8,
+                      "padding": 16,
+                      "backgroundColor": "#F2F2F7",
+                      "cornerRadius": 12,
+                      "maxWidth": "infinity"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "props": { "value": "state.set / ui.toast / ui.alert", "foregroundColor": "#8E8E93" }
+                      },
+                      {
+                        "type": "text",
+                        "props": {
+                          "value": { "bind": "statusMessage" },
+                          "foregroundColor": "#1C1C1E"
+                        }
+                      },
+                      {
+                        "type": "hstack",
+                        "props": { "spacing": 8 },
+                        "children": [
+                          {
+                            "type": "button",
+                            "props": {
+                              "label": "Toast",
+                              "padding": 10,
+                              "backgroundColor": "#007AFF",
+                              "cornerRadius": 8,
+                              "foregroundColor": "#FFFFFF"
+                            },
+                            "event": { "tap": "showToast" }
+                          },
+                          {
+                            "type": "button",
+                            "props": {
+                              "label": "Alert",
+                              "padding": 10,
+                              "backgroundColor": "#FF9500",
+                              "cornerRadius": 8,
+                              "foregroundColor": "#FFFFFF"
+                            },
+                            "event": { "tap": "showAlert" }
+                          },
+                          {
+                            "type": "button",
+                            "props": {
+                              "label": "Set msg",
+                              "padding": 10,
+                              "backgroundColor": "#34C759",
+                              "cornerRadius": 8,
+                              "foregroundColor": "#FFFFFF"
+                            },
+                            "event": { "tap": "setStatus" }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+
+                ]
+              }
+            ]
+          }
+        ]
+      },
+
+      {
+        "type": "tab",
+        "id": "layout",
+        "props": { "title": "Layout", "icon": "square.grid.2x2" },
+        "children": [
+          {
+            "type": "scroll",
+            "id": "layoutScroll",
+            "props": { "padding": 16 },
+            "children": [
+              {
+                "type": "vstack",
+                "id": "layoutRoot",
+                "props": { "spacing": 20, "maxWidth": "infinity" },
+                "children": [
+
                   {
                     "type": "text",
-                    "id": "selectedFieldValue",
+                    "props": { "value": "Layout Primitives", "foregroundColor": "#1C1C1E" }
+                  },
+
+                  {
+                    "type": "vstack",
+                    "id": "hstackDemo",
                     "props": {
-                      "value": {
-                        "bind": "selectedField"
+                      "spacing": 8,
+                      "padding": 16,
+                      "backgroundColor": "#F2F2F7",
+                      "cornerRadius": 12,
+                      "maxWidth": "infinity"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "props": { "value": "hstack + spacer", "foregroundColor": "#8E8E93" }
+                      },
+                      {
+                        "type": "hstack",
+                        "props": { "spacing": 8, "maxWidth": "infinity" },
+                        "children": [
+                          { "type": "icon", "props": { "name": "star.fill", "size": 20, "foregroundColor": "#FF9500" } },
+                          { "type": "text", "props": { "value": "Leading content" } },
+                          { "type": "spacer" },
+                          { "type": "badge", "props": { "text": "New" } }
+                        ]
+                      },
+                      {
+                        "type": "hstack",
+                        "props": { "spacing": 8, "maxWidth": "infinity" },
+                        "children": [
+                          { "type": "label", "props": { "title": "Settings", "icon": "gearshape", "foregroundColor": "#007AFF" } },
+                          { "type": "spacer" },
+                          { "type": "icon", "props": { "name": "chevron.right", "size": 14, "foregroundColor": "#C7C7CC" } }
+                        ]
                       }
-                    }
+                    ]
+                  },
+
+                  {
+                    "type": "vstack",
+                    "id": "zstackDemo",
+                    "props": {
+                      "spacing": 8,
+                      "padding": 16,
+                      "backgroundColor": "#F2F2F7",
+                      "cornerRadius": 12,
+                      "maxWidth": "infinity"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "props": { "value": "zstack (layered composition)", "foregroundColor": "#8E8E93" }
+                      },
+                      {
+                        "type": "zstack",
+                        "props": { "width": 120, "height": 80 },
+                        "children": [
+                          {
+                            "type": "vstack",
+                            "props": {
+                              "width": 120,
+                              "height": 80,
+                              "backgroundColor": "#007AFF",
+                              "cornerRadius": 12
+                            },
+                            "children": []
+                          },
+                          {
+                            "type": "label",
+                            "props": {
+                              "title": "On top",
+                              "icon": "bolt.fill",
+                              "foregroundColor": "#FFFFFF"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+
+                  {
+                    "type": "vstack",
+                    "id": "scrollHDemo",
+                    "props": {
+                      "spacing": 8,
+                      "padding": 16,
+                      "backgroundColor": "#F2F2F7",
+                      "cornerRadius": 12,
+                      "maxWidth": "infinity"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "props": { "value": "scroll axis:horizontal", "foregroundColor": "#8E8E93" }
+                      },
+                      {
+                        "type": "scroll",
+                        "props": { "axis": "horizontal", "padding": 0 },
+                        "children": [
+                          {
+                            "type": "hstack",
+                            "props": { "spacing": 10 },
+                            "children": [
+                              {
+                                "type": "vstack",
+                                "props": { "spacing": 4, "padding": 12, "backgroundColor": "#007AFF", "cornerRadius": 10, "width": 90, "height": 70 },
+                                "children": [
+                                  { "type": "icon", "props": { "name": "flame.fill", "size": 22, "foregroundColor": "#FFFFFF" } },
+                                  { "type": "text", "props": { "value": "Card 1", "foregroundColor": "#FFFFFF" } }
+                                ]
+                              },
+                              {
+                                "type": "vstack",
+                                "props": { "spacing": 4, "padding": 12, "backgroundColor": "#34C759", "cornerRadius": 10, "width": 90, "height": 70 },
+                                "children": [
+                                  { "type": "icon", "props": { "name": "leaf.fill", "size": 22, "foregroundColor": "#FFFFFF" } },
+                                  { "type": "text", "props": { "value": "Card 2", "foregroundColor": "#FFFFFF" } }
+                                ]
+                              },
+                              {
+                                "type": "vstack",
+                                "props": { "spacing": 4, "padding": 12, "backgroundColor": "#FF9500", "cornerRadius": 10, "width": 90, "height": 70 },
+                                "children": [
+                                  { "type": "icon", "props": { "name": "sun.max.fill", "size": 22, "foregroundColor": "#FFFFFF" } },
+                                  { "type": "text", "props": { "value": "Card 3", "foregroundColor": "#FFFFFF" } }
+                                ]
+                              },
+                              {
+                                "type": "vstack",
+                                "props": { "spacing": 4, "padding": 12, "backgroundColor": "#FF2D55", "cornerRadius": 10, "width": 90, "height": 70 },
+                                "children": [
+                                  { "type": "icon", "props": { "name": "heart.fill", "size": 22, "foregroundColor": "#FFFFFF" } },
+                                  { "type": "text", "props": { "value": "Card 4", "foregroundColor": "#FFFFFF" } }
+                                ]
+                              },
+                              {
+                                "type": "vstack",
+                                "props": { "spacing": 4, "padding": 12, "backgroundColor": "#5856D6", "cornerRadius": 10, "width": 90, "height": 70 },
+                                "children": [
+                                  { "type": "icon", "props": { "name": "star.fill", "size": 22, "foregroundColor": "#FFFFFF" } },
+                                  { "type": "text", "props": { "value": "Card 5", "foregroundColor": "#FFFFFF" } }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+
+                  {
+                    "type": "vstack",
+                    "id": "textFormatDemo",
+                    "props": {
+                      "spacing": 8,
+                      "padding": 16,
+                      "backgroundColor": "#F2F2F7",
+                      "cornerRadius": 12,
+                      "maxWidth": "infinity"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "props": { "value": "text: bind + format", "foregroundColor": "#8E8E93" }
+                      },
+                      {
+                        "type": "text",
+                        "props": {
+                          "value": { "bind": "statusMessage" },
+                          "foregroundColor": "#1C1C1E"
+                        }
+                      },
+                      {
+                        "type": "text",
+                        "props": {
+                          "value": { "format": "Counter is {counter} of {counterMax}", "binds": ["counter", "counterMax"] },
+                          "foregroundColor": "#007AFF"
+                        }
+                      }
+                    ]
+                  }
+
+                ]
+              }
+            ]
+          }
+        ]
+      },
+
+      {
+        "type": "tab",
+        "id": "components",
+        "props": { "title": "Components", "icon": "square.stack.3d.up" },
+        "children": [
+          {
+            "type": "list",
+            "id": "componentsList",
+            "children": [
+
+              {
+                "type": "section",
+                "props": { "title": "Menu" },
+                "children": [
+                  {
+                    "type": "hstack",
+                    "props": { "spacing": 12, "maxWidth": "infinity" },
+                    "children": [
+                      {
+                        "type": "text",
+                        "props": {
+                          "value": { "bind": "menuLastPick" },
+                          "foregroundColor": "#1C1C1E",
+                          "maxWidth": "infinity"
+                        }
+                      },
+                      {
+                        "type": "menu",
+                        "id": "actionsMenu",
+                        "props": { "title": "Options", "icon": "ellipsis.circle" },
+                        "children": [
+                          {
+                            "type": "button",
+                            "props": { "label": "Edit", "icon": "pencil" },
+                            "event": { "tap": "menuPickEdit" }
+                          },
+                          {
+                            "type": "button",
+                            "props": { "label": "Duplicate", "icon": "doc.on.doc" },
+                            "event": { "tap": "menuPickDuplicate" }
+                          },
+                          {
+                            "type": "button",
+                            "props": { "label": "Share", "icon": "square.and.arrow.up" },
+                            "event": { "tap": "menuPickShare" }
+                          },
+                          {
+                            "type": "button",
+                            "props": { "label": "Delete", "icon": "trash", "foregroundColor": "#FF3B30" },
+                            "event": { "tap": "menuPickDelete" }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "menu",
+                    "id": "customLabelMenu",
+                    "children": [
+                      {
+                        "type": "label",
+                        "id": "label",
+                        "props": { "title": "Custom trigger label", "icon": "line.3.horizontal.decrease.circle", "foregroundColor": "#007AFF" }
+                      },
+                      {
+                        "type": "button",
+                        "props": { "label": "Filter: All", "icon": "tray.2" },
+                        "event": { "tap": "filterAll" }
+                      },
+                      {
+                        "type": "button",
+                        "props": { "label": "Filter: Active", "icon": "bolt.circle" },
+                        "event": { "tap": "filterActive" }
+                      },
+                      {
+                        "type": "button",
+                        "props": { "label": "Filter: Done", "icon": "checkmark.circle" },
+                        "event": { "tap": "filterDone" }
+                      }
+                    ]
+                  }
+                ]
+              },
+
+              {
+                "type": "section",
+                "props": { "title": "Badge + Label + Icon" },
+                "children": [
+                  {
+                    "type": "hstack",
+                    "props": { "spacing": 10, "maxWidth": "infinity" },
+                    "children": [
+                      { "type": "label", "props": { "title": "Inbox", "icon": "tray.fill" } },
+                      { "type": "spacer" },
+                      { "type": "badge", "props": { "text": "12" } }
+                    ]
+                  },
+                  {
+                    "type": "hstack",
+                    "props": { "spacing": 10, "maxWidth": "infinity" },
+                    "children": [
+                      { "type": "label", "props": { "title": "Warnings", "icon": "exclamationmark.triangle.fill", "foregroundColor": "#FF9500" } },
+                      { "type": "spacer" },
+                      { "type": "badge", "props": { "text": "3" } }
+                    ]
+                  },
+                  {
+                    "type": "hstack",
+                    "props": { "spacing": 10, "maxWidth": "infinity" },
+                    "children": [
+                      { "type": "label", "props": { "title": "All clear", "icon": "checkmark.seal.fill", "foregroundColor": "#34C759" } },
+                      { "type": "spacer" },
+                      { "type": "icon", "props": { "name": "chevron.right", "size": 14, "foregroundColor": "#C7C7CC" } }
+                    ]
+                  }
+                ]
+              },
+
+              {
+                "type": "section",
+                "props": { "title": "Toggles in list" },
+                "children": [
+                  {
+                    "type": "toggle",
+                    "props": { "title": "Wi-Fi", "bind": "wifiEnabled" },
+                    "event": { "change": "wifiToggled" }
+                  },
+                  {
+                    "type": "toggle",
+                    "props": { "title": "Notifications", "bind": "notificationsEnabled" },
+                    "event": { "change": "notificationsToggled" }
+                  },
+                  {
+                    "type": "toggle",
+                    "props": { "title": "Dark Mode", "bind": "darkModeEnabled" },
+                    "event": { "change": "darkModeToggled" }
+                  }
+                ]
+              },
+
+              {
+                "type": "section",
+                "props": { "title": "Conditional rows (visibleWhen)" },
+                "children": [
+                  {
+                    "type": "label",
+                    "props": { "title": "Wi-Fi enabled row", "icon": "wifi", "foregroundColor": "#34C759" },
+                    "visibleWhen": { "bind": "wifiEnabled" }
+                  },
+                  {
+                    "type": "label",
+                    "props": { "title": "Wi-Fi disabled row", "icon": "wifi.slash", "foregroundColor": "#FF3B30" },
+                    "visibleWhen": { "not": { "bind": "wifiEnabled" } }
+                  },
+                  {
+                    "type": "hstack",
+                    "props": { "spacing": 8, "maxWidth": "infinity" },
+                    "children": [
+                      { "type": "label", "props": { "title": "Counter limit reached", "icon": "exclamationmark.circle", "foregroundColor": "#FF3B30" } }
+                    ],
+                    "visibleWhen": { "gte": [{ "bind": "counter" }, { "bind": "counterMax" }] }
+                  }
+                ]
+              }
+
+            ]
+          }
+        ]
+      },
+
+      {
+        "type": "tab",
+        "id": "navigation",
+        "props": { "title": "Nav", "icon": "arrow.triangle.turn.up.right.diamond" },
+        "children": [
+          {
+            "type": "navigationstack",
+            "id": "demoNav",
+            "props": { "title": "Navigation Demo" },
+            "children": [
+              {
+                "type": "toolbaritem",
+                "id": "trailingToolbar",
+                "props": { "placement": "trailing" },
+                "children": [
+                  {
+                    "type": "button",
+                    "props": { "label": "Info", "icon": "info.circle" },
+                    "event": { "tap": "toolbarInfoPressed" }
+                  }
+                ]
+              },
+              {
+                "type": "toolbaritem",
+                "id": "leadingToolbar",
+                "props": { "placement": "leading" },
+                "children": [
+                  {
+                    "type": "menu",
+                    "props": { "title": "More", "icon": "ellipsis" },
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": { "label": "Refresh", "icon": "arrow.clockwise" },
+                        "event": { "tap": "navRefresh" }
+                      },
+                      {
+                        "type": "button",
+                        "props": { "label": "Share", "icon": "square.and.arrow.up" },
+                        "event": { "tap": "navShare" }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "scroll",
+                "props": { "padding": 16 },
+                "children": [
+                  {
+                    "type": "vstack",
+                    "props": { "spacing": 16, "maxWidth": "infinity" },
+                    "children": [
+
+                      {
+                        "type": "vstack",
+                        "props": {
+                          "spacing": 10,
+                          "padding": 16,
+                          "backgroundColor": "#F2F2F7",
+                          "cornerRadius": 12,
+                          "maxWidth": "infinity"
+                        },
+                        "children": [
+                          {
+                            "type": "text",
+                            "props": { "value": "NavigationStack + toolbar", "foregroundColor": "#8E8E93" }
+                          },
+                          {
+                            "type": "text",
+                            "props": { "value": "Toolbar items are authored as toolbaritem children of navigationstack.", "foregroundColor": "#1C1C1E" }
+                          },
+                          {
+                            "type": "text",
+                            "props": { "value": "placement: leading / trailing / bottom", "foregroundColor": "#007AFF" }
+                          }
+                        ]
+                      },
+
+                      {
+                        "type": "vstack",
+                        "props": {
+                          "spacing": 10,
+                          "padding": 16,
+                          "backgroundColor": "#F2F2F7",
+                          "cornerRadius": 12,
+                          "maxWidth": "infinity"
+                        },
+                        "children": [
+                          {
+                            "type": "text",
+                            "props": { "value": "Conditional display via state", "foregroundColor": "#8E8E93" }
+                          },
+                          {
+                            "type": "button",
+                            "props": {
+                              "label": "Toggle nav block",
+                              "icon": "eye",
+                              "padding": 12,
+                              "backgroundColor": "#007AFF",
+                              "cornerRadius": 8,
+                              "foregroundColor": "#FFFFFF"
+                            },
+                            "event": { "tap": "toggleNavDemo" }
+                          },
+                          {
+                            "type": "vstack",
+                            "props": {
+                              "spacing": 8,
+                              "padding": 12,
+                              "backgroundColor": "#E8F5E9",
+                              "cornerRadius": 8,
+                              "maxWidth": "infinity"
+                            },
+                            "visibleWhen": { "bind": "navDemoActive" },
+                            "children": [
+                              { "type": "label", "props": { "title": "This block is conditionally visible", "icon": "checkmark.circle.fill", "foregroundColor": "#34C759" } },
+                              {
+                                "type": "text",
+                                "props": {
+                                  "value": { "format": "Counter is currently {counter}", "binds": ["counter"] },
+                                  "foregroundColor": "#1C1C1E"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+
+                      {
+                        "type": "list",
+                        "id": "navFeatureList",
+                        "children": [
+                          {
+                            "type": "section",
+                            "props": { "title": "Supported actions" },
+                            "children": [
+                              { "type": "label", "props": { "title": "state.set", "icon": "square.and.pencil" } },
+                              { "type": "label", "props": { "title": "state.inc / state.dec", "icon": "plusminus.circle" } },
+                              { "type": "label", "props": { "title": "state.toggle", "icon": "togglepower" } },
+                              { "type": "label", "props": { "title": "ui.toast", "icon": "bubble.left" } },
+                              { "type": "label", "props": { "title": "ui.alert", "icon": "bell.badge" } },
+                              { "type": "label", "props": { "title": "nav.push / nav.pop", "icon": "arrow.right.circle" } }
+                            ]
+                          },
+                          {
+                            "type": "section",
+                            "props": { "title": "Supported expressions" },
+                            "children": [
+                              { "type": "label", "props": { "title": "bind", "icon": "link" } },
+                              { "type": "label", "props": { "title": "eq / neq", "icon": "equal.circle" } },
+                              { "type": "label", "props": { "title": "gt / gte / lt / lte", "icon": "lessthan.circle" } },
+                              { "type": "label", "props": { "title": "and / or / not", "icon": "function" } }
+                            ]
+                          }
+                        ]
+                      }
+
+                    ]
                   }
                 ]
               }
@@ -409,92 +829,73 @@
           }
         ]
       }
+
     ]
   },
+
   "events": {
-    "homePressed": [
-      {
-        "do": "state.set",
-        "key": "selectedField",
-        "value": "Нажата кнопка Home"
-      }
+    "counterInc": [
+      { "do": "state.inc", "key": "counter", "max": 10 }
     ],
-    "searchPressed": [
-      {
-        "do": "state.set",
-        "key": "selectedField",
-        "value": "Нажата кнопка Search"
-      }
+    "counterDec": [
+      { "do": "state.dec", "key": "counter", "min": 0 }
     ],
-    "bellPressed": [
-      {
-        "do": "state.set",
-        "key": "selectedField",
-        "value": "Нажата кнопка Bell"
-      }
+    "counterReset": [
+      { "do": "state.set", "key": "counter", "value": 0 },
+      { "do": "ui.toast", "message": "Counter reset to 0" }
     ],
-    "gearPressed": [
-      {
-        "do": "state.set",
-        "key": "selectedField",
-        "value": "Нажата кнопка Settings"
-      }
+    "wifiToggled": [
+      { "do": "state.set", "key": "statusMessage", "value": "Wi-Fi toggled" }
     ],
-    "wifiRowPressed": [
-      {
-        "do": "state.set",
-        "key": "selectedField",
-        "value": "Выбрано поле Wi-Fi"
-      }
+    "darkModeToggled": [
+      { "do": "state.set", "key": "statusMessage", "value": "Dark Mode toggled" }
     ],
-    "wifiChanged": [
-      {
-        "do": "state.set",
-        "key": "selectedField",
-        "value": "Изменен toggle Wi-Fi"
-      }
+    "notificationsToggled": [
+      { "do": "state.set", "key": "statusMessage", "value": "Notifications toggled" }
     ],
-    "bluetoothRowPressed": [
-      {
-        "do": "state.set",
-        "key": "selectedField",
-        "value": "Выбрано поле Bluetooth"
-      }
+    "showToast": [
+      { "do": "ui.toast", "message": "This is a ui.toast message" }
     ],
-    "bluetoothChanged": [
-      {
-        "do": "state.set",
-        "key": "selectedField",
-        "value": "Изменен toggle Bluetooth"
-      }
+    "showAlert": [
+      { "do": "ui.alert", "title": "Alert", "message": "This is a ui.alert message from the engine." }
     ],
-    "notificationsRowPressed": [
-      {
-        "do": "state.set",
-        "key": "selectedField",
-        "value": "Выбрано поле Уведомления"
-      }
+    "setStatus": [
+      { "do": "state.set", "key": "statusMessage", "value": "Status updated via state.set" }
     ],
-    "notificationsChanged": [
-      {
-        "do": "state.set",
-        "key": "selectedField",
-        "value": "Изменен toggle Уведомления"
-      }
+    "menuPickEdit": [
+      { "do": "state.set", "key": "menuLastPick", "value": "Edit selected" }
     ],
-    "locationRowPressed": [
-      {
-        "do": "state.set",
-        "key": "selectedField",
-        "value": "Выбрано поле Геолокация"
-      }
+    "menuPickDuplicate": [
+      { "do": "state.set", "key": "menuLastPick", "value": "Duplicate selected" }
     ],
-    "locationChanged": [
-      {
-        "do": "state.set",
-        "key": "selectedField",
-        "value": "Изменен toggle Геолокация"
-      }
+    "menuPickShare": [
+      { "do": "state.set", "key": "menuLastPick", "value": "Share selected" }
+    ],
+    "menuPickDelete": [
+      { "do": "state.set", "key": "menuLastPick", "value": "Delete selected" },
+      { "do": "ui.toast", "message": "Deleted (demo only)" }
+    ],
+    "filterAll": [
+      { "do": "state.set", "key": "menuLastPick", "value": "Filter: All" }
+    ],
+    "filterActive": [
+      { "do": "state.set", "key": "menuLastPick", "value": "Filter: Active" }
+    ],
+    "filterDone": [
+      { "do": "state.set", "key": "menuLastPick", "value": "Filter: Done" }
+    ],
+    "toolbarInfoPressed": [
+      { "do": "ui.alert", "title": "Engine Info", "message": "Running UIBuilder v1 runtime. Schema: com.ilya.ui/1.0" }
+    ],
+    "navRefresh": [
+      { "do": "state.set", "key": "statusMessage", "value": "Refreshed from toolbar" },
+      { "do": "ui.toast", "message": "Refreshed" }
+    ],
+    "navShare": [
+      { "do": "ui.toast", "message": "Share tapped from toolbar menu" }
+    ],
+    "toggleNavDemo": [
+      { "do": "state.toggle", "key": "navDemoActive" }
     ]
   }
 }

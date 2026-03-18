@@ -310,7 +310,7 @@ struct UIRenderer: View {
     @ViewBuilder
     private func tabContent(tab: UINode, evaluator: ExpressionEvaluator) -> some View {
         let tabTitle = resolveText(from: tab.props?["title"], evaluator: evaluator)
-        let tabIcon = tab.props?["icon"]?.stringValue
+        let tabIcon = tab.props?["icon"]?.stringValue ?? ""
 
         VStack(spacing: 0) {
             ForEach(Array((tab.children ?? []).enumerated()), id: \.offset) { _, child in
@@ -318,7 +318,7 @@ struct UIRenderer: View {
             }
         }
         .tabItem {
-            if let tabIcon {
+            if !tabIcon.isEmpty {
                 Label(tabTitle, systemImage: tabIcon)
             } else {
                 Text(tabTitle)
@@ -387,14 +387,44 @@ struct UIRenderer: View {
     }
 
     // Builds ToolbarContent for navigationstack from toolbaritem children.
+    // @ToolbarContentBuilder does not support ForEach — items are split by placement slot.
     @ToolbarContentBuilder
     private func toolbarContent(nodes: [UINode], evaluator: ExpressionEvaluator) -> some ToolbarContent {
-        ForEach(Array(nodes.enumerated()), id: \.offset) { _, item in
-            ToolbarItem(placement: toolbarPlacement(from: item.props?["placement"])) {
-                ForEach(Array((item.children ?? []).enumerated()), id: \.offset) { _, child in
-                    UIRenderer(node: child, document: document, state: state, executor: executor)
-                }
+        let leading  = nodes.filter { ($0.props?["placement"]?.stringValue ?? "trailing") == "leading" }
+        let trailing = nodes.filter { ($0.props?["placement"]?.stringValue ?? "trailing") == "trailing" || $0.props?["placement"] == nil }
+        let bottom   = nodes.filter { $0.props?["placement"]?.stringValue == "bottom" }
+
+        if !leading.isEmpty {
+            ToolbarItem(placement: .topBarLeading) {
+                toolbarGroupView(items: leading, evaluator: evaluator)
             }
+        }
+        if !trailing.isEmpty {
+            ToolbarItem(placement: .topBarTrailing) {
+                toolbarGroupView(items: trailing, evaluator: evaluator)
+            }
+        }
+        if !bottom.isEmpty {
+            ToolbarItem(placement: .bottomBar) {
+                toolbarGroupView(items: bottom, evaluator: evaluator)
+            }
+        }
+    }
+
+    // Renders multiple toolbaritem nodes as a horizontal group.
+    @ViewBuilder
+    private func toolbarGroupView(items: [UINode], evaluator: ExpressionEvaluator) -> some View {
+        HStack(spacing: 8) {
+            ForEach(Array(items.enumerated()), id: \.offset) { _, item in
+                toolbarItemView(item: item, evaluator: evaluator)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func toolbarItemView(item: UINode, evaluator: ExpressionEvaluator) -> some View {
+        ForEach(Array((item.children ?? []).enumerated()), id: \.offset) { _, child in
+            UIRenderer(node: child, document: document, state: state, executor: executor)
         }
     }
 
