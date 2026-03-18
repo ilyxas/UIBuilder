@@ -779,7 +779,7 @@
       ],
       "notes": [
         "Use local props before adding wrapper nodes whose only purpose is styling or simple layout.",
-        "maxWidth may use the string value infinity.",
+        "maxWidth must use the JSON string \"infinity\" when unbounded width is intended.",
         "fixedSize may be authored as one of the documented string values, and the runtime also accepts boolean true for a fully fixed view."
       ]
     },
@@ -1028,7 +1028,7 @@
           "Authors provide the record rows or section groups, not a manually duplicated table shell."
         ],
         "supportNotes": [
-          "sortable remains part of the declared authoring surface for forward compatibility and should not be invented under a different name.",
+          "sortable remains part of the declared authoring surface for forward compatibility; treat it as a table-level boolean intent flag and do not invent alternate names or value shapes.",
           "selectionMode accepts none, single, or multiple; multiple is declared even though current behavior is limited."
         ]
       },
