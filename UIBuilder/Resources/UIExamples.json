@@ -1,0 +1,883 @@
+[
+  {
+    "schema": "com.ilya.ui/1.0",
+    "screenId": "minimal",
+    "title": "Minimal Screen",
+    "state": {
+      "vars": {}
+    },
+    "root": {
+      "type": "text",
+      "props": {
+        "value": "Hello"
+      }
+    },
+    "events": {}
+  },
+  {
+    "schema": "com.ilya.ui/1.0",
+    "screenId": "navigationstack-list-toolbar",
+    "title": "NavigationStack with Toolbar",
+    "state": {
+      "vars": {}
+    },
+    "root": {
+      "type": "navigationstack",
+      "props": {
+        "title": "My Screen"
+      },
+      "host": {
+        "toolbar": {
+          "topTrailing": [
+            {
+              "type": "button",
+              "props": {
+                "label": "Add",
+                "icon": "plus"
+              },
+              "event": {
+                "tap": "addPressed"
+              }
+            }
+          ]
+        }
+      },
+      "children": [
+        {
+          "type": "list",
+          "children": [
+            {
+              "type": "section",
+              "props": {
+                "title": "Account"
+              },
+              "children": [
+                {
+                  "type": "label",
+                  "props": {
+                    "title": "Profile",
+                    "icon": "person.circle"
+                  }
+                },
+                {
+                  "type": "label",
+                  "props": {
+                    "title": "Notifications",
+                    "icon": "bell"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "section",
+              "props": {
+                "title": "Support"
+              },
+              "children": [
+                {
+                  "type": "label",
+                  "props": {
+                    "title": "Help",
+                    "icon": "questionmark.circle"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "events": {
+      "addPressed": [
+        {
+          "do": "ui.toast",
+          "message": "Add pressed"
+        }
+      ]
+    }
+  },
+  {
+    "schema": "com.ilya.ui/1.0",
+    "screenId": "list-section-toggle",
+    "title": "List + Section Example",
+    "state": {
+      "vars": {
+        "darkMode": false,
+        "notificationsEnabled": true
+      }
+    },
+    "root": {
+      "type": "list",
+      "children": [
+        {
+          "type": "section",
+          "props": {
+            "title": "Appearance"
+          },
+          "children": [
+            {
+              "type": "toggle",
+              "props": {
+                "title": "Dark Mode",
+                "bind": "darkMode"
+              }
+            }
+          ]
+        },
+        {
+          "type": "section",
+          "props": {
+            "title": "Notifications"
+          },
+          "children": [
+            {
+              "type": "toggle",
+              "props": {
+                "title": "Enable Notifications",
+                "bind": "notificationsEnabled"
+              }
+            }
+          ]
+        },
+        {
+          "type": "section",
+          "children": [
+            {
+              "type": "button",
+              "props": {
+                "label": "Sign Out",
+                "icon": "rectangle.portrait.and.arrow.right",
+                "foregroundColor": "#FF3B30"
+              },
+              "event": {
+                "tap": "signOutPressed"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "events": {
+      "signOutPressed": [
+        {
+          "do": "ui.toast",
+          "message": "Signed out"
+        }
+      ]
+    }
+  },
+  {
+    "schema": "com.ilya.ui/1.0",
+    "screenId": "tabview-tabs",
+    "title": "TabView Example",
+    "state": {
+      "vars": {
+        "activeTab": "home",
+        "notificationCount": 3
+      }
+    },
+    "root": {
+      "type": "tabview",
+      "id": "mainTabs",
+      "props": {
+        "selection": "activeTab"
+      },
+      "children": [
+        {
+          "type": "tab",
+          "id": "home",
+          "props": {
+            "title": "Home",
+            "icon": "house"
+          },
+          "children": [
+            {
+              "type": "vstack",
+              "props": {
+                "spacing": 16,
+                "padding": 20
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "props": {
+                    "value": "Welcome"
+                  }
+                },
+                {
+                  "type": "button",
+                  "props": {
+                    "label": "Go to Notifications",
+                    "icon": "bell",
+                    "padding": 12,
+                    "backgroundColor": "#F2F2F7",
+                    "cornerRadius": 10
+                  },
+                  "event": {
+                    "tap": "goToNotifications"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "tab",
+          "id": "notifications",
+          "props": {
+            "title": "Notifications",
+            "icon": "bell"
+          },
+          "children": [
+            {
+              "type": "vstack",
+              "props": {
+                "spacing": 12,
+                "padding": 20
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "props": {
+                    "value": {
+                      "format": "You have {notificationCount} notifications",
+                      "binds": ["notificationCount"]
+                    }
+                  }
+                },
+                {
+                  "type": "button",
+                  "props": {
+                    "label": "Clear",
+                    "icon": "trash",
+                    "padding": 12,
+                    "backgroundColor": "#FFF3F3",
+                    "foregroundColor": "#FF3B30",
+                    "cornerRadius": 10
+                  },
+                  "event": {
+                    "tap": "clearNotifications"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "tab",
+          "id": "profile",
+          "props": {
+            "title": "Profile",
+            "icon": "person.circle"
+          },
+          "children": [
+            {
+              "type": "vstack",
+              "props": {
+                "spacing": 12,
+                "padding": 20
+              },
+              "children": [
+                {
+                  "type": "label",
+                  "props": {
+                    "title": "Username",
+                    "icon": "person"
+                  }
+                },
+                {
+                  "type": "label",
+                  "props": {
+                    "title": "example@mail.com",
+                    "icon": "envelope"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "events": {
+      "goToNotifications": [
+        {
+          "do": "state.set",
+          "key": "activeTab",
+          "value": "notifications"
+        }
+      ],
+      "clearNotifications": [
+        {
+          "do": "state.set",
+          "key": "notificationCount",
+          "value": 0
+        }
+      ]
+    }
+  },
+  {
+    "schema": "com.ilya.ui/1.0",
+    "screenId": "textfield-bind",
+    "title": "TextField Example",
+    "state": {
+      "vars": {
+        "searchQuery": "",
+        "password": ""
+      }
+    },
+    "root": {
+      "type": "vstack",
+      "props": {
+        "spacing": 16,
+        "padding": 20
+      },
+      "children": [
+        {
+          "type": "textfield",
+          "id": "searchField",
+          "props": {
+            "bind": "searchQuery",
+            "placeholder": "Search...",
+            "keyboardType": "default",
+            "returnKeyType": "search",
+            "autocorrectionDisabled": true,
+            "prefixIcon": "magnifyingglass",
+            "padding": 12,
+            "backgroundColor": "#F2F2F7",
+            "cornerRadius": 10
+          },
+          "event": {
+            "change": "onSearchChange"
+          }
+        },
+        {
+          "type": "textfield",
+          "id": "passwordField",
+          "props": {
+            "bind": "password",
+            "placeholder": "Password",
+            "secure": true,
+            "maxLength": 32,
+            "prefixIcon": "lock",
+            "padding": 12,
+            "backgroundColor": "#F2F2F7",
+            "cornerRadius": 10
+          }
+        },
+        {
+          "type": "text",
+          "props": {
+            "value": {
+              "format": "Query: {searchQuery}",
+              "binds": ["searchQuery"]
+            }
+          }
+        }
+      ]
+    },
+    "events": {
+      "onSearchChange": [
+        {
+          "do": "ui.toast",
+          "message": "Search updated"
+        }
+      ]
+    }
+  },
+  {
+    "schema": "com.ilya.ui/1.0",
+    "screenId": "visibleWhen-enabledWhen",
+    "title": "Conditional Visibility and Enabled State",
+    "state": {
+      "vars": {
+        "formName": "",
+        "formEmail": "",
+        "password": ""
+      }
+    },
+    "root": {
+      "type": "scroll",
+      "props": {
+        "padding": 16
+      },
+      "children": [
+        {
+          "type": "group",
+          "props": {
+            "title": "Text Fields",
+            "style": "plain"
+          },
+          "children": [
+            {
+              "type": "textfield",
+              "props": {
+                "bind": "formName",
+                "placeholder": "Full name",
+                "keyboardType": "default",
+                "returnKeyType": "next",
+                "autocapitalization": "words",
+                "prefixIcon": "person",
+                "padding": 12,
+                "backgroundColor": "#F2F2F7",
+                "cornerRadius": 10
+              }
+            },
+            {
+              "type": "textfield",
+              "props": {
+                "bind": "formEmail",
+                "placeholder": "Email address",
+                "keyboardType": "email",
+                "returnKeyType": "next",
+                "autocapitalization": "none",
+                "autocorrectionDisabled": true,
+                "prefixIcon": "envelope",
+                "padding": 12,
+                "backgroundColor": "#F2F2F7",
+                "cornerRadius": 10
+              }
+            },
+            {
+              "type": "textfield",
+              "props": {
+                "bind": "password",
+                "placeholder": "Password",
+                "secure": true,
+                "maxLength": 32,
+                "prefixIcon": "lock",
+                "padding": 12,
+                "backgroundColor": "#F2F2F7",
+                "cornerRadius": 10
+              }
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "props": {
+            "value": {
+              "format": "Name: {formName}",
+              "binds": ["formName"]
+            },
+            "foregroundColor": "#6B7280"
+          },
+          "visibleWhen": {
+            "neq": [{ "bind": "formName" }, ""]
+          }
+        },
+        {
+          "type": "text",
+          "props": {
+            "value": {
+              "format": "Email: {formEmail}",
+              "binds": ["formEmail"]
+            },
+            "foregroundColor": "#6B7280"
+          },
+          "visibleWhen": {
+            "neq": [{ "bind": "formEmail" }, ""]
+          }
+        },
+        {
+          "type": "button",
+          "props": {
+            "label": "Submit Form",
+            "icon": "checkmark.circle.fill",
+            "padding": 14,
+            "backgroundColor": "#2563EB",
+            "foregroundColor": "#FFFFFF",
+            "cornerRadius": 12,
+            "maxWidth": "infinity"
+          },
+          "enabledWhen": {
+            "neq": [{ "bind": "formName" }, ""]
+          },
+          "event": {
+            "tap": "submitForm"
+          }
+        }
+      ]
+    },
+    "events": {
+      "submitForm": [
+        {
+          "do": "ui.toast",
+          "message": "Form submitted"
+        }
+      ]
+    }
+  },
+  {
+    "schema": "com.ilya.ui/1.0",
+    "screenId": "state-actions",
+    "title": "State Actions: Counter and Toggles",
+    "state": {
+      "vars": {
+        "counter": 0,
+        "featureA": true,
+        "featureB": false
+      }
+    },
+    "root": {
+      "type": "scroll",
+      "props": {
+        "padding": 16
+      },
+      "children": [
+        {
+          "type": "group",
+          "props": {
+            "title": "Counter",
+            "style": "card"
+          },
+          "children": [
+            {
+              "type": "hstack",
+              "props": {
+                "spacing": 16
+              },
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "label": "Decrement",
+                    "icon": "minus.circle",
+                    "foregroundColor": "#DC2626"
+                  },
+                  "event": {
+                    "tap": "decrementCounter"
+                  }
+                },
+                {
+                  "type": "text",
+                  "props": {
+                    "value": {
+                      "bind": "counter"
+                    },
+                    "foregroundColor": "#1C1C1E"
+                  }
+                },
+                {
+                  "type": "button",
+                  "props": {
+                    "label": "Increment",
+                    "icon": "plus.circle",
+                    "foregroundColor": "#2563EB"
+                  },
+                  "event": {
+                    "tap": "incrementCounter"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "label": "Reset",
+                "icon": "arrow.counterclockwise",
+                "padding": 10,
+                "backgroundColor": "#F2F2F7",
+                "cornerRadius": 8,
+                "maxWidth": "infinity"
+              },
+              "event": {
+                "tap": "resetCounter"
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "props": {
+            "title": "Toggles",
+            "style": "card"
+          },
+          "children": [
+            {
+              "type": "toggle",
+              "props": {
+                "title": "Feature A",
+                "bind": "featureA"
+              },
+              "event": {
+                "change": "onToggleA"
+              }
+            },
+            {
+              "type": "toggle",
+              "props": {
+                "title": "Feature B",
+                "bind": "featureB"
+              },
+              "visibleWhen": {
+                "bind": "featureA"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "events": {
+      "decrementCounter": [
+        {
+          "do": "state.dec",
+          "key": "counter",
+          "min": 0
+        }
+      ],
+      "incrementCounter": [
+        {
+          "do": "state.inc",
+          "key": "counter",
+          "max": 99
+        }
+      ],
+      "resetCounter": [
+        {
+          "do": "state.set",
+          "key": "counter",
+          "value": 0
+        }
+      ],
+      "onToggleA": [
+        {
+          "do": "ui.toast",
+          "message": "Feature A toggled"
+        }
+      ]
+    }
+  },
+  {
+    "schema": "com.ilya.ui/1.0",
+    "screenId": "menu-example",
+    "title": "Menu Example",
+    "state": {
+      "vars": {
+        "lastAction": "No action selected"
+      }
+    },
+    "root": {
+      "type": "vstack",
+      "id": "root",
+      "props": {
+        "spacing": 20,
+        "padding": 20
+      },
+      "children": [
+        {
+          "type": "text",
+          "id": "statusText",
+          "props": {
+            "value": {
+              "bind": "lastAction"
+            }
+          }
+        },
+        {
+          "type": "menu",
+          "id": "actionsMenu",
+          "props": {
+            "title": "Actions",
+            "icon": "ellipsis.circle"
+          },
+          "children": [
+            {
+              "type": "button",
+              "id": "editBtn",
+              "props": {
+                "label": "Edit",
+                "icon": "pencil"
+              },
+              "event": {
+                "tap": "editPressed"
+              }
+            },
+            {
+              "type": "button",
+              "id": "shareBtn",
+              "props": {
+                "label": "Share",
+                "icon": "square.and.arrow.up"
+              },
+              "event": {
+                "tap": "sharePressed"
+              }
+            },
+            {
+              "type": "button",
+              "id": "deleteBtn",
+              "props": {
+                "label": "Delete",
+                "icon": "trash",
+                "foregroundColor": "#FF3B30"
+              },
+              "event": {
+                "tap": "deletePressed"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "events": {
+      "editPressed": [
+        {
+          "do": "state.set",
+          "key": "lastAction",
+          "value": "Edit"
+        }
+      ],
+      "sharePressed": [
+        {
+          "do": "state.set",
+          "key": "lastAction",
+          "value": "Share"
+        }
+      ],
+      "deletePressed": [
+        {
+          "do": "state.set",
+          "key": "lastAction",
+          "value": "Delete"
+        }
+      ]
+    }
+  },
+  {
+    "schema": "com.ilya.ui/1.0",
+    "screenId": "group-collapsible",
+    "title": "Group Example",
+    "state": {
+      "vars": {
+        "notificationsOn": true,
+        "darkMode": false,
+        "devMode": false
+      }
+    },
+    "root": {
+      "type": "vstack",
+      "props": {
+        "spacing": 16,
+        "padding": 20
+      },
+      "children": [
+        {
+          "type": "group",
+          "props": {
+            "title": "Preferences",
+            "footer": "Changes apply immediately.",
+            "style": "card"
+          },
+          "children": [
+            {
+              "type": "toggle",
+              "props": {
+                "title": "Notifications",
+                "bind": "notificationsOn"
+              }
+            },
+            {
+              "type": "toggle",
+              "props": {
+                "title": "Dark Mode",
+                "bind": "darkMode"
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "advancedGroup",
+          "props": {
+            "title": "Advanced",
+            "collapsible": true,
+            "isExpanded": false,
+            "style": "plain"
+          },
+          "children": [
+            {
+              "type": "toggle",
+              "props": {
+                "title": "Developer Mode",
+                "bind": "devMode"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "events": {}
+  },
+  {
+    "schema": "com.ilya.ui/1.0",
+    "screenId": "slider-example",
+    "title": "Slider Example",
+    "state": {
+      "vars": {
+        "volume": 50,
+        "rating": 3
+      }
+    },
+    "root": {
+      "type": "vstack",
+      "props": {
+        "spacing": 20,
+        "padding": 24
+      },
+      "children": [
+        {
+          "type": "text",
+          "props": {
+            "value": {
+              "format": "Volume: {volume}",
+              "binds": ["volume"]
+            }
+          }
+        },
+        {
+          "type": "slider",
+          "id": "volumeSlider",
+          "props": {
+            "bind": "volume",
+            "min": 0,
+            "max": 100,
+            "label": "Volume",
+            "accentColor": "#2563EB"
+          },
+          "event": {
+            "change": "onVolumeChange"
+          }
+        },
+        {
+          "type": "text",
+          "props": {
+            "value": {
+              "format": "Rating: {rating}",
+              "binds": ["rating"]
+            }
+          }
+        },
+        {
+          "type": "slider",
+          "id": "ratingSlider",
+          "props": {
+            "bind": "rating",
+            "min": 1,
+            "max": 5,
+            "step": 1,
+            "label": "Rating",
+            "accentColor": "#F59E0B"
+          }
+        }
+      ]
+    },
+    "events": {
+      "onVolumeChange": [
+        {
+          "do": "ui.toast",
+          "message": "Volume changed"
+        }
+      ]
+    }
+  }
+]

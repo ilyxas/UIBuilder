@@ -1,0 +1,255 @@
+{
+  "decisions": {
+    "vstack": {
+      "useWhen": [
+        "Stacking content vertically with consistent spacing",
+        "Building form layouts",
+        "Composing a screen body with multiple sections"
+      ],
+      "avoidWhen": [
+        "Content is scrollable — wrap in scroll instead",
+        "Horizontal layout is needed — use hstack"
+      ],
+      "preferOver": ["zstack", "frame"]
+    },
+    "hstack": {
+      "useWhen": [
+        "Placing elements side by side in a row",
+        "Building toolbar-like rows with a spacer",
+        "Label + value pairs on the same line"
+      ],
+      "avoidWhen": [
+        "Content needs to wrap to multiple lines",
+        "Vertical layout is needed — use vstack"
+      ]
+    },
+    "zstack": {
+      "useWhen": [
+        "Overlaying content on top of a background shape or image",
+        "Placing a badge or overlay on top of another node"
+      ],
+      "avoidWhen": [
+        "Nodes need explicit alignment with frame constraints — use frame",
+        "Vertical or horizontal flow layout is needed"
+      ],
+      "preferOver": ["frame"]
+    },
+    "scroll": {
+      "useWhen": [
+        "Content may exceed the visible screen area",
+        "Horizontal scrolling chip rows or card carousels",
+        "Any screen that is not a List"
+      ],
+      "avoidWhen": [
+        "Content is guaranteed to fit on screen",
+        "A native document list with sections is needed — use list"
+      ]
+    },
+    "text": {
+      "useWhen": [
+        "Displaying a static or state-bound string",
+        "Rendering a formatted template with multiple bound values"
+      ],
+      "avoidWhen": [
+        "An icon is also needed alongside the text — use label",
+        "The text should be editable — use textfield"
+      ],
+      "preferOver": ["badge"]
+    },
+    "button": {
+      "useWhen": [
+        "A tappable action is required",
+        "Confirming, submitting, or triggering any event"
+      ],
+      "avoidWhen": [
+        "A boolean on/off control is needed — use toggle",
+        "The tap should navigate — use nav.push action inside button"
+      ]
+    },
+    "toggle": {
+      "useWhen": [
+        "A boolean on/off switch bound to a state variable",
+        "Settings rows with an enable/disable control"
+      ],
+      "avoidWhen": [
+        "Multiple exclusive options are needed — use a different pattern",
+        "The value is not boolean"
+      ]
+    },
+    "icon": {
+      "useWhen": [
+        "A standalone SF Symbol icon with explicit size is needed",
+        "Decorative icon with no accompanying text"
+      ],
+      "avoidWhen": [
+        "An icon paired with a text label is needed — use label",
+        "The icon is part of a button — use button with icon prop"
+      ],
+      "preferOver": []
+    },
+    "spacer": {
+      "useWhen": [
+        "Pushing sibling elements to opposite ends of an hstack or vstack",
+        "Creating flexible empty space between nodes"
+      ],
+      "avoidWhen": [
+        "Fixed spacing between elements is needed — use the spacing prop on the parent stack"
+      ]
+    },
+    "badge": {
+      "useWhen": [
+        "Displaying a small highlighted count or tag",
+        "Status chips with a pill/capsule background"
+      ],
+      "avoidWhen": [
+        "Plain text display is needed — use text",
+        "Custom styling is required — badge has fixed inline styling"
+      ]
+    },
+    "label": {
+      "useWhen": [
+        "Displaying an SF Symbol icon paired with a text title",
+        "Settings rows, menu items, or list rows with an icon"
+      ],
+      "avoidWhen": [
+        "No icon is needed — use text",
+        "The icon and text need independent styling — use hstack with icon and text nodes"
+      ],
+      "preferOver": ["hstack"]
+    },
+    "menu": {
+      "useWhen": [
+        "A dropdown menu with multiple contextual actions is needed",
+        "Toolbar or list row with an ellipsis/more button"
+      ],
+      "avoidWhen": [
+        "Only one action is available — use button",
+        "Actions should always be visible — use buttons in an hstack"
+      ]
+    },
+    "tabview": {
+      "useWhen": [
+        "Top-level navigation between two or more major screens",
+        "App-level tab bar at the bottom of the screen"
+      ],
+      "avoidWhen": [
+        "Segmented in-screen switching — use state + visibleWhen pattern instead",
+        "Only one screen exists"
+      ]
+    },
+    "tab": {
+      "useWhen": [
+        "As a direct child of tabview to define a tab's content and tab bar item"
+      ],
+      "avoidWhen": [
+        "Outside of a tabview — it renders as a plain vstack with no tab bar item"
+      ]
+    },
+    "image": {
+      "useWhen": [
+        "Displaying an SF Symbol as a resizable image",
+        "Displaying an asset catalog image by name"
+      ],
+      "avoidWhen": [
+        "A small inline icon is needed — use icon or label",
+        "No actual image source is known — a placeholder will appear"
+      ]
+    },
+    "navigationstack": {
+      "useWhen": [
+        "The screen needs a navigation bar with a title",
+        "Toolbar buttons in topLeading, topTrailing, principal, or bottomBar slots are needed",
+        "The screen is the root of a push-navigation flow"
+      ],
+      "avoidWhen": [
+        "No navigation bar or toolbar is needed — use vstack or scroll",
+        "The screen is already inside a navigationstack"
+      ]
+    },
+    "list": {
+      "useWhen": [
+        "A native document-style grouped or plain list with section support",
+        "Settings screens with multiple sections and rows"
+      ],
+      "avoidWhen": [
+        "Custom row spacing or background is needed — use vstack in scroll",
+        "Horizontal layout is needed"
+      ],
+      "preferOver": ["vstack"]
+    },
+    "section": {
+      "useWhen": [
+        "Grouping rows inside a list with an optional header title"
+      ],
+      "avoidWhen": [
+        "Outside of a list — use group instead for card or plain grouping"
+      ],
+      "preferOver": ["group"]
+    },
+    "frame": {
+      "useWhen": [
+        "Applying explicit alignment (e.g. bottomTrailing) to children within fixed dimensions",
+        "Clipping children to a specific size with clip or clipShape"
+      ],
+      "avoidWhen": [
+        "Simple overlay without alignment constraints — use zstack",
+        "No fixed dimensions are needed"
+      ]
+    },
+    "textfield": {
+      "useWhen": [
+        "Single-line text input bound to a state variable",
+        "Search fields, name fields, email fields, password fields"
+      ],
+      "avoidWhen": [
+        "Multi-line input is needed — not currently supported",
+        "Value is not a string"
+      ]
+    },
+    "slider": {
+      "useWhen": [
+        "Continuous or stepped numeric value selection bound to a state variable",
+        "Volume controls, ratings, progress adjustments"
+      ],
+      "avoidWhen": [
+        "A discrete set of options is needed — use buttons or a different pattern",
+        "The value is not numeric"
+      ]
+    },
+    "shape": {
+      "useWhen": [
+        "Drawing a geometric shape (circle, rectangle, capsule, ellipse, roundedRectangle)",
+        "Using a shape as a colored background block or decorative divider",
+        "Overlaying child nodes on top of a shape via its children array"
+      ],
+      "avoidWhen": [
+        "Background color on an existing node is sufficient — use backgroundColor common prop",
+        "Clipping a container to a shape — use clipShape common prop"
+      ]
+    },
+    "group": {
+      "useWhen": [
+        "Grouping related content outside of a list with an optional title and footer",
+        "Collapsible sections with a disclosure toggle",
+        "Card-style or inset-style content blocks"
+      ],
+      "avoidWhen": [
+        "Content is inside a list — use section instead",
+        "No visual grouping is needed — use vstack"
+      ],
+      "preferOver": ["section"]
+    },
+    "table": {
+      "useWhen": [
+        "Displaying tabular data with named columns and a header row",
+        "Alternating row backgrounds for readability",
+        "Single-row selection from a data set"
+      ],
+      "avoidWhen": [
+        "Rows have heterogeneous layouts — use list with custom children",
+        "No columns or header is needed — use list"
+      ],
+      "preferOver": ["list"]
+    }
+  }
+}
