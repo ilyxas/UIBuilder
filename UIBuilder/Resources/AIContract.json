@@ -374,30 +374,6 @@
       "allowsChildren": true
     },
 
-    "toolbaritem": {
-      "category": "navigation",
-      "tier": 3,
-      "purpose": "Legacy toolbar authoring node. Supported for backward compatibility. Prefer host.toolbar slots on navigationstack for new screens.",
-      "containerManages": [
-        "Placement in the navigation bar — author specifies the placement prop, the container handles the rest."
-      ],
-      "authorProvides": [
-        "placement prop.",
-        "At least one button child as the toolbar control."
-      ],
-      "useWhen": [
-        "Maintaining or reading existing screens that use toolbaritem."
-      ],
-      "avoidWhen": [
-        "New screens — use host.toolbar on navigationstack instead.",
-        "Outside navigationstack — no toolbar behavior occurs."
-      ],
-      "props": {
-        "placement": { "type": "enum", "values": ["leading", "trailing", "bottom"], "default": "trailing" }
-      },
-      "allowsChildren": true
-    },
-
     "list": {
       "category": "content",
       "tier": 2,
