@@ -560,18 +560,18 @@
                   {
                     "type": "navigationstack",
                     "props": { "title": "Items" },
-                    "children": [
-                      {
-                        "type": "toolbaritem",
-                        "props": { "placement": "trailing" },
-                        "children": [
+                    "host": {
+                      "toolbar": {
+                        "topTrailing": [
                           {
                             "type": "button",
                             "props": { "label": "Add", "icon": "plus" },
                             "event": { "tap": "navAddPressed" }
                           }
                         ]
-                      },
+                      }
+                    },
+                    "children": [
                       {
                         "type": "list",
                         "children": [

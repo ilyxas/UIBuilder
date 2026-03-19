@@ -43,7 +43,7 @@
           "Inside list: use section to group rows under a named header.",
           "Outside list: use group for standalone content blocks with optional title, footer, or card style.",
           "Multi-tab page content: each destination is a tab child of tabview.",
-          "Navigation bar actions: use toolbaritem as a direct child of navigationstack.",
+          "Navigation bar actions: use host.toolbar slots on navigationstack (topLeading, topTrailing, bottomBar, principal).",
           "Do not simulate section groups with vstack inside list."
         ]
       },
@@ -96,8 +96,8 @@
         {
           "tier": 3,
           "label": "Semantic grouping nodes",
-          "nodes": ["section", "group", "toolbaritem", "tab"],
-          "role": "Organize content into logical units, navigation bar slots, and tab pages."
+          "nodes": ["section", "group", "tab"],
+          "role": "Organize content into logical units and tab pages."
         },
         {
           "tier": 4,
@@ -119,7 +119,7 @@
       "description": "Clearly separates what the container manages automatically from what the author must provide explicitly. Never duplicate container-managed behavior in JSON.",
       "containerManaged": [
         "navigationstack manages: screen-level scrollability, navigation bar chrome, toolbar slot — author should not add wrappers for these.",
-        "navigationstack manages: lifting toolbaritem children into the navigation bar — author should not place toolbaritem anywhere else.",
+        "navigationstack manages: toolbar slots via host.toolbar — children are body content only, not toolbar content.",
         "navigationstack manages: navigation title from its title prop — author should not place a separate title text node at the top.",
         "scroll manages: the vertical flow of children — author should not add a single vstack as the only child of scroll.",
         "tab (inside tabview) manages: the tab bar label from title and icon props — author should not add a manual tab bar row.",
@@ -134,7 +134,7 @@
         "State structure: all keys in state.vars and their initial values.",
         "Event handlers: the events map and its action sequences.",
         "Section structure inside list.",
-        "toolbaritem placement inside navigationstack."
+        "host.toolbar slot contents on navigationstack."
       ]
     },
 
@@ -179,8 +179,12 @@
     {
       "question": "Where do toolbar buttons go?",
       "rules": [
-        { "if": "Screen has a navigationstack", "then": "toolbaritem as a direct child of navigationstack. Place the button as a child of toolbaritem." },
-        { "if": "toolbaritem is placed outside navigationstack", "then": "Its children render flat without toolbar behavior. Avoid." }
+        { "if": "Screen has a navigationstack", "then": "Place toolbar nodes in the host.toolbar slots of the navigationstack node. Use topLeading, topTrailing, bottomBar, or principal as the slot key. Each slot is an array of ordinary UINodes (button, menu, etc.)." },
+        { "if": "You need a leading bar button", "then": "host.toolbar.topLeading array on navigationstack." },
+        { "if": "You need a trailing bar button", "then": "host.toolbar.topTrailing array on navigationstack." },
+        { "if": "You need a bottom bar item", "then": "host.toolbar.bottomBar array on navigationstack." },
+        { "if": "You need a principal (centre title) item", "then": "host.toolbar.principal array on navigationstack." },
+        { "never": "Place toolbar controls as children in the body content tree. children = body, host.toolbar = toolbar." }
       ]
     },
     {
@@ -251,10 +255,10 @@
       "correctChoice": "section with a title prop directly inside list for named row groups."
     },
     {
-      "name": "toolbaritem_outside_navigationstack",
-      "whatWentWrong": "Placing toolbaritem as a child of vstack, hstack, or any container that is not navigationstack.",
-      "whySemanticallyWrong": "toolbaritem is a navigation bar slot node. Its semantics are defined by its position as a direct child of navigationstack. Elsewhere it has no meaning.",
-      "correctChoice": "toolbaritem must be a direct child of navigationstack."
+      "name": "toolbar_in_children",
+      "whatWentWrong": "Placing toolbar controls (button, menu, etc.) as children of navigationstack instead of in host.toolbar slots.",
+      "whySemanticallyWrong": "children represents the body/content hierarchy. Toolbar controls placed there render in the body, not in the navigation bar. host.toolbar is the correct owner for toolbar semantics.",
+      "correctChoice": "Place toolbar nodes in host.toolbar.topLeading, topTrailing, bottomBar, or principal on the navigationstack node."
     },
     {
       "name": "tab_outside_tabview",
@@ -336,15 +340,15 @@
     "navigationstack": {
       "category": "navigation",
       "tier": 1,
-      "purpose": "Establishes the navigation context for a screen. Provides a navigation bar with a title and a toolbar slot. All non-toolbar content is presented as the screen body.",
+      "purpose": "Establishes the navigation context for a screen. Provides a navigation bar with a title and explicit toolbar slots via host.toolbar. All children are body/content nodes only.",
       "containerManages": [
         "Navigation bar and title — do not add a separate title text node at the top of the content.",
-        "Toolbar slot — toolbaritem children are automatically placed in the navigation bar. Do not place them in a manual hstack.",
+        "Toolbar slots via host.toolbar — do not place toolbar controls in the children body tree.",
         "Screen body flow — do not add an extra vstack around all content children."
       ],
       "authorProvides": [
         "title prop when a navigation bar title is needed.",
-        "toolbaritem children for each toolbar action.",
+        "host.toolbar slots (topLeading, topTrailing, bottomBar, principal) containing plain UINodes for each toolbar action.",
         "Content children directly (not wrapped in an extra layer)."
       ],
       "useWhen": [
@@ -359,29 +363,13 @@
       "props": {
         "title": { "type": "string", "required": false }
       },
-      "allowsChildren": true
-    },
-
-    "toolbaritem": {
-      "category": "navigation",
-      "tier": 3,
-      "purpose": "Defines a button or control in the navigation bar or bottom bar. Meaningful only as a direct child of navigationstack.",
-      "containerManages": [
-        "Placement in the navigation bar — author specifies the placement prop, the container handles the rest."
-      ],
-      "authorProvides": [
-        "placement prop.",
-        "At least one button child as the toolbar control."
-      ],
-      "useWhen": [
-        "Adding a navigation bar action button.",
-        "Multiple related buttons in the leading or trailing bar slot."
-      ],
-      "avoidWhen": [
-        "Outside navigationstack — no toolbar behavior occurs."
-      ],
-      "props": {
-        "placement": { "type": "enum", "values": ["leading", "trailing", "bottom"], "default": "trailing" }
+      "host": {
+        "toolbar": {
+          "topLeading": { "type": "[UINode]", "required": false, "description": "Nodes placed in the leading top-bar slot." },
+          "topTrailing": { "type": "[UINode]", "required": false, "description": "Nodes placed in the trailing top-bar slot." },
+          "bottomBar": { "type": "[UINode]", "required": false, "description": "Nodes placed in the bottom bar." },
+          "principal": { "type": "[UINode]", "required": false, "description": "Nodes placed in the principal (centre) position." }
+        }
       },
       "allowsChildren": true
     },

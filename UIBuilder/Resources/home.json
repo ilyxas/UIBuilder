@@ -672,24 +672,16 @@
             "type": "navigationstack",
             "id": "demoNav",
             "props": { "title": "Navigation Demo" },
-            "children": [
-              {
-                "type": "toolbaritem",
-                "id": "trailingToolbar",
-                "props": { "placement": "trailing" },
-                "children": [
+            "host": {
+              "toolbar": {
+                "topTrailing": [
                   {
                     "type": "button",
                     "props": { "label": "Info", "icon": "info.circle" },
                     "event": { "tap": "toolbarInfoPressed" }
                   }
-                ]
-              },
-              {
-                "type": "toolbaritem",
-                "id": "leadingToolbar",
-                "props": { "placement": "leading" },
-                "children": [
+                ],
+                "topLeading": [
                   {
                     "type": "menu",
                     "props": { "title": "More", "icon": "ellipsis" },
@@ -707,7 +699,9 @@
                     ]
                   }
                 ]
-              },
+              }
+            },
+            "children": [
               {
                 "type": "scroll",
                 "props": { "padding": 16 },
@@ -729,15 +723,15 @@
                         "children": [
                           {
                             "type": "text",
-                            "props": { "value": "NavigationStack + toolbar", "foregroundColor": "#8E8E93" }
+                            "props": { "value": "NavigationStack + host toolbar", "foregroundColor": "#8E8E93" }
                           },
                           {
                             "type": "text",
-                            "props": { "value": "Toolbar items are authored as toolbaritem children of navigationstack.", "foregroundColor": "#1C1C1E" }
+                            "props": { "value": "Toolbar items are authored in host.toolbar slots on navigationstack.", "foregroundColor": "#1C1C1E" }
                           },
                           {
                             "type": "text",
-                            "props": { "value": "placement: leading / trailing / bottom", "foregroundColor": "#007AFF" }
+                            "props": { "value": "slots: topLeading / topTrailing / bottomBar / principal", "foregroundColor": "#007AFF" }
                           }
                         ]
                       },

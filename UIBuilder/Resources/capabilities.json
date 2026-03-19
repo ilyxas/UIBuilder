@@ -8,7 +8,7 @@
       "This file is the authoritative authoring contract for the base runtime.",
       "Use native SwiftUI-like composition. Do not invent unsupported node types.",
       "Prefer semantic nodes over manual primitive composition wherever possible.",
-      "The renderer owns structural wrapping (VStack inside scroll/tab, toolbar lifting in navigationstack).",
+      "The renderer owns structural wrapping (VStack inside scroll/tab, toolbar placement in navigationstack).",
       "JSON authors own the content tree, props, state bindings, and event wiring.",
       "Styling and layout props are applied through NodeStyle.apply(). Node-specific behavior is in UIRenderer."
     ]
@@ -24,6 +24,7 @@
         "id",
         "props",
         "children",
+        "host",
         "visibleWhen",
         "enabledWhen",
         "event",
@@ -31,6 +32,7 @@
       ],
       "notes": [
         "Children are rendered recursively.",
+        "host.toolbar on navigationstack defines toolbar slot contents. children is body content only.",
         "The renderer must not invent subtree structure beyond what is documented here."
       ]
     }
@@ -39,7 +41,7 @@
     "layout":     ["vstack", "hstack", "zstack", "scroll", "spacer", "frame"],
     "primitive":  ["text", "icon", "image", "toggle", "badge", "label", "textfield", "slider", "shape"],
     "composite":  ["button", "menu", "tabview", "tab", "group"],
-    "navigation": ["navigationstack", "toolbaritem"],
+    "navigation": ["navigationstack"],
     "content":    ["list", "section", "table"]
   },
   "nodeRules": {
@@ -205,23 +207,19 @@
       "childrenAllowed": true,
       "childrenRecommended": true,
       "optionalProps": ["title"],
+      "host": {
+        "toolbar": {
+          "topLeading": "[UINode] — nodes placed in the leading top-bar slot.",
+          "topTrailing": "[UINode] — nodes placed in the trailing top-bar slot.",
+          "bottomBar": "[UINode] — nodes placed in the bottom bar.",
+          "principal": "[UINode] — nodes placed in the principal (centre) slot."
+        }
+      },
       "notes": [
         "Owns the navigation context. Use as the root container for navigable screens.",
         "title prop sets the navigation bar title.",
-        "toolbaritem children are automatically lifted into the navigation toolbar by the renderer.",
-        "All other children are rendered as vertical content inside the navigation stack.",
+        "Toolbar content is authored in host.toolbar slots — children contains body content only.",
         "JSON authors must NOT manually apply .navigationTitle or toolbar — the renderer handles this."
-      ]
-    },
-    "toolbaritem": {
-      "childrenAllowed": true,
-      "childrenRecommended": true,
-      "optionalProps": ["placement"],
-      "notes": [
-        "Must be a direct child of navigationstack to function as a toolbar item.",
-        "placement: 'leading', 'trailing' (default), or 'bottom'.",
-        "Children define the visual content of the toolbar item (typically a button or label).",
-        "When used outside navigationstack, children are rendered as a plain inline view."
       ]
     },
     "list": {
@@ -345,7 +343,6 @@
     ],
     "button": ["label", "icon"],
     "navigationstack": ["title"],
-    "toolbaritem": ["placement"],
     "section": ["title"]
   },
   "propValues": {
@@ -440,7 +437,7 @@
       "device-aware layout policy",
       "VStack wrapping inside scroll and tab",
       "navigation bar title binding from navigationstack.title prop",
-      "toolbar item placement from toolbaritem children inside navigationstack",
+      "toolbar slot placement from host.toolbar on navigationstack",
       "tab item label from tab.title and tab.icon props",
       "section header from section.title prop",
       "ZStack alignment in frame node",
@@ -455,7 +452,7 @@
       "state bindings",
       "event wiring",
       "section structure inside list",
-      "toolbaritem placement inside navigationstack"
+      "host.toolbar slot contents on navigationstack"
     ]
   },
   "generationRules": [
@@ -465,7 +462,7 @@
     "Do not add a VStack wrapper inside scroll — the renderer provides it.",
     "Do not add a VStack wrapper inside tab — the renderer provides it.",
     "Use navigationstack as the root container for navigable screens.",
-    "Place toolbaritem nodes as direct children of navigationstack.",
+    "Place toolbar nodes in host.toolbar slots (topLeading, topTrailing, bottomBar, principal) on navigationstack.",
     "Use list for vertical document-style row content.",
     "Use section inside list to group rows with optional headers.",
     "Use image for standalone image content; use icon for inline decorative glyphs.",
@@ -724,22 +721,22 @@
       }
     },
     "navigationstack": {
-      "description": "NavigationStack with title and toolbar buttons via toolbaritem children.",
+      "description": "NavigationStack with title and toolbar buttons via host.toolbar slots.",
       "example": {
         "type": "navigationstack",
         "props": { "title": "Home" },
-        "children": [
-          {
-            "type": "toolbaritem",
-            "props": { "placement": "trailing" },
-            "children": [
+        "host": {
+          "toolbar": {
+            "topTrailing": [
               {
                 "type": "button",
                 "props": { "label": "Add", "icon": "plus" },
                 "event": { "tap": "addPressed" }
               }
             ]
-          },
+          }
+        },
+        "children": [
           {
             "type": "list",
             "children": [
@@ -787,20 +784,6 @@
         "children": [
           { "type": "toggle", "props": { "title": "Dark Mode", "bind": "darkMode" } },
           { "type": "toggle", "props": { "title": "Notifications", "bind": "notificationsEnabled" } }
-        ]
-      }
-    },
-    "toolbaritem": {
-      "description": "toolbaritem as a direct child of navigationstack — defines a navigation bar button.",
-      "example": {
-        "type": "toolbaritem",
-        "props": { "placement": "trailing" },
-        "children": [
-          {
-            "type": "button",
-            "props": { "label": "Done", "icon": "checkmark" },
-            "event": { "tap": "donePressed" }
-          }
         ]
       }
     },

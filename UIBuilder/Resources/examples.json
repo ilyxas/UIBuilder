@@ -164,18 +164,18 @@
             "root": {
                 "type": "navigationstack",
                 "props": { "title": "My Screen" },
-                "children": [
-                    {
-                        "type": "toolbaritem",
-                        "props": { "placement": "trailing" },
-                        "children": [
+                "host": {
+                    "toolbar": {
+                        "topTrailing": [
                             {
                                 "type": "button",
                                 "props": { "label": "Add", "icon": "plus" },
                                 "event": { "tap": "addPressed" }
                             }
                         ]
-                    },
+                    }
+                },
+                "children": [
                     {
                         "type": "list",
                         "children": [

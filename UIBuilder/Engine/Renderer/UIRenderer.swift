@@ -244,23 +244,17 @@ struct UIRenderer: View {
         case "navigationstack":
             // NavigationStack owning the navigation context.
             // Props: title (navigation bar title, optional).
-            // toolbaritem children are lifted into the toolbar; all other children
-            // are rendered as vertical content.
+            // Toolbar content comes exclusively from host.toolbar slots:
+            // topLeading, topTrailing, bottomBar, principal.
+            // children contains body content only.
             let navTitle = resolveText(from: node.props?["title"], evaluator: evaluator)
-            let allNavChildren = node.children ?? []
-            let toolbarNodes = allNavChildren.filter { $0.type == "toolbaritem" }
-            let contentNodes = allNavChildren.filter { $0.type != "toolbaritem" }
 
             NavigationStack {
-                VStack(spacing: 0) {
-                    ForEach(Array(contentNodes.enumerated()), id: \.offset) { _, child in
-                        UIRenderer(node: child, document: document, state: state, executor: executor)
+                navigationBody(evaluator: evaluator)
+                    .navigationTitle(navTitle)
+                    .toolbar {
+                        navigationToolbar(evaluator: evaluator)
                     }
-                }
-                .navigationTitle(navTitle)
-                .toolbar {
-                    toolbarContent(nodes: toolbarNodes, evaluator: evaluator)
-                }
             }
 
         case "list":
@@ -291,13 +285,6 @@ struct UIRenderer: View {
                         UIRenderer(node: child, document: document, state: state, executor: executor)
                     }
                 }
-            }
-
-        case "toolbaritem":
-            // toolbaritem is handled natively by navigationstack.
-            // When used outside that context, children are rendered as a plain view group.
-            ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
-                UIRenderer(node: child, document: document, state: state, executor: executor)
             }
 
         // MARK: - frame
@@ -739,54 +726,53 @@ struct UIRenderer: View {
         }
     }
 
-    // Builds ToolbarContent for navigationstack from toolbaritem children.
-    // @ToolbarContentBuilder does not support ForEach — items are split by placement slot.
+    // MARK: - NavigationStack helpers
+
+    // Renders the body content of a navigationstack node.
+    // All children are body/content nodes. Toolbar content lives in host.toolbar, not here.
+    @ViewBuilder
+    private func navigationBody(evaluator: ExpressionEvaluator) -> some View {
+        VStack(spacing: 0) {
+            ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
+                UIRenderer(node: child, document: document, state: state, executor: executor)
+            }
+        }
+    }
+
+    // Builds ToolbarContent for a navigationstack node from host.toolbar slots.
     @ToolbarContentBuilder
-    private func toolbarContent(nodes: [UINode], evaluator: ExpressionEvaluator) -> some ToolbarContent {
-        let leading  = nodes.filter { ($0.props?["placement"]?.stringValue ?? "trailing") == "leading" }
-        let trailing = nodes.filter { ($0.props?["placement"]?.stringValue ?? "trailing") == "trailing" || $0.props?["placement"] == nil }
-        let bottom   = nodes.filter { $0.props?["placement"]?.stringValue == "bottom" }
-
-        if !leading.isEmpty {
-            ToolbarItem(placement: .topBarLeading) {
-                toolbarGroupView(items: leading, evaluator: evaluator)
+    private func navigationToolbar(evaluator: ExpressionEvaluator) -> some ToolbarContent {
+        if let toolbar = node.host?.toolbar {
+            if let nodes = toolbar.topLeading, !nodes.isEmpty {
+                ToolbarItem(placement: .topBarLeading) {
+                    toolbarSlotView(nodes: nodes, evaluator: evaluator)
+                }
             }
-        }
-        if !trailing.isEmpty {
-            ToolbarItem(placement: .topBarTrailing) {
-                toolbarGroupView(items: trailing, evaluator: evaluator)
+            if let nodes = toolbar.topTrailing, !nodes.isEmpty {
+                ToolbarItem(placement: .topBarTrailing) {
+                    toolbarSlotView(nodes: nodes, evaluator: evaluator)
+                }
             }
-        }
-        if !bottom.isEmpty {
-            ToolbarItem(placement: .bottomBar) {
-                toolbarGroupView(items: bottom, evaluator: evaluator)
+            if let nodes = toolbar.principal, !nodes.isEmpty {
+                ToolbarItem(placement: .principal) {
+                    toolbarSlotView(nodes: nodes, evaluator: evaluator)
+                }
+            }
+            if let nodes = toolbar.bottomBar, !nodes.isEmpty {
+                ToolbarItem(placement: .bottomBar) {
+                    toolbarSlotView(nodes: nodes, evaluator: evaluator)
+                }
             }
         }
     }
 
-    // Renders multiple toolbaritem nodes as a horizontal group.
+    // Renders a single toolbar slot as a horizontal group of UINodes.
     @ViewBuilder
-    private func toolbarGroupView(items: [UINode], evaluator: ExpressionEvaluator) -> some View {
+    private func toolbarSlotView(nodes: [UINode], evaluator: ExpressionEvaluator) -> some View {
         HStack(spacing: 8) {
-            ForEach(Array(items.enumerated()), id: \.offset) { _, item in
-                toolbarItemView(item: item, evaluator: evaluator)
+            ForEach(Array(nodes.enumerated()), id: \.offset) { _, node in
+                UIRenderer(node: node, document: document, state: state, executor: executor)
             }
-        }
-    }
-
-    @ViewBuilder
-    private func toolbarItemView(item: UINode, evaluator: ExpressionEvaluator) -> some View {
-        ForEach(Array((item.children ?? []).enumerated()), id: \.offset) { _, child in
-            UIRenderer(node: child, document: document, state: state, executor: executor)
-        }
-    }
-
-    private func toolbarPlacement(from value: DynamicValue?) -> ToolbarItemPlacement {
-        switch value?.stringValue {
-        case "leading": return .topBarLeading
-        case "trailing": return .topBarTrailing
-        case "bottom": return .bottomBar
-        default: return .automatic
         }
     }
 }
