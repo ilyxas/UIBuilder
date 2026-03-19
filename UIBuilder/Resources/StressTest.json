@@ -1,0 +1,347 @@
+{
+  "schema": "com.ilya.ui/1.0",
+  "screenId": "stress-test",
+  "title": "Stress Test Screen",
+  "state": {
+    "vars": {
+      "activeTab": "home",
+      "searchQuery": "",
+      "sliderValue": 50,
+      "notificationsEnabled": true,
+      "darkModeEnabled": false,
+      "autoSaveEnabled": true,
+      "counter": 0,
+      "profileVisible": true,
+      "userName": "Alice",
+      "itemCount": 5,
+      "score": 75
+    }
+  },
+  "events": {
+    "onSearchChange": [
+      { "do": "ui.toast", "message": "Search updated" }
+    ],
+    "onSliderChange": [
+      { "do": "ui.toast", "message": "Slider updated" }
+    ],
+    "onNotificationsChange": [
+      { "do": "state.toggle", "key": "notificationsEnabled" }
+    ],
+    "onDarkModeChange": [
+      { "do": "state.toggle", "key": "darkModeEnabled" }
+    ],
+    "onAutoSaveChange": [
+      { "do": "state.toggle", "key": "autoSaveEnabled" }
+    ],
+    "onMenuOption1": [
+      { "do": "ui.toast", "message": "Option 1 selected" }
+    ],
+    "onMenuOption2": [
+      {
+        "do": "ui.alert",
+        "title": "High Score",
+        "message": "Your score qualifies!",
+        "when": { "gt": [{ "bind": "score" }, 50] }
+      }
+    ],
+    "onMenuOption3": [
+      { "do": "nav.push", "screenId": "detail-screen" }
+    ],
+    "onCounterInc": [
+      { "do": "state.inc", "key": "counter", "max": 10 }
+    ],
+    "onCounterDec": [
+      { "do": "state.dec", "key": "counter", "min": 0 }
+    ],
+    "onToggleProfile": [
+      { "do": "state.toggle", "key": "profileVisible" }
+    ],
+    "onNavigate": [
+      { "do": "nav.push", "screenId": "profile-screen" }
+    ],
+    "onShowAlert": [
+      { "do": "ui.alert", "title": "Notice", "message": "This is a stress test alert." }
+    ]
+  },
+  "root": {
+    "type": "navigationstack",
+    "props": {
+      "title": "Dashboard"
+    },
+    "host": {
+      "toolbar": {
+        "topTrailing": [
+          {
+            "type": "menu",
+            "props": {
+              "title": "Actions",
+              "icon": "ellipsis.circle"
+            },
+            "children": [
+              {
+                "type": "button",
+                "props": { "label": "Option 1", "icon": "star" },
+                "event": { "tap": "onMenuOption1" }
+              },
+              {
+                "type": "button",
+                "props": { "label": "Check Score", "icon": "trophy" },
+                "event": { "tap": "onMenuOption2" }
+              },
+              {
+                "type": "button",
+                "props": { "label": "Go to Details", "icon": "arrow.right" },
+                "event": { "tap": "onMenuOption3" }
+              }
+            ]
+          }
+        ],
+        "bottomBar": [
+          {
+            "type": "hstack",
+            "props": { "spacing": 8 },
+            "children": [
+              { "type": "spacer" },
+              {
+                "type": "badge",
+                "props": {
+                  "text": { "format": "Items: {itemCount}", "binds": ["itemCount"] }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "children": [
+      {
+        "type": "tabview",
+        "props": { "selection": "activeTab" },
+        "children": [
+          {
+            "type": "tab",
+            "id": "home",
+            "props": { "title": "Home", "icon": "house" },
+            "children": [
+              {
+                "type": "scroll",
+                "props": { "axis": "vertical", "spacing": 16 },
+                "children": [
+                  {
+                    "type": "vstack",
+                    "props": { "alignment": "leading", "spacing": 16 },
+                    "children": [
+                      {
+                        "type": "group",
+                        "props": {
+                          "title": "Profile",
+                          "style": "card"
+                        },
+                        "children": [
+                          {
+                            "type": "text",
+                            "props": {
+                              "value": {
+                                "format": "Hello, {userName}! You have {itemCount} items.",
+                                "binds": ["userName", "itemCount"]
+                              }
+                            }
+                          },
+                          {
+                            "type": "hstack",
+                            "props": { "spacing": 12 },
+                            "children": [
+                              { "type": "spacer" },
+                              {
+                                "type": "badge",
+                                "props": {
+                                  "text": {
+                                    "format": "Score: {score}",
+                                    "binds": ["score"]
+                                  }
+                                },
+                                "visibleWhen": { "neq": [{ "bind": "score" }, 0] }
+                              }
+                            ]
+                          },
+                          {
+                            "type": "shape",
+                            "props": { "type": "capsule", "fill": "#4A90D9" },
+                            "children": [
+                              {
+                                "type": "text",
+                                "props": {
+                                  "value": "Active",
+                                  "foregroundColor": "#FFFFFF"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "group",
+                        "props": {
+                          "title": "Filters",
+                          "style": "plain",
+                          "collapsible": true,
+                          "isExpanded": true
+                        },
+                        "children": [
+                          {
+                            "type": "textfield",
+                            "props": {
+                              "bind": "searchQuery",
+                              "placeholder": "Search...",
+                              "keyboardType": "default",
+                              "autocapitalization": "none",
+                              "prefixIcon": "magnifyingglass"
+                            },
+                            "event": { "change": "onSearchChange" }
+                          },
+                          {
+                            "type": "slider",
+                            "props": {
+                              "bind": "sliderValue",
+                              "min": 0,
+                              "max": 100,
+                              "step": 5,
+                              "label": "Range",
+                              "accentColor": "#4A90D9"
+                            },
+                            "event": { "change": "onSliderChange" }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tab",
+            "id": "settings",
+            "props": { "title": "Settings", "icon": "gear" },
+            "children": [
+              {
+                "type": "scroll",
+                "props": { "axis": "vertical" },
+                "children": [
+                  {
+                    "type": "list",
+                    "children": [
+                      {
+                        "type": "section",
+                        "props": { "title": "Notifications" },
+                        "children": [
+                          {
+                            "type": "label",
+                            "props": { "title": "Push Notifications", "icon": "bell" }
+                          },
+                          {
+                            "type": "toggle",
+                            "props": { "title": "Enable Notifications", "bind": "notificationsEnabled" },
+                            "event": { "change": "onNotificationsChange" }
+                          },
+                          {
+                            "type": "toggle",
+                            "props": { "title": "Dark Mode", "bind": "darkModeEnabled" },
+                            "event": { "change": "onDarkModeChange" }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "section",
+                        "props": { "title": "Preferences" },
+                        "children": [
+                          {
+                            "type": "label",
+                            "props": { "title": "Auto Save", "icon": "externaldrive" }
+                          },
+                          {
+                            "type": "toggle",
+                            "props": { "title": "Auto Save", "bind": "autoSaveEnabled" },
+                            "event": { "change": "onAutoSaveChange" }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tab",
+            "id": "counter",
+            "props": { "title": "Counter", "icon": "number" },
+            "children": [
+              {
+                "type": "vstack",
+                "props": { "alignment": "center", "spacing": 20 },
+                "children": [
+                  {
+                    "type": "text",
+                    "props": {
+                      "value": { "format": "Count: {counter}", "binds": ["counter"] }
+                    }
+                  },
+                  {
+                    "type": "hstack",
+                    "props": { "spacing": 16 },
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": { "label": "−", "icon": "minus.circle" },
+                        "event": { "tap": "onCounterDec" },
+                        "enabledWhen": { "gt": [{ "bind": "counter" }, 0] }
+                      },
+                      {
+                        "type": "button",
+                        "props": { "label": "+", "icon": "plus.circle" },
+                        "event": { "tap": "onCounterInc" }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "button",
+                    "props": { "label": "Toggle Profile", "icon": "person.crop.circle" },
+                    "event": { "tap": "onToggleProfile" }
+                  },
+                  {
+                    "type": "text",
+                    "props": { "value": "Profile is visible" },
+                    "visibleWhen": { "bind": "profileVisible" }
+                  },
+                  {
+                    "type": "text",
+                    "props": { "value": "Counter exceeded 5!" },
+                    "visibleWhen": { "gt": [{ "bind": "counter" }, 5] }
+                  },
+                  {
+                    "type": "text",
+                    "props": { "value": "Both modes active" },
+                    "visibleWhen": {
+                      "and": [{ "bind": "notificationsEnabled" }, { "bind": "darkModeEnabled" }]
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "props": { "label": "View Profile", "icon": "person" },
+                    "event": { "tap": "onNavigate" }
+                  },
+                  {
+                    "type": "button",
+                    "props": { "label": "Show Alert", "icon": "exclamationmark.triangle" },
+                    "event": { "tap": "onShowAlert" }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
