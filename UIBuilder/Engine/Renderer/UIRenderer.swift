@@ -244,23 +244,17 @@ struct UIRenderer: View {
         case "navigationstack":
             // NavigationStack owning the navigation context.
             // Props: title (navigation bar title, optional).
-            // toolbaritem children are lifted into the toolbar; all other children
-            // are rendered as vertical content.
+            // Toolbar content is sourced from host.toolbar slots (topLeading, topTrailing,
+            // bottomBar, principal). Legacy toolbaritem children are also supported as a
+            // fallback for backward compatibility.
             let navTitle = resolveText(from: node.props?["title"], evaluator: evaluator)
-            let allNavChildren = node.children ?? []
-            let toolbarNodes = allNavChildren.filter { $0.type == "toolbaritem" }
-            let contentNodes = allNavChildren.filter { $0.type != "toolbaritem" }
 
             NavigationStack {
-                VStack(spacing: 0) {
-                    ForEach(Array(contentNodes.enumerated()), id: \.offset) { _, child in
-                        UIRenderer(node: child, document: document, state: state, executor: executor)
+                navigationBody(evaluator: evaluator)
+                    .navigationTitle(navTitle)
+                    .toolbar {
+                        navigationToolbar(evaluator: evaluator)
                     }
-                }
-                .navigationTitle(navTitle)
-                .toolbar {
-                    toolbarContent(nodes: toolbarNodes, evaluator: evaluator)
-                }
             }
 
         case "list":
@@ -294,8 +288,9 @@ struct UIRenderer: View {
             }
 
         case "toolbaritem":
-            // toolbaritem is handled natively by navigationstack.
-            // When used outside that context, children are rendered as a plain view group.
+            // toolbaritem is a legacy authoring pattern supported for backward compatibility.
+            // Prefer host.toolbar slots on navigationstack for new screens.
+            // When used outside navigationstack, children render as a plain view group.
             ForEach(Array((node.children ?? []).enumerated()), id: \.offset) { _, child in
                 UIRenderer(node: child, document: document, state: state, executor: executor)
             }
@@ -739,45 +734,106 @@ struct UIRenderer: View {
         }
     }
 
-    // Builds ToolbarContent for navigationstack from toolbaritem children.
+    // MARK: - NavigationStack helpers
+
+    // Renders the body content of a navigationstack node.
+    // Children are all non-toolbaritem nodes (toolbaritem children are the legacy
+    // authoring pattern; they are excluded from the body and handled by navigationToolbar).
+    @ViewBuilder
+    private func navigationBody(evaluator: ExpressionEvaluator) -> some View {
+        let contentNodes = (node.children ?? []).filter { $0.type != "toolbaritem" }
+        VStack(spacing: 0) {
+            ForEach(Array(contentNodes.enumerated()), id: \.offset) { _, child in
+                UIRenderer(node: child, document: document, state: state, executor: executor)
+            }
+        }
+    }
+
+    // Builds ToolbarContent for a navigationstack node.
+    // When host.toolbar is present the slot arrays (topLeading, topTrailing, bottomBar,
+    // principal) are used directly. Each array holds ordinary UINodes rendered through
+    // the standard UIRenderer pipeline.
+    // Falls back to the legacy toolbaritem child scanning path when host.toolbar is absent.
+    @ToolbarContentBuilder
+    private func navigationToolbar(evaluator: ExpressionEvaluator) -> some ToolbarContent {
+        if let toolbar = node.host?.toolbar {
+            hostToolbarContent(toolbar: toolbar, evaluator: evaluator)
+        } else {
+            let toolbarNodes = (node.children ?? []).filter { $0.type == "toolbaritem" }
+            legacyToolbarContent(nodes: toolbarNodes, evaluator: evaluator)
+        }
+    }
+
+    // Renders toolbar slots from a ToolbarHost — the new host-based authoring path.
+    // Each slot array contains plain UINodes rendered directly through UIRenderer.
+    @ToolbarContentBuilder
+    private func hostToolbarContent(toolbar: ToolbarHost, evaluator: ExpressionEvaluator) -> some ToolbarContent {
+        if let nodes = toolbar.topLeading, !nodes.isEmpty {
+            ToolbarItem(placement: .topBarLeading) {
+                toolbarSlotView(nodes: nodes, evaluator: evaluator)
+            }
+        }
+        if let nodes = toolbar.topTrailing, !nodes.isEmpty {
+            ToolbarItem(placement: .topBarTrailing) {
+                toolbarSlotView(nodes: nodes, evaluator: evaluator)
+            }
+        }
+        if let nodes = toolbar.principal, !nodes.isEmpty {
+            ToolbarItem(placement: .principal) {
+                toolbarSlotView(nodes: nodes, evaluator: evaluator)
+            }
+        }
+        if let nodes = toolbar.bottomBar, !nodes.isEmpty {
+            ToolbarItem(placement: .bottomBar) {
+                toolbarSlotView(nodes: nodes, evaluator: evaluator)
+            }
+        }
+    }
+
+    // Renders a single toolbar slot as a horizontal group of UINodes.
+    @ViewBuilder
+    private func toolbarSlotView(nodes: [UINode], evaluator: ExpressionEvaluator) -> some View {
+        HStack(spacing: 8) {
+            ForEach(Array(nodes.enumerated()), id: \.offset) { _, node in
+                UIRenderer(node: node, document: document, state: state, executor: executor)
+            }
+        }
+    }
+
+    // Legacy toolbar path — builds ToolbarContent from toolbaritem children.
     // @ToolbarContentBuilder does not support ForEach — items are split by placement slot.
     @ToolbarContentBuilder
-    private func toolbarContent(nodes: [UINode], evaluator: ExpressionEvaluator) -> some ToolbarContent {
+    private func legacyToolbarContent(nodes: [UINode], evaluator: ExpressionEvaluator) -> some ToolbarContent {
         let leading  = nodes.filter { ($0.props?["placement"]?.stringValue ?? "trailing") == "leading" }
         let trailing = nodes.filter { ($0.props?["placement"]?.stringValue ?? "trailing") == "trailing" || $0.props?["placement"] == nil }
         let bottom   = nodes.filter { $0.props?["placement"]?.stringValue == "bottom" }
 
         if !leading.isEmpty {
             ToolbarItem(placement: .topBarLeading) {
-                toolbarGroupView(items: leading, evaluator: evaluator)
+                legacyToolbarGroupView(items: leading, evaluator: evaluator)
             }
         }
         if !trailing.isEmpty {
             ToolbarItem(placement: .topBarTrailing) {
-                toolbarGroupView(items: trailing, evaluator: evaluator)
+                legacyToolbarGroupView(items: trailing, evaluator: evaluator)
             }
         }
         if !bottom.isEmpty {
             ToolbarItem(placement: .bottomBar) {
-                toolbarGroupView(items: bottom, evaluator: evaluator)
+                legacyToolbarGroupView(items: bottom, evaluator: evaluator)
             }
         }
     }
 
-    // Renders multiple toolbaritem nodes as a horizontal group.
+    // Renders multiple legacy toolbaritem nodes as a horizontal group.
     @ViewBuilder
-    private func toolbarGroupView(items: [UINode], evaluator: ExpressionEvaluator) -> some View {
+    private func legacyToolbarGroupView(items: [UINode], evaluator: ExpressionEvaluator) -> some View {
         HStack(spacing: 8) {
             ForEach(Array(items.enumerated()), id: \.offset) { _, item in
-                toolbarItemView(item: item, evaluator: evaluator)
+                ForEach(Array((item.children ?? []).enumerated()), id: \.offset) { _, child in
+                    UIRenderer(node: child, document: document, state: state, executor: executor)
+                }
             }
-        }
-    }
-
-    @ViewBuilder
-    private func toolbarItemView(item: UINode, evaluator: ExpressionEvaluator) -> some View {
-        ForEach(Array((item.children ?? []).enumerated()), id: \.offset) { _, child in
-            UIRenderer(node: child, document: document, state: state, executor: executor)
         }
     }
 
