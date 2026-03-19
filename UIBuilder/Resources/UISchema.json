@@ -70,8 +70,7 @@
         "alignment": "enum:HorizontalAlignment",
         "spacing": "number",
         "padding": "number"
-      },
-      "note": "scroll does not apply NodeStyle; use its own padding prop for inner content inset"
+      }
     },
     "text": {
       "allowsChildren": false,
@@ -146,8 +145,7 @@
       "propTypes": {
         "title": "string",
         "icon": "string"
-      },
-      "note": "A child with id='label' or type='label' is used as the menu trigger button; remaining children are menu items"
+      }
     },
     "tabview": {
       "allowsChildren": true,
@@ -156,8 +154,7 @@
       "allowedEvents": [],
       "propTypes": {
         "selection": "string"
-      },
-      "note": "Children must be of type 'tab'"
+      }
     },
     "tab": {
       "allowsChildren": true,
@@ -167,8 +164,7 @@
       "propTypes": {
         "title": "string",
         "icon": "string"
-      },
-      "note": "Used only inside tabview. id is used as the selection tag value"
+      }
     },
     "image": {
       "allowsChildren": false,
@@ -188,8 +184,7 @@
       "allowedEvents": [],
       "propTypes": {
         "title": "DynamicValue"
-      },
-      "note": "Toolbar content comes from host.toolbar slots only; children are body content"
+      }
     },
     "list": {
       "allowsChildren": true,
@@ -334,7 +329,6 @@
     "ClipShape": ["circle", "capsule", "ellipse", "roundedRectangle", "rectangle"]
   },
   "dynamicValue": {
-    "description": "A prop value that can be a literal or bound to state",
     "forms": [
       { "literal": "string" },
       { "literal": "number" },
@@ -345,8 +339,7 @@
   },
   "event": {
     "nodeFormat": { "event": { "<eventName>": "<handlerName>" } },
-    "topLevelFormat": { "events": { "<handlerName>": [{ "do": "<actionName>" }] } },
-    "note": "Every handlerName used in node event fields must be declared as a key in the top-level events map"
+    "topLevelFormat": { "events": { "<handlerName>": [{ "do": "<actionName>" }] } }
   },
   "actions": {
     "state.set": {
@@ -401,7 +394,6 @@
     }
   },
   "actionConditional": {
-    "description": "Any action can include a 'when' field; the action is skipped if the expression evaluates to false",
     "field": "when",
     "type": "Expression"
   },
@@ -419,8 +411,7 @@
       "and": { "and": ["<expression>", "<expression>"] },
       "or": { "or": ["<expression>", "<expression>"] },
       "not": { "not": "<expression>" }
-    },
-    "operand": "An operand for comparison operators can be an Expression (e.g. { 'bind': 'key' }) or a literal DynamicValue (string, number, boolean)"
+    }
   },
   "host": {
     "toolbar": {
