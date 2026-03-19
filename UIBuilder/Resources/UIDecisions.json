@@ -1,0 +1,101 @@
+{
+  "decisions": {
+    "vstack": {
+      "useWhen": ["custom vertical layout not covered by semantic nodes"],
+      "avoidWhen": ["a semantic node such as list, group, or section fits the use case"]
+    },
+    "hstack": {
+      "useWhen": ["custom horizontal layout not covered by semantic nodes"],
+      "avoidWhen": ["a semantic node such as label fits the use case"]
+    },
+    "zstack": {
+      "useWhen": ["overlapping layers are needed"],
+      "avoidWhen": ["content does not require layering"]
+    },
+    "scroll": {
+      "useWhen": ["content may overflow vertically or horizontally"],
+      "avoidWhen": ["content fits on screen without scrolling"]
+    },
+    "spacer": {
+      "useWhen": ["pushing adjacent views apart in hstack or vstack"],
+      "avoidWhen": ["spacing prop on the parent stack is sufficient"]
+    },
+    "frame": {
+      "useWhen": ["explicit alignment or sizing constraints needed on a subtree"],
+      "avoidWhen": ["no alignment or sizing constraint is needed"]
+    },
+    "text": {
+      "useWhen": ["any static or bound text display"]
+    },
+    "icon": {
+      "useWhen": ["small inline decorative SF Symbol glyph"],
+      "avoidWhen": ["a larger standalone image is needed"],
+      "preferOver": ["image"]
+    },
+    "image": {
+      "useWhen": ["standalone image or SF Symbol at larger scale"],
+      "preferOver": ["icon"]
+    },
+    "toggle": {
+      "useWhen": ["boolean state needed; requires bind as boolean in state.vars"],
+      "avoidWhen": ["the value is not boolean"]
+    },
+    "badge": {
+      "useWhen": ["small count or status indicator"]
+    },
+    "label": {
+      "useWhen": ["icon and text as a single semantic unit"],
+      "preferOver": ["hstack with icon and text"]
+    },
+    "textfield": {
+      "useWhen": ["single-line user text input needed; always requires bind in state.vars"],
+      "avoidWhen": ["read-only text display is needed"]
+    },
+    "slider": {
+      "useWhen": ["numeric range input needed; always requires bind, min, and max in state.vars"],
+      "avoidWhen": ["discrete selection from a short list is needed"]
+    },
+    "shape": {
+      "useWhen": ["decorative geometric background, divider, or indicator"],
+      "avoidWhen": ["a real image asset is more appropriate"]
+    },
+    "button": {
+      "useWhen": ["user tap action needed; always requires event.tap wired to events handler"],
+      "avoidWhen": ["the intent is navigation row selection rather than an explicit action"]
+    },
+    "menu": {
+      "useWhen": ["contextual action list triggered by a single button"],
+      "preferOver": ["vstack of buttons"]
+    },
+    "group": {
+      "useWhen": ["visually grouping related content with optional title or footer outside of list"],
+      "avoidWhen": ["inside list where section is more appropriate"],
+      "preferOver": ["vstack"]
+    },
+    "tabview": {
+      "useWhen": ["top-level screen has multiple distinct parallel tabs"],
+      "avoidWhen": ["navigation between screens is sequential rather than parallel"]
+    },
+    "tab": {
+      "useWhen": ["direct child of tabview only"],
+      "avoidWhen": ["used outside of tabview"]
+    },
+    "navigationstack": {
+      "useWhen": ["screen needs a navigation bar with title or toolbar"],
+      "avoidWhen": ["screen is tab content without its own navigation bar"]
+    },
+    "list": {
+      "useWhen": ["content is rows of data or settings"],
+      "avoidWhen": ["content needs custom spacing or is not row-based"],
+      "preferOver": ["vstack"]
+    },
+    "section": {
+      "useWhen": ["grouping rows inside list with an optional header"],
+      "avoidWhen": ["used outside list where group is more appropriate"]
+    },
+    "table": {
+      "useWhen": ["tabular data with column structure"],
+      "avoidWhen": ["data does not require column headers or tabular layout"]
+    }
+  }
+}

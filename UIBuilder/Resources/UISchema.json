@@ -1,0 +1,366 @@
+{
+  "schema": "com.ilya.ui/1.0",
+  "document": {
+    "requiredFields": ["schema", "screenId", "root", "events"],
+    "optionalFields": ["title", "state", "theme", "meta"],
+    "stateStructure": { "vars": { "<key>": "<initialValue>" } }
+  },
+  "node": {
+    "requiredFields": ["type"],
+    "optionalFields": ["id", "props", "children", "host", "event", "visibleWhen", "enabledWhen"]
+  },
+  "nodes": {
+    "vstack": {
+      "allowsChildren": true,
+      "requiredProps": [],
+      "optionalProps": ["spacing", "alignment"],
+      "allowedEvents": [],
+      "propTypes": {
+        "spacing": "number",
+        "alignment": "string"
+      }
+    },
+    "hstack": {
+      "allowsChildren": true,
+      "requiredProps": [],
+      "optionalProps": ["spacing", "alignment"],
+      "allowedEvents": [],
+      "propTypes": {
+        "spacing": "number",
+        "alignment": "string"
+      }
+    },
+    "zstack": {
+      "allowsChildren": true,
+      "requiredProps": [],
+      "optionalProps": ["alignment"],
+      "allowedEvents": [],
+      "propTypes": {
+        "alignment": "string"
+      }
+    },
+    "scroll": {
+      "allowsChildren": true,
+      "requiredProps": [],
+      "optionalProps": ["axis"],
+      "axisDefault": "vertical",
+      "allowedEvents": [],
+      "propTypes": {
+        "axis": "enum:axis"
+      }
+    },
+    "spacer": {
+      "allowsChildren": false,
+      "requiredProps": [],
+      "optionalProps": [],
+      "allowedEvents": [],
+      "propTypes": {}
+    },
+    "frame": {
+      "allowsChildren": true,
+      "requiredProps": [],
+      "optionalProps": ["alignment", "idealWidth", "idealHeight", "fixedSize", "clip", "clipShape"],
+      "allowedEvents": [],
+      "propTypes": {
+        "alignment": "enum:frameAlignment",
+        "idealWidth": "number",
+        "idealHeight": "number",
+        "fixedSize": "enum:fixedSize",
+        "clip": "boolean",
+        "clipShape": "enum:clipShape"
+      }
+    },
+    "text": {
+      "allowsChildren": false,
+      "requiredProps": ["value"],
+      "optionalProps": [],
+      "allowedEvents": [],
+      "propTypes": {
+        "value": "textValue"
+      }
+    },
+    "icon": {
+      "allowsChildren": false,
+      "requiredProps": ["name"],
+      "optionalProps": ["size"],
+      "allowedEvents": [],
+      "propTypes": {
+        "name": "string",
+        "size": "number"
+      }
+    },
+    "image": {
+      "allowsChildren": false,
+      "requiredProps": [],
+      "optionalProps": ["systemName", "name", "contentMode"],
+      "allowedEvents": [],
+      "propTypes": {
+        "systemName": "string",
+        "name": "string",
+        "contentMode": "enum:contentMode"
+      }
+    },
+    "toggle": {
+      "allowsChildren": false,
+      "requiredProps": ["title", "bind"],
+      "optionalProps": [],
+      "allowedEvents": ["change"],
+      "propTypes": {
+        "title": "string",
+        "bind": "string"
+      }
+    },
+    "badge": {
+      "allowsChildren": false,
+      "requiredProps": [],
+      "optionalProps": [],
+      "allowedEvents": [],
+      "propTypes": {}
+    },
+    "label": {
+      "allowsChildren": false,
+      "requiredProps": ["title"],
+      "optionalProps": ["icon"],
+      "allowedEvents": [],
+      "propTypes": {
+        "title": "string",
+        "icon": "string"
+      }
+    },
+    "textfield": {
+      "allowsChildren": false,
+      "requiredProps": ["bind"],
+      "optionalProps": ["placeholder", "keyboardType", "secure", "autocapitalization", "autocorrectionDisabled", "returnKeyType", "maxLength", "prefixIcon", "suffixIcon"],
+      "allowedEvents": ["change"],
+      "propTypes": {
+        "bind": "string",
+        "placeholder": "string",
+        "keyboardType": "enum:keyboardType",
+        "secure": "boolean",
+        "autocapitalization": "enum:autocapitalization",
+        "autocorrectionDisabled": "boolean",
+        "returnKeyType": "enum:returnKeyType",
+        "maxLength": "number",
+        "prefixIcon": "string",
+        "suffixIcon": "string"
+      }
+    },
+    "slider": {
+      "allowsChildren": false,
+      "requiredProps": ["bind", "min", "max"],
+      "optionalProps": ["step", "label", "accentColor", "thumbColor", "trackColorActive", "trackColorInactive"],
+      "allowedEvents": ["change"],
+      "propTypes": {
+        "bind": "string",
+        "min": "number",
+        "max": "number",
+        "step": "number",
+        "label": "string",
+        "accentColor": "string",
+        "thumbColor": "string",
+        "trackColorActive": "string",
+        "trackColorInactive": "string"
+      }
+    },
+    "shape": {
+      "allowsChildren": true,
+      "requiredProps": [],
+      "optionalProps": ["type", "fill", "strokeColor", "strokeWidth", "strokeStyle", "cornerRadius", "cornerStyle"],
+      "allowedEvents": [],
+      "propTypes": {
+        "type": "enum:shapeType",
+        "fill": "string",
+        "strokeColor": "string",
+        "strokeWidth": "number",
+        "strokeStyle": "enum:strokeStyle",
+        "cornerRadius": "number",
+        "cornerStyle": "string"
+      }
+    },
+    "button": {
+      "allowsChildren": false,
+      "requiredProps": ["label"],
+      "optionalProps": ["icon"],
+      "requiredEventKeys": ["tap"],
+      "allowedEvents": ["tap"],
+      "propTypes": {
+        "label": "string",
+        "icon": "string"
+      }
+    },
+    "menu": {
+      "allowsChildren": true,
+      "requiredProps": [],
+      "optionalProps": ["title", "icon"],
+      "allowedEvents": [],
+      "propTypes": {
+        "title": "string",
+        "icon": "string"
+      }
+    },
+    "group": {
+      "allowsChildren": true,
+      "requiredProps": [],
+      "optionalProps": ["title", "footer", "collapsible", "isExpanded", "style"],
+      "allowedEvents": [],
+      "propTypes": {
+        "title": "string",
+        "footer": "string",
+        "collapsible": "boolean",
+        "isExpanded": "boolean",
+        "style": "enum:groupStyle"
+      }
+    },
+    "tabview": {
+      "allowsChildren": true,
+      "requiredProps": [],
+      "optionalProps": ["selection"],
+      "allowedEvents": [],
+      "propTypes": {
+        "selection": "string"
+      }
+    },
+    "tab": {
+      "allowsChildren": true,
+      "requiredProps": ["title"],
+      "optionalProps": ["icon"],
+      "allowedEvents": [],
+      "propTypes": {
+        "title": "string",
+        "icon": "string"
+      }
+    },
+    "navigationstack": {
+      "allowsChildren": true,
+      "requiredProps": [],
+      "optionalProps": ["title"],
+      "allowedEvents": [],
+      "propTypes": {
+        "title": "string"
+      },
+      "host": {
+        "toolbar": {
+          "topLeading": "[UINode]",
+          "topTrailing": "[UINode]",
+          "bottomBar": "[UINode]",
+          "principal": "[UINode]"
+        }
+      }
+    },
+    "list": {
+      "allowsChildren": true,
+      "requiredProps": [],
+      "optionalProps": [],
+      "allowedEvents": [],
+      "propTypes": {}
+    },
+    "section": {
+      "allowsChildren": true,
+      "requiredProps": [],
+      "optionalProps": ["title"],
+      "allowedEvents": [],
+      "propTypes": {
+        "title": "string"
+      }
+    },
+    "table": {
+      "allowsChildren": true,
+      "requiredProps": [],
+      "optionalProps": ["columns", "rowHeight", "sortable", "selectionMode", "alternatingRows", "headerVisible"],
+      "allowedEvents": [],
+      "propTypes": {
+        "columns": "string",
+        "rowHeight": "number",
+        "sortable": "boolean",
+        "selectionMode": "enum:selectionMode",
+        "alternatingRows": "boolean",
+        "headerVisible": "boolean"
+      }
+    }
+  },
+  "commonProps": {
+    "backgroundColor": "string",
+    "foregroundColor": "string",
+    "opacity": "number",
+    "padding": "number",
+    "paddingTop": "number",
+    "paddingBottom": "number",
+    "paddingLeading": "number",
+    "paddingTrailing": "number",
+    "width": "number",
+    "height": "number",
+    "minWidth": "number",
+    "minHeight": "number",
+    "maxWidth": "number | string",
+    "maxHeight": "number | string",
+    "cornerRadius": "number",
+    "shadowColor": "string",
+    "shadowRadius": "number",
+    "shadowX": "number",
+    "shadowY": "number",
+    "borderColor": "string",
+    "borderWidth": "number"
+  },
+  "layoutProps": {
+    "spacing": "number",
+    "alignment": "string"
+  },
+  "propEnums": {
+    "keyboardType": ["default", "numberPad", "decimalPad", "email", "phone", "url"],
+    "returnKeyType": ["default", "done", "go", "search", "next"],
+    "autocapitalization": ["none", "words", "sentences", "characters"],
+    "shapeType": ["rectangle", "roundedRectangle", "circle", "capsule", "ellipse"],
+    "strokeStyle": ["solid", "dashed", "dotted"],
+    "groupStyle": ["plain", "card", "inset"],
+    "selectionMode": ["none", "single", "multiple"],
+    "fixedSize": ["both", "horizontal", "vertical"],
+    "clipShape": ["rectangle", "roundedRectangle", "circle", "capsule", "ellipse"],
+    "frameAlignment": ["topLeading", "top", "topTrailing", "leading", "center", "trailing", "bottomLeading", "bottom", "bottomTrailing"],
+    "contentMode": ["fit", "fill"],
+    "axis": ["vertical", "horizontal"]
+  },
+  "textValue": {
+    "forms": [
+      { "literal": "string" },
+      { "bind": "<stateKey>" },
+      { "format": "<template with {key}>", "binds": ["<stateKey>"] }
+    ]
+  },
+  "event": {
+    "nodeFormat": { "event": { "<eventName>": "<handlerName>" } },
+    "topLevelFormat": { "events": { "<handlerName>": [{ "do": "<action>" }] } }
+  },
+  "actions": {
+    "state.set":    { "fields": ["key", "value"] },
+    "state.inc":    { "fields": ["key"] },
+    "state.dec":    { "fields": ["key"] },
+    "state.toggle": { "fields": ["key"] },
+    "ui.toast":     { "fields": ["message"] },
+    "ui.alert":     { "fields": ["message"] },
+    "ai.request":   { "fields": ["input"] }
+  },
+  "expressions": {
+    "usedIn": ["visibleWhen", "enabledWhen"],
+    "operators": ["eq", "neq", "gt", "gte", "lt", "lte", "and", "or", "not"],
+    "format": {
+      "bind":  { "bind": "<stateKey>" },
+      "eq":    { "eq":  [{ "bind": "<key>" }, "<value>"] },
+      "neq":   { "neq": [{ "bind": "<key>" }, "<value>"] },
+      "gt":    { "gt":  [{ "bind": "<key>" }, "<value>"] },
+      "gte":   { "gte": [{ "bind": "<key>" }, "<value>"] },
+      "lt":    { "lt":  [{ "bind": "<key>" }, "<value>"] },
+      "lte":   { "lte": [{ "bind": "<key>" }, "<value>"] },
+      "and":   { "and": ["<expr>", "<expr>"] },
+      "or":    { "or":  ["<expr>", "<expr>"] },
+      "not":   { "not": "<expr>" }
+    }
+  },
+  "host": {
+    "toolbar": {
+      "slots": ["topLeading", "topTrailing", "bottomBar", "principal"],
+      "slotValue": "[UINode]",
+      "usedOn": "navigationstack"
+    }
+  },
+  "disallowedNodeTypes": ["box", "columns", "toolbar"]
+}
