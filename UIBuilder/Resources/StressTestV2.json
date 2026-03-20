@@ -1,0 +1,600 @@
+{
+  "schema": "com.ilya.ui/1.0",
+  "screenId": "stress-test-v2",
+  "title": "Task Manager",
+  "meta": {
+    "version": 2,
+    "author": "StressTestV2",
+    "tags": ["stress-test", "task-manager", "productivity"]
+  },
+  "state": {
+    "vars": {
+      "searchQuery": "",
+      "sortMode": "none",
+      "completedCount": 3,
+      "totalCount": 7,
+      "dailyGoal": 5,
+      "showDone": true,
+      "filterActive": false,
+      "notificationsEnabled": true,
+      "emailNotificationsEnabled": false,
+      "darkModeEnabled": false,
+      "compactViewEnabled": false,
+      "fontSize": 16,
+      "userName": "Alex",
+      "taskCount": 7,
+      "isPremium": true,
+      "pendingCount": 4,
+      "task1Done": true,
+      "task2Done": false,
+      "task3Done": false
+    }
+  },
+  "root": {
+    "type": "tabview",
+    "children": [
+      {
+        "type": "tab",
+        "props": { "title": "Tasks", "icon": "checklist" },
+        "children": [
+          {
+            "type": "navigationstack",
+            "props": { "title": "My Tasks" },
+            "host": {
+              "toolbar": {
+                "topTrailing": [
+                  {
+                    "type": "menu",
+                    "props": { "icon": "ellipsis.circle" },
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": { "label": "Add Task", "icon": "plus" },
+                        "event": { "tap": "addTaskTap" }
+                      },
+                      {
+                        "type": "button",
+                        "props": { "label": "Sort by Date", "icon": "calendar" },
+                        "event": { "tap": "sortByDateTap" }
+                      },
+                      {
+                        "type": "button",
+                        "props": { "label": "Clear Done", "icon": "trash" },
+                        "event": { "tap": "clearDoneTap" }
+                      },
+                      {
+                        "type": "button",
+                        "props": { "label": "Toggle Done", "icon": "eye" },
+                        "event": { "tap": "toggleShowDoneTap" }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "children": [
+              {
+                "type": "textfield",
+                "props": {
+                  "bind": "searchQuery",
+                  "placeholder": "Search tasks...",
+                  "prefixIcon": "magnifyingglass",
+                  "autocorrectionDisabled": true,
+                  "returnKeyType": "search",
+                  "padding": 12,
+                  "backgroundColor": "#F2F2F7",
+                  "cornerRadius": 10
+                }
+              },
+              {
+                "type": "list",
+                "children": [
+                  {
+                    "type": "section",
+                    "props": { "title": "In Progress" },
+                    "children": [
+                      {
+                        "type": "toggle",
+                        "props": { "title": "Design new dashboard", "bind": "task1Done" },
+                        "event": { "change": "taskCompletionChanged" }
+                      },
+                      {
+                        "type": "toggle",
+                        "props": { "title": "Write unit tests", "bind": "task2Done" },
+                        "event": { "change": "taskCompletionChanged" }
+                      },
+                      {
+                        "type": "toggle",
+                        "props": { "title": "Review pull request", "bind": "task3Done" },
+                        "visibleWhen": { "bind": "filterActive" },
+                        "event": { "change": "taskCompletionChanged" }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "section",
+                    "props": { "title": "Upcoming" },
+                    "children": [
+                      {
+                        "type": "hstack",
+                        "props": { "spacing": 8 },
+                        "children": [
+                          {
+                            "type": "label",
+                            "props": { "title": "Client presentation", "icon": "person.2" }
+                          },
+                          {
+                            "type": "spacer"
+                          },
+                          {
+                            "type": "badge",
+                            "props": { "text": "High" }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "hstack",
+                        "props": { "spacing": 8 },
+                        "children": [
+                          {
+                            "type": "label",
+                            "props": { "title": "Update documentation", "icon": "doc.text" }
+                          },
+                          {
+                            "type": "spacer"
+                          },
+                          {
+                            "type": "badge",
+                            "props": { "text": "Medium" }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "hstack",
+                        "props": { "spacing": 8 },
+                        "children": [
+                          {
+                            "type": "label",
+                            "props": { "title": "Refactor auth module", "icon": "lock.shield" }
+                          },
+                          {
+                            "type": "spacer"
+                          },
+                          {
+                            "type": "badge",
+                            "props": { "text": "Low" }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "section",
+                    "props": { "title": "Done" },
+                    "visibleWhen": { "bind": "showDone" },
+                    "children": [
+                      {
+                        "type": "label",
+                        "props": { "title": "Setup CI/CD pipeline", "icon": "checkmark.circle" }
+                      },
+                      {
+                        "type": "label",
+                        "props": { "title": "Deploy to production", "icon": "checkmark.circle" }
+                      },
+                      {
+                        "type": "label",
+                        "props": { "title": "Code review sprint 12", "icon": "checkmark.circle" }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "tab",
+        "props": { "title": "Stats", "icon": "chart.bar" },
+        "children": [
+          {
+            "type": "navigationstack",
+            "props": { "title": "Statistics" },
+            "children": [
+              {
+                "type": "scroll",
+                "props": { "spacing": 16, "padding": 16 },
+                "children": [
+                  {
+                    "type": "group",
+                    "props": { "title": "Task Summary", "style": "card" },
+                    "children": [
+                      {
+                        "type": "text",
+                        "props": {
+                          "value": {
+                            "format": "Completed: {completedCount} tasks",
+                            "binds": ["completedCount"]
+                          }
+                        }
+                      },
+                      {
+                        "type": "text",
+                        "props": {
+                          "value": {
+                            "format": "Total: {totalCount} tasks",
+                            "binds": ["totalCount"]
+                          }
+                        }
+                      },
+                      {
+                        "type": "text",
+                        "props": {
+                          "value": {
+                            "format": "Pending: {pendingCount} tasks",
+                            "binds": ["pendingCount"]
+                          }
+                        }
+                      },
+                      {
+                        "type": "hstack",
+                        "props": { "spacing": 12 },
+                        "children": [
+                          {
+                            "type": "button",
+                            "props": {
+                              "label": "Done +1",
+                              "icon": "plus.circle",
+                              "foregroundColor": "#2563EB"
+                            },
+                            "event": { "tap": "incCompletedTap" }
+                          },
+                          {
+                            "type": "button",
+                            "props": {
+                              "label": "Undo",
+                              "icon": "minus.circle",
+                              "foregroundColor": "#DC2626"
+                            },
+                            "enabledWhen": { "gt": [{ "bind": "completedCount" }, 0] },
+                            "event": { "tap": "decCompletedTap" }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "group",
+                    "props": { "title": "Daily Goal", "style": "card" },
+                    "children": [
+                      {
+                        "type": "text",
+                        "props": {
+                          "value": {
+                            "format": "Goal: {dailyGoal} tasks per day",
+                            "binds": ["dailyGoal"]
+                          }
+                        }
+                      },
+                      {
+                        "type": "slider",
+                        "props": {
+                          "bind": "dailyGoal",
+                          "min": 1,
+                          "max": 20,
+                          "step": 1,
+                          "label": "Daily Goal"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "hstack",
+                    "props": { "spacing": 8 },
+                    "children": [
+                      {
+                        "type": "badge",
+                        "props": {
+                          "text": {
+                            "format": "{pendingCount} Pending",
+                            "binds": ["pendingCount"]
+                          }
+                        },
+                        "visibleWhen": { "gt": [{ "bind": "pendingCount" }, 0] }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "text": {
+                            "format": "{completedCount} Done",
+                            "binds": ["completedCount"]
+                          }
+                        },
+                        "visibleWhen": { "gt": [{ "bind": "completedCount" }, 0] }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "text": {
+                            "format": "{totalCount} Total",
+                            "binds": ["totalCount"]
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "text",
+                    "props": {
+                      "value": "🎉 Goal reached!",
+                      "foregroundColor": "#16A34A"
+                    },
+                    "visibleWhen": {
+                      "gte": [{ "bind": "completedCount" }, { "bind": "dailyGoal" }]
+                    }
+                  },
+                  {
+                    "type": "shape",
+                    "props": {
+                      "type": "capsule",
+                      "fill": "#2563EB",
+                      "height": 8,
+                      "maxWidth": "infinity",
+                      "opacity": 0.3
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "tab",
+        "props": { "title": "Settings", "icon": "gear" },
+        "children": [
+          {
+            "type": "list",
+            "children": [
+              {
+                "type": "section",
+                "props": { "title": "Notifications" },
+                "children": [
+                  {
+                    "type": "toggle",
+                    "props": { "title": "Push Notifications", "bind": "notificationsEnabled" }
+                  },
+                  {
+                    "type": "toggle",
+                    "props": { "title": "Email Notifications", "bind": "emailNotificationsEnabled" },
+                    "enabledWhen": { "bind": "notificationsEnabled" }
+                  }
+                ]
+              },
+              {
+                "type": "section",
+                "props": { "title": "Display" },
+                "children": [
+                  {
+                    "type": "toggle",
+                    "props": { "title": "Dark Mode", "bind": "darkModeEnabled" }
+                  },
+                  {
+                    "type": "toggle",
+                    "props": { "title": "Compact View", "bind": "compactViewEnabled" }
+                  }
+                ]
+              },
+              {
+                "type": "section",
+                "props": { "title": "Data" },
+                "children": [
+                  {
+                    "type": "button",
+                    "props": { "label": "Export Data", "icon": "square.and.arrow.up" },
+                    "event": { "tap": "exportDataTap" }
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": "Delete All Tasks",
+                      "icon": "trash",
+                      "foregroundColor": "#FF3B30"
+                    },
+                    "event": { "tap": "deleteAllTasksTap" }
+                  }
+                ]
+              },
+              {
+                "type": "section",
+                "props": { "title": "Font Size" },
+                "children": [
+                  {
+                    "type": "text",
+                    "props": {
+                      "value": {
+                        "format": "Current size: {fontSize}pt",
+                        "binds": ["fontSize"]
+                      },
+                      "foregroundColor": "#6B7280"
+                    }
+                  },
+                  {
+                    "type": "slider",
+                    "props": {
+                      "bind": "fontSize",
+                      "min": 12,
+                      "max": 24,
+                      "step": 1,
+                      "label": "Font Size"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "tab",
+        "props": { "title": "Profile", "icon": "person.circle" },
+        "children": [
+          {
+            "type": "scroll",
+            "props": { "spacing": 16, "padding": 16 },
+            "children": [
+              {
+                "type": "group",
+                "props": { "title": "User Info", "style": "card" },
+                "children": [
+                  {
+                    "type": "text",
+                    "props": {
+                      "value": {
+                        "format": "Hello, {userName}!",
+                        "binds": ["userName"]
+                      }
+                    }
+                  },
+                  {
+                    "type": "text",
+                    "props": {
+                      "value": {
+                        "format": "You have {taskCount} tasks total",
+                        "binds": ["taskCount"]
+                      },
+                      "foregroundColor": "#6B7280"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "hstack",
+                "props": { "spacing": 8 },
+                "children": [
+                  {
+                    "type": "badge",
+                    "props": { "text": "🏆 Productive" },
+                    "visibleWhen": { "gte": [{ "bind": "completedCount" }, 5] }
+                  },
+                  {
+                    "type": "badge",
+                    "props": { "text": "⭐ Premium" },
+                    "visibleWhen": { "bind": "isPremium" }
+                  },
+                  {
+                    "type": "badge",
+                    "props": { "text": "🔥 Power User" },
+                    "visibleWhen": { "gte": [{ "bind": "totalCount" }, 10] }
+                  }
+                ]
+              },
+              {
+                "type": "button",
+                "props": {
+                  "label": "Edit Profile",
+                  "icon": "pencil",
+                  "padding": 14,
+                  "backgroundColor": "#2563EB",
+                  "foregroundColor": "#FFFFFF",
+                  "cornerRadius": 12,
+                  "maxWidth": "infinity"
+                },
+                "event": { "tap": "editProfileTap" }
+              },
+              {
+                "type": "button",
+                "props": {
+                  "label": "Reset All Data",
+                  "icon": "arrow.counterclockwise",
+                  "padding": 14,
+                  "backgroundColor": "#FFF3F3",
+                  "foregroundColor": "#FF3B30",
+                  "cornerRadius": 12,
+                  "maxWidth": "infinity"
+                },
+                "event": { "tap": "resetDataTap" }
+              },
+              {
+                "type": "group",
+                "props": { "title": "Premium Features", "style": "card" },
+                "visibleWhen": { "bind": "isPremium" },
+                "children": [
+                  {
+                    "type": "text",
+                    "props": { "value": "You have access to all premium features" }
+                  },
+                  {
+                    "type": "label",
+                    "props": { "title": "Advanced Analytics", "icon": "chart.xyaxis.line" }
+                  },
+                  {
+                    "type": "label",
+                    "props": { "title": "Unlimited Tasks", "icon": "infinity" }
+                  },
+                  {
+                    "type": "label",
+                    "props": { "title": "Priority Support", "icon": "star.circle" }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "events": {
+    "addTaskTap": [
+      { "do": "ui.toast", "message": "New task added!" }
+    ],
+    "sortByDateTap": [
+      { "do": "state.set", "key": "sortMode", "value": "date" }
+    ],
+    "clearDoneTap": [
+      {
+        "do": "ui.alert",
+        "title": "Clear Completed Tasks",
+        "message": "Remove all completed tasks from the list?",
+        "when": { "gt": [{ "bind": "completedCount" }, 0] }
+      }
+    ],
+    "toggleShowDoneTap": [
+      { "do": "state.toggle", "key": "showDone" }
+    ],
+    "taskCompletionChanged": [
+      { "do": "ui.toast", "message": "Task status updated" }
+    ],
+    "incCompletedTap": [
+      { "do": "state.inc", "key": "completedCount" }
+    ],
+    "decCompletedTap": [
+      { "do": "state.dec", "key": "completedCount", "min": 0 }
+    ],
+    "exportDataTap": [
+      {
+        "do": "ui.alert",
+        "title": "Export Data",
+        "message": "Your tasks will be exported as a CSV file."
+      }
+    ],
+    "deleteAllTasksTap": [
+      {
+        "do": "ui.alert",
+        "title": "Delete All Tasks",
+        "message": "This will permanently delete all your tasks. Are you sure?",
+        "when": { "gt": [{ "bind": "totalCount" }, 0] }
+      }
+    ],
+    "editProfileTap": [
+      { "do": "ui.toast", "message": "Profile editing coming soon!" }
+    ],
+    "resetDataTap": [
+      {
+        "do": "ui.alert",
+        "title": "Reset All Data",
+        "message": "This will reset all your tasks and settings to defaults."
+      }
+    ]
+  }
+}
