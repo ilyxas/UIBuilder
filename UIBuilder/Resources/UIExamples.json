@@ -933,5 +933,150 @@
       ]
     },
     "meta": { "version": 1, "author": "UIBuilder", "tags": ["webview", "eval", "javascript"] }
+  },
+  {
+    "schema": "com.ilya.ui/1.0",
+    "screenId": "browser-screen",
+    "title": "Browser Screen",
+    "notes": "Correct pattern for a browser-like screen. Root is vstack(spacing:0) — NOT navigationstack, which would add an unwanted large title area. The webview fills all available space. All interactions with the page (navigation, overlays, search) go through eval targeting the webview id. JS runs in the webview context and cannot read SwiftUI state — the urlInput textfield writes to state on each keystroke but that value is not accessible inside eval scripts. The Go button is a stub until webview.load action is implemented natively.",
+    "state": {
+      "vars": {
+        "urlInput": ""
+      }
+    },
+    "root": {
+      "type": "vstack",
+      "props": { "spacing": 0 },
+      "children": [
+        {
+          "type": "hstack",
+          "props": { "spacing": 8, "padding": 8 },
+          "children": [
+            {
+              "type": "textfield",
+              "props": {
+                "bind": "urlInput",
+                "placeholder": "https://",
+                "keyboardType": "url",
+                "returnKeyType": "go",
+                "autocorrectionDisabled": true,
+                "autocapitalization": "none",
+                "backgroundColor": "#F2F2F7",
+                "cornerRadius": 10,
+                "padding": 10
+              }
+            },
+            {
+              "type": "button",
+              "props": {
+                "label": "Go",
+                "backgroundColor": "#2563EB",
+                "foregroundColor": "#FFFFFF",
+                "cornerRadius": 10,
+                "padding": 10
+              },
+              "event": { "tap": "goPressed" }
+            }
+          ]
+        },
+        {
+          "type": "webview",
+          "id": "wb",
+          "props": {
+            "url": "https://example.com",
+            "maxHeight": "infinity",
+            "maxWidth": "infinity"
+          }
+        },
+        {
+          "type": "hstack",
+          "props": { "spacing": 0, "padding": 8, "backgroundColor": "#F2F2F7" },
+          "children": [
+            {
+              "type": "button",
+              "props": { "label": "‹", "foregroundColor": "#2563EB", "padding": 12 },
+              "event": { "tap": "goBack" }
+            },
+            {
+              "type": "button",
+              "props": { "label": "›", "foregroundColor": "#2563EB", "padding": 12 },
+              "event": { "tap": "goForward" }
+            },
+            { "type": "spacer" },
+            {
+              "type": "button",
+              "props": { "label": "⌂", "foregroundColor": "#2563EB", "padding": 12 },
+              "event": { "tap": "goHome" }
+            },
+            { "type": "spacer" },
+            {
+              "type": "menu",
+              "props": { "title": "More", "icon": "ellipsis.circle" },
+              "children": [
+                {
+                  "type": "button",
+                  "props": { "label": "Translate to Russian", "icon": "globe" },
+                  "event": { "tap": "translatePage" }
+                },
+                {
+                  "type": "button",
+                  "props": { "label": "Find Chat", "icon": "bubble.left" },
+                  "event": { "tap": "findChat" }
+                },
+                {
+                  "type": "button",
+                  "props": { "label": "Toggle Stats", "icon": "chart.bar" },
+                  "event": { "tap": "toggleStats" }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "events": {
+      "goPressed": [
+        {
+          "do": "eval",
+          "target": "wb",
+          "script": "/* stub: webview.load action not yet available. urlInput state value is not accessible here — JS and SwiftUI state are isolated. */"
+        }
+      ],
+      "goBack": [
+        { "do": "eval", "target": "wb", "script": "history.back();" }
+      ],
+      "goForward": [
+        { "do": "eval", "target": "wb", "script": "history.forward();" }
+      ],
+      "goHome": [
+        {
+          "do": "eval",
+          "target": "wb",
+          "script": "document.open(); document.write('<!DOCTYPE html><html><body style=\"font-family:sans-serif;padding:32px;\"><h2>Home</h2><p>Enter a URL above and tap Go.</p></body></html>'); document.close();"
+        }
+      ],
+      "translatePage": [
+        {
+          "do": "eval",
+          "target": "wb",
+          "script": "window.location.href = 'https://translate.google.com/translate?sl=auto&tl=ru&u=' + encodeURIComponent(window.location.href);"
+        }
+      ],
+      "findChat": [
+        {
+          "do": "eval",
+          "target": "wb",
+          "script": "document.querySelectorAll('input[type=text], textarea, [contenteditable=true]').forEach(function(el){ el.style.outline = '3px solid red'; });"
+        }
+      ],
+      "toggleStats": [
+        {
+          "do": "eval",
+          "target": "wb",
+          "script": "(function(){ var el = document.getElementById('__ub_stats'); if(el){ clearInterval(window.__ub_timer); el.remove(); return; } var d = document.createElement('div'); d.id = '__ub_stats'; d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.85);color:#0f0;font-family:monospace;font-size:13px;padding:8px 12px;z-index:99999;display:flex;gap:16px;align-items:center;'; var t = document.createElement('span'); t.id='__ub_time'; t.textContent='00:00:00'; d.appendChild(t); var s = document.createElement('input'); s.placeholder='Search...'; s.style.cssText='background:#222;color:#fff;border:1px solid #555;border-radius:4px;padding:4px 8px;font-size:13px;'; s.oninput=function(){ window.find(s.value); }; d.appendChild(s); document.body.appendChild(d); var sec=0; window.__ub_timer=setInterval(function(){ sec++; var h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),ss=sec%60; document.getElementById('__ub_time').textContent=(h?String(h).padStart(2,'0')+':':'')+String(m).padStart(2,'0')+':'+String(ss).padStart(2,'0'); },1000); })();"
+        }
+      ]
+    },
+    "meta": { "version": 1, "author": "UIBuilder", "tags": ["webview", "eval", "browser", "javascript"] }
   }
 ]

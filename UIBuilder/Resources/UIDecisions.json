@@ -306,7 +306,9 @@
       "notes": [
         "target must be the exact id of a webview node declared in the same document",
         "script is a raw JavaScript string — it is evaluated directly in the webview's JS context"
-      ]
+      ],
+      "jsIsolationNote": "eval runs the script inside the WKWebView JS context — this is a completely separate execution environment from SwiftUI. The JS context has no knowledge of SwiftUI state variables, no access to native node values, and no way to call back into the native layer. The two worlds are isolated: SwiftUI state lives in the native layer, JavaScript lives inside the webview. eval is a one-way bridge — native triggers JS, but JS cannot read or write SwiftUI state. This means: if a native textfield is bound to state key 'urlInput', that value is NOT accessible inside an eval script. Any logic that needs to react to native state must be handled by native actions (state.set, state.toggle, etc.) before or instead of eval.",
+      "requiresWebview": "eval is only meaningful when a webview node with a matching id exists in the same document. If there is no webview node, eval actions are silently ignored. Never use eval in a screen that has no webview node."
     }
   }
 }
