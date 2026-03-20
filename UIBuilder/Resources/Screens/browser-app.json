@@ -6,7 +6,8 @@
     "vars": {
       "urlInput": "",
       "menuOpen": false,
-      "statsBarOpen": false
+      "statsBarOpen": false,
+      "searchTerm": ""
     }
   },
   "root": {
@@ -78,9 +79,8 @@
               },
               {
                 "type": "text",
-                "id": "__ub_timer__",
                 "props": {
-                  "value": "00:00:00",
+                  "value": "⏱ 00:00:00",
                   "foregroundColor": "#30D158"
                 }
               },
@@ -107,7 +107,7 @@
               {
                 "type": "textfield",
                 "props": {
-                  "bind": "urlInput",
+                  "bind": "searchTerm",
                   "placeholder": "Search on page...",
                   "backgroundColor": "#3A3A3C",
                   "foregroundColor": "#FFFFFF",
@@ -116,9 +116,6 @@
                   "returnKeyType": "search",
                   "autocapitalization": "none",
                   "autocorrectionDisabled": true
-                },
-                "event": {
-                  "change": "searchDown"
                 }
               },
               {
@@ -335,21 +332,21 @@
       {
         "do": "eval",
         "target": "main-browser",
-        "script": "(function(){window.__ub_timer_start=Date.now();if(window.__ub_timer_interval){clearInterval(window.__ub_timer_interval);window.__ub_timer_interval=null;}window.__ub_timer_interval=setInterval(function(){var el=document.getElementById('__ub_timer__');if(el){var e=Math.floor((Date.now()-window.__ub_timer_start)/1000);var h=Math.floor(e/3600);var m=Math.floor((e%3600)/60);var s=e%60;el.textContent=(h<10?'0'+String(h):String(h))+':'+(m<10?'0'+String(m):String(m))+':'+(s<10?'0'+String(s):String(s));}},1000);})()"
+        "script": "(function(){var ex=document.getElementById('__ub_stats_bar__');if(ex){ex.remove();}var bar=document.createElement('div');bar.id='__ub_stats_bar__';bar.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2147483647;background:rgba(28,28,30,0.95);color:#fff;padding:8px 12px;display:flex;align-items:center;gap:10px;font-family:-apple-system,sans-serif;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,0.4);';var t=document.createElement('span');t.id='__ub_timer_txt__';t.style.cssText='font-variant-numeric:tabular-nums;color:#30D158;font-weight:600;';t.textContent='⏱ 00:00:00';var rb=document.createElement('button');rb.textContent='Reset';rb.style.cssText='padding:2px 8px;background:transparent;color:#FF3B30;border:1px solid #FF3B30;border-radius:6px;cursor:pointer;font-size:12px;';rb.onclick=function(){window.__ub_timer_start=Date.now();};var cb=document.createElement('button');cb.textContent='✕';cb.style.cssText='padding:2px 8px;background:transparent;color:#8E8E93;border:none;cursor:pointer;font-size:14px;';cb.onclick=function(){var o=document.getElementById('__ub_stats_bar__');if(o)o.remove();if(window.__ub_timer_interval){clearInterval(window.__ub_timer_interval);window.__ub_timer_interval=null;}};bar.appendChild(t);bar.appendChild(rb);bar.appendChild(cb);document.documentElement.appendChild(bar);window.__ub_timer_start=Date.now();if(window.__ub_timer_interval){clearInterval(window.__ub_timer_interval);}window.__ub_timer_interval=setInterval(function(){var el=document.getElementById('__ub_timer_txt__');if(!el){clearInterval(window.__ub_timer_interval);return;}var e=Math.floor((Date.now()-window.__ub_timer_start)/1000);var h=Math.floor(e/3600);var m=Math.floor((e%3600)/60);var s=e%60;el.textContent='⏱ '+(h<10?'0'+String(h):String(h))+':'+(m<10?'0'+String(m):String(m))+':'+(s<10?'0'+String(s):String(s));},1000);})()"
       }
     ],
     "searchUp": [
       {
         "do": "eval",
         "target": "main-browser",
-        "script": "(function(){var t=window.__ub_search_term||'';if(t){window.find(t,false,true,true,false,false,false);}})()"
+        "script": "(function(){var t=window.__ub_search_term;if(!t){t=prompt('Search on page:','');if(t)window.__ub_search_term=t;}if(t){window.find(t,false,true,true,false,false,false);}})()"
       }
     ],
     "searchDown": [
       {
         "do": "eval",
         "target": "main-browser",
-        "script": "(function(){var t=window.__ub_search_term||'';if(t){window.find(t,false,false,true,false,false,false);}})()"
+        "script": "(function(){var t=window.__ub_search_term;if(!t){t=prompt('Search on page:','');if(t)window.__ub_search_term=t;}if(t){window.find(t,false,false,true,false,false,false);}})()"
       }
     ]
   },
