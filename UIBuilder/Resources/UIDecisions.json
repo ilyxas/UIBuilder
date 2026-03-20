@@ -277,6 +277,36 @@
       "preferOver": [
         "list"
       ]
+    },
+    "webview": {
+      "useWhen": [
+        "Embedding a live web page or web-based content inside a native screen",
+        "Displaying content that already exists as a URL and does not need native reconstruction",
+        "Injecting JavaScript into an embedded page via eval actions"
+      ],
+      "avoidWhen": [
+        "A native node exists that achieves the same result — prefer native nodes",
+        "No id is provided — webview without id renders an error placeholder and cannot be targeted by eval"
+      ],
+      "notes": [
+        "id is required on every webview node — it registers the view in WebViewRegistry",
+        "eval is the only way to interact with a webview from the event system",
+        "eval goes through the normal event → named event → actions pipeline — no special wiring needed"
+      ]
+    },
+    "eval": {
+      "useWhen": [
+        "Injecting JavaScript into a webview node in response to a user action",
+        "Calling a JS function, changing DOM state, or scrolling inside a webview"
+      ],
+      "avoidWhen": [
+        "The target id does not match any webview node in the same document — the action is silently ignored",
+        "Native state changes are needed — use state.set / state.toggle instead"
+      ],
+      "notes": [
+        "target must be the exact id of a webview node declared in the same document",
+        "script is a raw JavaScript string — it is evaluated directly in the webview's JS context"
+      ]
     }
   }
 }

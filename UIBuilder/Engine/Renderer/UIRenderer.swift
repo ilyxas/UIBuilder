@@ -338,6 +338,11 @@ struct UIRenderer: View {
             // Props: rowHeight, selectionMode, alternatingRows, headerVisible, columns.
             tableView(evaluator: evaluator)
 
+        // MARK: - webview
+
+        case "webview":
+            webViewNode(evaluator: evaluator)
+
         default:
             Text("Unsupported node: \(node.type)")
         }
@@ -645,6 +650,18 @@ struct UIRenderer: View {
             },
             props: node.props
         )
+    }
+
+    // MARK: - WebView helper
+
+    @ViewBuilder
+    private func webViewNode(evaluator: ExpressionEvaluator) -> some View {
+        if let nodeId = node.id, !nodeId.isEmpty {
+            let initialURL = node.props?["url"]?.stringValue
+            NodeStyle.apply(WebViewNodeView(nodeId: nodeId, initialURL: initialURL), props: node.props)
+        } else {
+            NodeStyle.apply(Text("webview requires a valid id for registry binding"), props: node.props)
+        }
     }
 
     // MARK: - Keyboard / input helpers

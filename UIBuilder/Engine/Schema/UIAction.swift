@@ -14,9 +14,11 @@ struct UIAction: Decodable, Sendable {
     let id: String?
     let input: [String: DynamicValue]?
     let when: Expression?
+    let target: String?
+    let script: String?
 
     enum CodingKeys: String, CodingKey {
         case action = "do"
-        case key, value, min, max, screenId, message, title, event, payload, id, input, when
+        case key, value, min, max, screenId, message, title, event, payload, id, input, when, target, script
     }
 }

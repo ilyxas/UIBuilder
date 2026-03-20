@@ -1,0 +1,75 @@
+{
+  "schema": "com.ilya.ui/1.0",
+  "screenId": "browser-tools",
+  "title": "Browser Tools",
+  "state": { "vars": {} },
+  "root": {
+    "type": "navigationstack",
+    "props": { "title": "Browser Tools" },
+    "children": [
+      {
+        "type": "vstack",
+        "props": { "spacing": 0 },
+        "children": [
+          {
+            "type": "webview",
+            "id": "main-web",
+            "props": {
+              "url": "https://example.com",
+              "maxHeight": "infinity"
+            }
+          },
+          {
+            "type": "hstack",
+            "props": { "spacing": 12, "padding": 12 },
+            "children": [
+              {
+                "type": "button",
+                "props": { "label": "🌐" },
+                "event": { "tap": "toggleNavBar" }
+              },
+              {
+                "type": "button",
+                "props": { "label": "🔍" },
+                "event": { "tap": "toggleHtmlSource" }
+              },
+              {
+                "type": "button",
+                "props": { "label": "🖼️" },
+                "event": { "tap": "extractImages" }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "events": {
+    "toggleNavBar": [
+      {
+        "do": "eval",
+        "target": "main-web",
+        "script": "(function(){var id='__ub_nav__';var el=document.getElementById(id);if(el){el.remove();return;}var bar=document.createElement('div');bar.id=id;bar.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#222;padding:8px;display:flex;gap:6px;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,0.5);';var back=document.createElement('button');back.textContent='\u2190';back.onclick=function(){history.back();};back.style.cssText='padding:6px 10px;border:none;background:#444;color:#fff;border-radius:6px;cursor:pointer;font-size:16px;';var fwd=document.createElement('button');fwd.textContent='\u2192';fwd.onclick=function(){history.forward();};fwd.style.cssText='padding:6px 10px;border:none;background:#444;color:#fff;border-radius:6px;cursor:pointer;font-size:16px;';var inp=document.createElement('input');inp.type='text';inp.value=window.location.href;inp.style.cssText='flex:1;padding:6px 8px;border:none;background:#444;color:#fff;border-radius:6px;font-size:14px;';var go=document.createElement('button');go.textContent='Go';go.onclick=function(){var url=inp.value.trim();if(/^https?:\\/\\//i.test(url)){window.location.href=url;}};go.style.cssText='padding:6px 12px;border:none;background:#0a84ff;color:#fff;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600;';bar.appendChild(back);bar.appendChild(fwd);bar.appendChild(inp);bar.appendChild(go);document.documentElement.appendChild(bar);})();"
+      }
+    ],
+    "toggleHtmlSource": [
+      {
+        "do": "eval",
+        "target": "main-web",
+        "script": "(function(){var id='__ub_src__';var el=document.getElementById(id);if(el){el.remove();return;}var ov=document.createElement('div');ov.id=id;ov.style.cssText='position:fixed;inset:0;z-index:2147483647;background:#1a1a1a;color:#d4d4d4;font-family:monospace;font-size:12px;overflow:auto;padding:16px;-webkit-overflow-scrolling:touch;';var btn=document.createElement('button');btn.textContent='\u2715 Close';btn.onclick=function(){ov.remove();};btn.style.cssText='position:sticky;top:0;display:block;margin-bottom:12px;padding:8px 16px;background:#333;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;';var pre=document.createElement('pre');pre.style.cssText='margin:0;white-space:pre-wrap;word-break:break-all;';pre.textContent=document.documentElement.outerHTML;ov.appendChild(btn);ov.appendChild(pre);document.documentElement.appendChild(ov);})();"
+      }
+    ],
+    "extractImages": [
+      {
+        "do": "eval",
+        "target": "main-web",
+        "script": "(function(){var imgs=Array.prototype.map.call(document.images,function(i){return i.src;}).filter(Boolean);document.body.innerHTML='';if(imgs.length===0){document.body.style.cssText='background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;';var p=document.createElement('p');p.style.cssText='color:#fff;font-family:sans-serif;font-size:18px;';p.textContent='No images found on this page.';document.body.appendChild(p);return;}document.body.style.cssText='background:#111;padding:16px;margin:0;';imgs.forEach(function(src){var img=document.createElement('img');img.src=src;img.style.cssText='display:block;max-width:100%;margin-bottom:12px;border-radius:8px;';document.body.appendChild(img);});})();"
+      }
+    ]
+  },
+  "meta": {
+    "version": 1,
+    "author": "UIBuilder",
+    "tags": ["webview", "eval", "browser", "javascript"]
+  }
+}

@@ -282,6 +282,16 @@
         "headerVisible": "boolean",
         "columns": "string"
       }
+    },
+    "webview": {
+      "allowsChildren": false,
+      "requiredProps": ["id"],
+      "optionalProps": ["url"],
+      "allowedEvents": [],
+      "propTypes": {
+        "url": "string"
+      },
+      "notes": "id is required — it registers the webview in WebViewRegistry so eval actions can target it. Supports all common style props (width, height, cornerRadius, etc.)."
     }
   },
   "commonProps": {
@@ -391,6 +401,12 @@
       "fields": ["do", "id", "input"],
       "requiredFields": ["do", "id", "input"],
       "fieldTypes": { "id": "string", "input": "map<string, DynamicValue>" }
+    },
+    "eval": {
+      "fields": ["do", "target", "script"],
+      "requiredFields": ["do", "target", "script"],
+      "fieldTypes": { "target": "string", "script": "string" },
+      "notes": "target must be the id of a webview node present in the same document. script is a JavaScript string evaluated in that webview."
     }
   },
   "actionConditional": {

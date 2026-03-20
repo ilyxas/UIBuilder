@@ -1,0 +1,54 @@
+{
+  "schema": "com.ilya.ui/1.0",
+  "screenId": "zoom-webview",
+  "title": "Zoom WebView",
+  "state": { "vars": {} },
+  "root": {
+    "type": "vstack",
+    "props": { "spacing": 12, "padding": 8 },
+    "children": [
+      {
+        "type": "webview",
+        "id": "zoom-web",
+        "props": {
+          "url": "https://example.com",
+          "height": 580,
+          "cornerRadius": 12
+        }
+      },
+      {
+        "type": "hstack",
+        "props": { "spacing": 16 },
+        "children": [
+          {
+            "type": "button",
+            "props": { "label": "−", "padding": 16 },
+            "event": { "tap": "zoomOut" }
+          },
+          {
+            "type": "button",
+            "props": { "label": "●", "padding": 16 },
+            "event": { "tap": "zoomReset" }
+          },
+          {
+            "type": "button",
+            "props": { "label": "+", "padding": 16 },
+            "event": { "tap": "zoomIn" }
+          }
+        ]
+      }
+    ]
+  },
+  "events": {
+    "zoomIn": [
+      { "do": "eval", "target": "zoom-web", "script": "window._zoom = Math.min(3.0, (window._zoom || 1) + 0.25); document.body.style.zoom = window._zoom;" }
+    ],
+    "zoomOut": [
+      { "do": "eval", "target": "zoom-web", "script": "window._zoom = Math.max(0.25, (window._zoom || 1) - 0.25); document.body.style.zoom = window._zoom;" }
+    ],
+    "zoomReset": [
+      { "do": "eval", "target": "zoom-web", "script": "window._zoom = 1; document.body.style.zoom = 1;" }
+    ]
+  },
+  "meta": { "version": 1, "author": "UIBuilder", "tags": ["webview", "eval", "zoom", "javascript"] }
+}
