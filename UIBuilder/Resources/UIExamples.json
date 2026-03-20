@@ -933,5 +933,151 @@
       ]
     },
     "meta": { "version": 1, "author": "UIBuilder", "tags": ["webview", "eval", "javascript"] }
+  },
+  {
+    "schema": "com.ilya.ui/1.0",
+    "screenId": "browser-screen",
+    "title": "Browser",
+    "state": {
+      "vars": {
+        "urlInput": "https://example.com"
+      }
+    },
+    "root": {
+      "type": "vstack",
+      "props": { "spacing": 0 },
+      "children": [
+        {
+          "type": "hstack",
+          "props": { "spacing": 8, "padding": 8 },
+          "children": [
+            {
+              "type": "textfield",
+              "props": {
+                "bind": "urlInput",
+                "placeholder": "Enter URL",
+                "keyboardType": "url",
+                "returnKeyType": "go"
+              }
+            },
+            {
+              "type": "button",
+              "props": { "label": " ", "icon": "arrow.right" },
+              "event": { "tap": "goPressed" }
+            }
+          ]
+        },
+        {
+          "type": "webview",
+          "id": "wb",
+          "props": {
+            "url": "https://example.com",
+            "maxHeight": "infinity",
+            "maxWidth": "infinity"
+          }
+        },
+        {
+          "type": "hstack",
+          "props": { "spacing": 8, "padding": 8 },
+          "children": [
+            {
+              "type": "button",
+              "props": { "label": " ", "icon": "chevron.left" },
+              "event": { "tap": "goBack" }
+            },
+            {
+              "type": "button",
+              "props": { "label": " ", "icon": "chevron.right" },
+              "event": { "tap": "goForward" }
+            },
+            {
+              "type": "button",
+              "props": { "label": " ", "icon": "house" },
+              "event": { "tap": "goHome" }
+            },
+            { "type": "spacer" },
+            {
+              "type": "menu",
+              "props": { "icon": "ellipsis" },
+              "children": [
+                {
+                  "type": "button",
+                  "props": { "label": "Translate to Russian", "icon": "globe" },
+                  "event": { "tap": "translatePage" }
+                },
+                {
+                  "type": "button",
+                  "props": { "label": "Find Chat Input", "icon": "bubble.left" },
+                  "event": { "tap": "findChat" }
+                },
+                {
+                  "type": "button",
+                  "props": { "label": "Toggle Stats Overlay", "icon": "chart.bar" },
+                  "event": { "tap": "toggleStatsOverlay" }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "events": {
+      "goPressed": [
+        {
+          "do": "eval",
+          "target": "wb",
+          "script": "window.location.href = window.location.href;"
+        }
+      ],
+      "goBack": [
+        {
+          "do": "eval",
+          "target": "wb",
+          "script": "history.back();"
+        }
+      ],
+      "goForward": [
+        {
+          "do": "eval",
+          "target": "wb",
+          "script": "history.forward();"
+        }
+      ],
+      "goHome": [
+        {
+          "do": "eval",
+          "target": "wb",
+          "script": "document.open(); document.write('<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>body{background:#1a1a2e;color:#eee;font-family:sans-serif;padding:20px;text-align:center}h1{color:#e94560}</style></head><body><h1>Home</h1><p>UIBuilder Browser</p></body></html>'); document.close();"
+        }
+      ],
+      "translatePage": [
+        {
+          "do": "eval",
+          "target": "wb",
+          "script": "window.location.href = 'https://translate.google.com/translate?sl=auto&tl=ru&u=' + encodeURIComponent(window.location.href);"
+        }
+      ],
+      "findChat": [
+        {
+          "do": "eval",
+          "target": "wb",
+          "script": "document.querySelectorAll('input[type=text],textarea,[contenteditable=true]').forEach(function(el){el.style.outline='3px solid red';});"
+        }
+      ],
+      "toggleStatsOverlay": [
+        {
+          "do": "eval",
+          "target": "wb",
+          "script": "var el=document.getElementById('__ub_stats');if(el){clearInterval(el.__ub_timer);el.remove();}else{var d=document.createElement('div');d.id='__ub_stats';d.style.cssText='position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.85);color:#fff;font-family:monospace;font-size:13px;padding:8px 12px;z-index:99999;display:flex;align-items:center;gap:12px;';var t=document.createElement('span');t.textContent='\\u23f1 00:00:00';var s=0;d.__ub_timer=setInterval(function(){s++;var h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;t.textContent='\\u23f1 '+String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');},1000);var inp=document.createElement('input');inp.placeholder='Search on page...';inp.style.cssText='background:#333;color:#fff;border:1px solid #555;border-radius:4px;padding:2px 6px;font-size:12px;flex:1;';inp.oninput=function(){var terms=document.querySelectorAll('.__ub_hl');terms.forEach(function(n){n.outerHTML=n.textContent;});if(inp.value.length>1){window.__ub_find(inp.value);}};window.__ub_find=function(q){var walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);var nodes=[];while(walker.nextNode()){if(walker.currentNode.parentElement.id!=='__ub_stats')nodes.push(walker.currentNode);}nodes.forEach(function(n){if(n.textContent.toLowerCase().includes(q.toLowerCase())){var s=document.createElement('span');s.className='__ub_hl';s.style.background='yellow';s.style.color='black';s.innerHTML=n.textContent.replace(new RegExp(q,'gi'),function(m){return '<mark style=\"background:orange\">'+m+'</mark>';});n.parentNode.replaceChild(s,n);}});};d.appendChild(t);d.appendChild(inp);document.body.insertBefore(d,document.body.firstChild);}"
+        }
+      ]
+    },
+    "notes": [
+      "urlInput state var is written by the textfield on every keystroke but CANNOT be read by eval scripts — eval runs in the webview JS context with no access to SwiftUI state",
+      "The Go button currently cannot pass the typed URL to the webview — webview.load action is not yet implemented; the goPressed event is a stub that reloads the current page",
+      "All overlay UI (timer, search) lives inside the webview DOM via eval-injected JavaScript — there are no SwiftUI timer nodes",
+      "This example demonstrates correct browser-screen architecture: vstack(spacing:0) as root (NOT navigationstack), menu node for the ··· dropdown, icon-only buttons using label:\" \" to suppress text, and eval for all webview interaction"
+    ],
+    "meta": { "version": 1, "author": "UIBuilder", "tags": ["webview", "browser", "eval", "menu", "architecture"] }
   }
 ]

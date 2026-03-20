@@ -72,7 +72,8 @@
       "avoidWhen": [
         "A boolean on/off control is needed — use toggle",
         "The tap should navigate — use nav.push action inside button"
-      ]
+      ],
+      "iconOnlyNote": "When a button should display ONLY an icon with no visible text label (e.g. toolbar navigation buttons like ‹ ›), set label to a single space \" \". A button with both a non-empty label and icon props will render as Label(title, systemImage:) showing both text AND icon side by side. Note: label is required — a button with only the icon prop and no label prop is not valid."
     },
     "toggle": {
       "useWhen": [
@@ -136,7 +137,8 @@
       "avoidWhen": [
         "Only one action is available — use button",
         "Actions should always be visible — use buttons in an hstack"
-      ]
+      ],
+      "webviewNote": "In browser-like screens, use menu node as the '···' more-actions button. Menu items trigger eval actions on the webview. This is the correct pattern — do NOT use visibleWhen + vstack to simulate a popup menu."
     },
     "tabview": {
       "useWhen": [
@@ -178,7 +180,8 @@
       "avoidWhen": [
         "No navigation bar or toolbar is needed — use vstack or scroll",
         "The screen is already inside a navigationstack",
-        "The screen root is a tabview — navigationstack must not wrap tabview; place it inside each tab instead"
+        "The screen root is a tabview — navigationstack must not wrap tabview; place it inside each tab instead",
+        "The screen is a full-screen webview wrapper (browser, reader, viewer) with no push navigation needed — use vstack(spacing:0) instead to avoid the large title area and empty space at top"
       ],
       "navPushNote": "nav.push requires a screenId that corresponds to an actually loaded screen document in the runtime. Do not invent placeholder screenId values such as 'detail-screen' or 'profile-screen' unless those screens genuinely exist as loaded documents. If no second screen exists, do not use nav.push — use ui.toast or ui.alert as a placeholder action instead."
     },
@@ -292,7 +295,14 @@
         "id is required on every webview node — it registers the view in WebViewRegistry",
         "eval is the only way to interact with a webview from the event system",
         "eval goes through the normal event → named event → actions pipeline — no special wiring needed"
-      ]
+      ],
+      "architecturePatterns": [
+        "Browser-like screen: use vstack (NOT navigationstack) as root. Top row: hstack with textfield(bind:urlInput, keyboardType:url, returnKeyType:go) + button(Go). Middle: webview with maxHeight:infinity. Bottom: hstack with back/forward/home buttons + menu node for extra actions.",
+        "The menu node (ellipsis button) is the correct way to show a dropdown of actions — do NOT simulate a menu with visibleWhen + vstack",
+        "Stats overlays, timers, search bars inside the page — inject these as position:fixed HTML elements via eval, not as native SwiftUI nodes",
+        "Never use navigationstack as the root of a browser screen unless you actually need push navigation — it adds an unnecessary large title bar and empty space"
+      ],
+      "evalOnlyInteraction": "eval is the ONLY bridge from native buttons to webview content. All webview-side UI (overlays, highlights, timers, search results) must be created and managed entirely through eval-injected JavaScript."
     },
     "eval": {
       "useWhen": [
@@ -306,7 +316,15 @@
       "notes": [
         "target must be the exact id of a webview node declared in the same document",
         "script is a raw JavaScript string — it is evaluated directly in the webview's JS context"
-      ]
+      ],
+      "critical_constraints": [
+        "eval scripts CANNOT read SwiftUI state variables — the script runs in the webview JS context which has no access to the native state store",
+        "If logic depends on a value the user typed in a native textfield, that value cannot be passed to eval — it is fine to display a native textfield for URL or search input, but the current value cannot be read by eval scripts; consider moving interactive input inside the webview HTML if the eval script needs to react to it",
+        "Never split interactive logic between SwiftUI state and webview JS — pick one layer and keep all related logic there",
+        "Timers, countdowns, and animations that need to update continuously MUST live inside the webview via eval-injected JS — a native text node bound to state cannot tick on its own",
+        "Search-within-page functionality MUST be implemented entirely in JS inside the webview — do not use a native textfield + state for the search term if the search action uses eval"
+      ],
+      "architectureNote": "When a screen is primarily a webview with surrounding controls, keep ALL interactive overlay logic (timers, search, stats, overlays) inside the webview DOM via eval-injected JavaScript. Native SwiftUI nodes outside the webview should only handle: URL input, navigation buttons (back/forward/home), and triggering eval actions. Do not build hybrid UI where some state lives in SwiftUI and some in JS."
     }
   }
 }

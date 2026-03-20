@@ -52,7 +52,9 @@ struct NodeStyle {
         let maxWidth: CGFloat? = (props["maxWidth"]?.stringValue == "infinity")
             ? CGFloat.infinity
             : props["maxWidth"]?.doubleValue.map { CGFloat($0) }
-        let maxHeight: CGFloat? = props["maxHeight"]?.doubleValue.map { CGFloat($0) }
+        let maxHeight: CGFloat? = (props["maxHeight"]?.stringValue == "infinity")
+            ? CGFloat.infinity
+            : props["maxHeight"]?.doubleValue.map { CGFloat($0) }
 
         if maxWidth != nil || maxHeight != nil {
             v = AnyView(v.frame(maxWidth: maxWidth, maxHeight: maxHeight))

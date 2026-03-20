@@ -291,7 +291,11 @@
       "propTypes": {
         "url": "string"
       },
-      "notes": "id is required — it registers the webview in WebViewRegistry so eval actions can target it. Supports all common style props (width, height, cornerRadius, etc.)."
+      "notes": [
+        "id is required — it registers the webview in WebViewRegistry so eval actions can target it. Supports all common style props (width, height, cornerRadius, etc.).",
+        "Use vstack(spacing:0) not navigationstack as the container for browser-like screens",
+        "All webview-side interactive UI must be injected via eval — there is no two-way data bridge between SwiftUI state and webview JS context"
+      ]
     }
   },
   "commonProps": {
@@ -305,7 +309,7 @@
     "minWidth": "number",
     "minHeight": "number",
     "maxWidth": "number | \"infinity\"",
-    "maxHeight": "number",
+    "maxHeight": "number | \"infinity\"",
     "idealWidth": "number",
     "idealHeight": "number",
     "fixedSize": "enum:FixedSize | boolean",
@@ -406,7 +410,12 @@
       "fields": ["do", "target", "script"],
       "requiredFields": ["do", "target", "script"],
       "fieldTypes": { "target": "string", "script": "string" },
-      "notes": "target must be the id of a webview node present in the same document. script is a JavaScript string evaluated in that webview."
+      "notes": "target must be the id of a webview node present in the same document. script is a JavaScript string evaluated in that webview.",
+      "constraints": [
+        "script runs in WKWebView JS context — no access to SwiftUI state",
+        "script cannot read state variables bound to native textfield or other nodes",
+        "for continuous UI updates (timers, animations) use setInterval inside the script"
+      ]
     }
   },
   "actionConditional": {
