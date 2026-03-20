@@ -1,0 +1,304 @@
+{
+  "schema": "com.ilya.ui/1.0",
+  "screenId": "browser-tabs",
+  "title": "Browser Tabs",
+  "state": {
+    "vars": {}
+  },
+  "root": {
+    "type": "tabview",
+    "children": [
+      {
+        "type": "tab",
+        "props": {
+          "title": "Browser",
+          "icon": "globe"
+        },
+        "children": [
+          {
+            "type": "navigationstack",
+            "host": {
+              "toolbar": {
+                "principal": [
+                  {
+                    "type": "text",
+                    "props": {
+                      "value": "Custom Browser"
+                    }
+                  }
+                ],
+                "topTrailing": [
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": "",
+                      "icon": "safari"
+                    },
+                    "event": {
+                      "tap": "b1ToggleNav"
+                    }
+                  },
+                  {
+                    "type": "menu",
+                    "props": {
+                      "title": "",
+                      "icon": "ellipsis.circle"
+                    },
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": "Translate to Russian",
+                          "icon": "globe"
+                        },
+                        "event": {
+                          "tap": "b1Translate"
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": "Find Chat Field",
+                          "icon": "bubble.left.and.bubble.right"
+                        },
+                        "event": {
+                          "tap": "b1FindChat"
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": "Stats & Search",
+                          "icon": "chart.bar.xaxis"
+                        },
+                        "event": {
+                          "tap": "b1ToggleStats"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "children": [
+              {
+                "type": "webview",
+                "id": "browser1",
+                "props": {
+                  "url": "https://apple.com",
+                  "maxHeight": 900
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "tab",
+        "props": {
+          "title": "Dev Tools",
+          "icon": "wrench.and.screwdriver"
+        },
+        "children": [
+          {
+            "type": "navigationstack",
+            "host": {
+              "toolbar": {
+                "principal": [
+                  {
+                    "type": "text",
+                    "props": {
+                      "value": "Dev Tools"
+                    }
+                  }
+                ],
+                "topTrailing": [
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": "",
+                      "icon": "safari"
+                    },
+                    "event": {
+                      "tap": "b2ToggleNav"
+                    }
+                  },
+                  {
+                    "type": "menu",
+                    "props": {
+                      "title": "",
+                      "icon": "ellipsis.circle"
+                    },
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": "Images Only",
+                          "icon": "photo.on.rectangle"
+                        },
+                        "event": {
+                          "tap": "b2ImagesOnly"
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": "View HTML Source",
+                          "icon": "chevron.left.forwardslash.chevron.right"
+                        },
+                        "event": {
+                          "tap": "b2ShowHTML"
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": "Zoom In",
+                          "icon": "plus.magnifyingglass"
+                        },
+                        "event": {
+                          "tap": "b2ZoomIn"
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": "Zoom Out",
+                          "icon": "minus.magnifyingglass"
+                        },
+                        "event": {
+                          "tap": "b2ZoomOut"
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": "Restore Page",
+                          "icon": "arrow.uturn.backward"
+                        },
+                        "event": {
+                          "tap": "b2Restore"
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": "Show Image Links",
+                          "icon": "photo.badge.magnifyingglass"
+                        },
+                        "event": {
+                          "tap": "b2ImageLinks"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "children": [
+              {
+                "type": "webview",
+                "id": "browser2",
+                "props": {
+                  "url": "https://apple.com",
+                  "maxHeight": 900
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "events": {
+    "b1ToggleNav": [
+      {
+        "do": "eval",
+        "target": "browser1",
+        "script": "(function(){var id='__ub_nav1__';var el=document.getElementById(id);if(el){el.remove();return;}var bar=document.createElement('div');bar.id=id;bar.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#1c1c1e;padding:8px;display:flex;gap:6px;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,0.6);';var back=document.createElement('button');back.textContent='\\u2190';back.onclick=function(){history.back();};back.style.cssText='padding:6px 10px;border:none;background:#3a3a3c;color:#fff;border-radius:6px;cursor:pointer;font-size:16px;';var fwd=document.createElement('button');fwd.textContent='\\u2192';fwd.onclick=function(){history.forward();};fwd.style.cssText='padding:6px 10px;border:none;background:#3a3a3c;color:#fff;border-radius:6px;cursor:pointer;font-size:16px;';var inp=document.createElement('input');inp.type='text';inp.id='__ub_urlinp1__';inp.value=window.location.href;inp.style.cssText='flex:1;padding:6px 8px;border:none;background:#3a3a3c;color:#fff;border-radius:6px;font-size:14px;';var go=document.createElement('button');go.textContent='Go';go.onclick=function(){var u=inp.value.trim();if(u&&!/^https?:\\/\\//i.test(u))u='https://'+u;if(u)window.location.href=u;};go.style.cssText='padding:6px 12px;border:none;background:#0a84ff;color:#fff;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600;';bar.appendChild(back);bar.appendChild(fwd);bar.appendChild(inp);bar.appendChild(go);document.documentElement.appendChild(bar);})();"
+      }
+    ],
+    "b1Translate": [
+      {
+        "do": "eval",
+        "target": "browser1",
+        "script": "window.location.href='https://translate.google.com/translate?sl=auto&tl=ru&u='+encodeURIComponent(window.location.href);"
+      }
+    ],
+    "b1FindChat": [
+      {
+        "do": "eval",
+        "target": "browser1",
+        "script": "(function(){var sels='[class*=\"chat\"],[class*=\"message\"],[id*=\"chat\"],[id*=\"message\"],[role=\"textbox\"],[contenteditable=\"true\"],textarea,input[type=\"text\"]';var els=document.querySelectorAll(sels);var count=0;els.forEach(function(el){var tag=el.tagName.toLowerCase();if(tag==='input'||tag==='textarea'||el.getAttribute('contenteditable')==='true'||el.getAttribute('role')==='textbox'){el.style.outline='3px solid #ff3b30';el.style.outlineOffset='2px';count++;}});if(count===0){var all=document.querySelectorAll('[class*=\"chat\"],[class*=\"message\"],[id*=\"chat\"],[id*=\"message\"]');all.forEach(function(el){el.style.outline='2px solid #ff9f0a';el.style.outlineOffset='1px';});count=all.length;}if(count===0)alert('No chat elements found on this page.');})();"
+      }
+    ],
+    "b1ToggleStats": [
+      {
+        "do": "eval",
+        "target": "browser1",
+        "script": "(function(){var id='__ub_stats1__';var el=document.getElementById(id);if(el){if(window.__ub_t1__)clearInterval(window.__ub_t1__);delete window.__ub_t1__;el.remove();return;}var ov=document.createElement('div');ov.id=id;ov.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2147483647;background:rgba(20,20,20,0.95);color:#fff;font-family:-apple-system,Helvetica,sans-serif;font-size:13px;padding:10px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;box-shadow:0 2px 12px rgba(0,0,0,0.6);';var tdsp=document.createElement('span');tdsp.style.cssText='font-variant-numeric:tabular-nums;min-width:72px;font-size:14px;font-family:monospace;';tdsp.textContent='00:00:00';var sec=0;window.__ub_t1__=setInterval(function(){sec++;var h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;tdsp.textContent=[h,m,s].map(function(n){return String(n).padStart(2,'0');}).join(':');},1000);var rst=document.createElement('button');rst.textContent='Reset';rst.onclick=function(){sec=0;tdsp.textContent='00:00:00';};rst.style.cssText='padding:3px 8px;background:#48484a;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;';var chatEls=document.querySelectorAll('[class*=\"message\"],[class*=\"chat\"],[role=\"listitem\"],[data-message-id],[class*=\"msg\"]');var chatSp=document.createElement('span');chatSp.style.cssText='color:#98e8a0;font-size:12px;white-space:nowrap;';if(chatEls.length>0)chatSp.textContent='\\ud83d\\udcac '+chatEls.length+' msgs';var sinp=document.createElement('input');sinp.type='text';sinp.placeholder='Search\\u2026';sinp.style.cssText='flex:1;min-width:80px;padding:3px 8px;background:#3a3a3c;color:#fff;border:none;border-radius:4px;font-size:13px;';var matches=[],midx=-1;function hl(){matches.forEach(function(m){try{m.style.outline='';m.style.backgroundColor='';}catch(e){}});matches=[];midx=-1;var q=sinp.value.trim();if(!q)return;var tw=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);var nd;while(nd=tw.nextNode()){if(nd.nodeValue&&nd.nodeValue.toLowerCase().includes(q.toLowerCase())&&nd.parentElement){nd.parentElement.style.outline='2px solid #ffd60a';nd.parentElement.style.backgroundColor='rgba(255,214,10,0.2)';matches.push(nd.parentElement);}}if(matches.length)matches[0].scrollIntoView({block:'center',behavior:'smooth'});}sinp.addEventListener('input',hl);var upb=document.createElement('button');upb.textContent='\\u2191';upb.onclick=function(){if(!matches.length)return;midx=(midx-1+matches.length)%matches.length;matches[midx].scrollIntoView({block:'center',behavior:'smooth'});};upb.style.cssText='padding:3px 8px;background:#48484a;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:14px;';var dnb=document.createElement('button');dnb.textContent='\\u2193';dnb.onclick=function(){if(!matches.length)return;midx=(midx+1)%matches.length;matches[midx].scrollIntoView({block:'center',behavior:'smooth'});};dnb.style.cssText=upb.style.cssText;ov.appendChild(tdsp);ov.appendChild(rst);if(chatEls.length>0)ov.appendChild(chatSp);ov.appendChild(sinp);ov.appendChild(upb);ov.appendChild(dnb);document.documentElement.appendChild(ov);})();"
+      }
+    ],
+    "b2ToggleNav": [
+      {
+        "do": "eval",
+        "target": "browser2",
+        "script": "(function(){var id='__ub_nav2__';var el=document.getElementById(id);if(el){el.remove();return;}var bar=document.createElement('div');bar.id=id;bar.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#1c1c1e;padding:8px;display:flex;gap:6px;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,0.6);';var back=document.createElement('button');back.textContent='\\u2190';back.onclick=function(){history.back();};back.style.cssText='padding:6px 10px;border:none;background:#3a3a3c;color:#fff;border-radius:6px;cursor:pointer;font-size:16px;';var fwd=document.createElement('button');fwd.textContent='\\u2192';fwd.onclick=function(){history.forward();};fwd.style.cssText='padding:6px 10px;border:none;background:#3a3a3c;color:#fff;border-radius:6px;cursor:pointer;font-size:16px;';var inp=document.createElement('input');inp.type='text';inp.id='__ub_urlinp2__';inp.value=window.location.href;inp.style.cssText='flex:1;padding:6px 8px;border:none;background:#3a3a3c;color:#fff;border-radius:6px;font-size:14px;';var go=document.createElement('button');go.textContent='Go';go.onclick=function(){var u=inp.value.trim();if(u&&!/^https?:\\/\\//i.test(u))u='https://'+u;if(u)window.location.href=u;};go.style.cssText='padding:6px 12px;border:none;background:#30d158;color:#fff;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600;';bar.appendChild(back);bar.appendChild(fwd);bar.appendChild(inp);bar.appendChild(go);document.documentElement.appendChild(bar);})();"
+      }
+    ],
+    "b2ImagesOnly": [
+      {
+        "do": "eval",
+        "target": "browser2",
+        "script": "(function(){var id='__ub_imgonly2__';var el=document.getElementById(id);if(el){el.remove();return;}var imgs=Array.prototype.slice.call(document.images).filter(function(i){return i.src&&/^https?:/.test(i.src);});var ov=document.createElement('div');ov.id=id;ov.style.cssText='position:fixed;inset:0;z-index:2147483647;background:#111;overflow:auto;padding:16px;-webkit-overflow-scrolling:touch;';var cls=document.createElement('button');cls.textContent='\\u2715 Close';cls.onclick=function(){ov.remove();};cls.style.cssText='display:block;margin-bottom:12px;padding:8px 16px;background:#3a3a3c;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;';ov.appendChild(cls);var h=document.createElement('p');h.textContent=imgs.length+' image'+(imgs.length!==1?'s':'')+' found';h.style.cssText='color:#8e8e93;font-family:sans-serif;font-size:13px;margin:0 0 12px;';ov.appendChild(h);if(imgs.length===0){var p=document.createElement('p');p.textContent='No images found on this page.';p.style.cssText='color:#fff;font-family:sans-serif;font-size:16px;';ov.appendChild(p);}else{imgs.forEach(function(img){var i=document.createElement('img');i.src=img.src;i.style.cssText='display:block;max-width:100%;margin-bottom:12px;border-radius:8px;';ov.appendChild(i);});}document.documentElement.appendChild(ov);})();"
+      }
+    ],
+    "b2ShowHTML": [
+      {
+        "do": "eval",
+        "target": "browser2",
+        "script": "(function(){var id='__ub_html2__';var el=document.getElementById(id);if(el){el.remove();return;}var ov=document.createElement('div');ov.id=id;ov.style.cssText='position:fixed;inset:0;z-index:2147483647;background:#1a1a1a;color:#d4d4d4;font-family:monospace;font-size:12px;overflow:auto;padding:16px;-webkit-overflow-scrolling:touch;';var btn=document.createElement('button');btn.textContent='\\u2715 Close';btn.onclick=function(){ov.remove();};btn.style.cssText='position:sticky;top:0;display:block;margin-bottom:12px;padding:8px 16px;background:#3a3a3c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;';var pre=document.createElement('pre');pre.style.cssText='margin:0;white-space:pre-wrap;word-break:break-all;';pre.textContent=document.documentElement.outerHTML;ov.appendChild(btn);ov.appendChild(pre);document.documentElement.appendChild(ov);})();"
+      }
+    ],
+    "b2ZoomIn": [
+      {
+        "do": "eval",
+        "target": "browser2",
+        "script": "window._z2=Math.min(3.0,(window._z2||1)+0.25);document.body.style.zoom=window._z2;"
+      }
+    ],
+    "b2ZoomOut": [
+      {
+        "do": "eval",
+        "target": "browser2",
+        "script": "window._z2=Math.max(0.25,(window._z2||1)-0.25);document.body.style.zoom=window._z2;"
+      }
+    ],
+    "b2Restore": [
+      {
+        "do": "eval",
+        "target": "browser2",
+        "script": "(function(){window._z2=1;document.body.style.zoom=1;['__ub_nav2__','__ub_imgonly2__','__ub_html2__','__ub_imglinks2__'].forEach(function(id){var el=document.getElementById(id);if(el)el.remove();});})();"
+      }
+    ],
+    "b2ImageLinks": [
+      {
+        "do": "eval",
+        "target": "browser2",
+        "script": "(function(){var id='__ub_imglinks2__';var el=document.getElementById(id);if(el){el.remove();return;}var srcs=Array.prototype.map.call(document.images,function(i){return i.src;}).filter(Boolean);var ov=document.createElement('div');ov.id=id;ov.style.cssText='position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,0.92);color:#fff;font-family:-apple-system,sans-serif;overflow:auto;padding:16px;-webkit-overflow-scrolling:touch;';var btn=document.createElement('button');btn.textContent='\\u2715 Close';btn.onclick=function(){ov.remove();};btn.style.cssText='display:block;margin-bottom:12px;padding:8px 16px;background:#3a3a3c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;';ov.appendChild(btn);var h=document.createElement('p');h.textContent=srcs.length+' image link'+(srcs.length!==1?'s':'')+' found:';h.style.cssText='color:#8e8e93;font-size:13px;margin:0 0 8px;';ov.appendChild(h);if(srcs.length===0){var p=document.createElement('p');p.textContent='No images found on this page.';p.style.cssText='color:#fff;font-size:14px;';ov.appendChild(p);}else{srcs.forEach(function(src){var p=document.createElement('p');p.textContent=src;p.style.cssText='margin:4px 0;word-break:break-all;font-size:11px;color:#64d2ff;font-family:monospace;';ov.appendChild(p);});}document.documentElement.appendChild(ov);})();"
+      }
+    ]
+  },
+  "meta": {
+    "version": 1,
+    "author": "UIBuilder",
+    "tags": [
+      "webview",
+      "eval",
+      "browser",
+      "tabview",
+      "javascript",
+      "devtools"
+    ]
+  }
+}
