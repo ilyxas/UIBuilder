@@ -938,7 +938,6 @@
     "schema": "com.ilya.ui/1.0",
     "screenId": "browser-screen",
     "title": "Browser Screen",
-    "notes": "Correct pattern for a browser-like screen. Root is vstack(spacing:0) — NOT navigationstack, which would add an unwanted large title area. The webview fills all available space. All interactions with the page (navigation, overlays, search) go through eval targeting the webview id. JS runs in the webview context and cannot read SwiftUI state — the urlInput textfield writes to state on each keystroke but that value is not accessible inside eval scripts. The Go button is a stub until webview.load action is implemented natively.",
     "state": {
       "vars": {
         "urlInput": ""
@@ -960,7 +959,6 @@
                 "keyboardType": "url",
                 "returnKeyType": "go",
                 "autocorrectionDisabled": true,
-                "autocapitalization": "none",
                 "backgroundColor": "#F2F2F7",
                 "cornerRadius": 10,
                 "padding": 10
@@ -984,7 +982,6 @@
           "id": "wb",
           "props": {
             "url": "https://example.com",
-            "maxHeight": "infinity",
             "maxWidth": "infinity"
           }
         },
