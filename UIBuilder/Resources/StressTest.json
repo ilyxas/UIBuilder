@@ -64,64 +64,64 @@
     ]
   },
   "root": {
-    "type": "navigationstack",
-    "props": {
-      "title": "Dashboard"
-    },
-    "host": {
-      "toolbar": {
-        "topTrailing": [
-          {
-            "type": "menu",
-            "props": {
-              "title": "Actions",
-              "icon": "ellipsis.circle"
-            },
-            "children": [
-              {
-                "type": "button",
-                "props": { "label": "Option 1", "icon": "star" },
-                "event": { "tap": "onMenuOption1" }
-              },
-              {
-                "type": "button",
-                "props": { "label": "Check Score", "icon": "trophy" },
-                "event": { "tap": "onMenuOption2" }
-              },
-              {
-                "type": "button",
-                "props": { "label": "Go to Details", "icon": "arrow.right" },
-                "event": { "tap": "onMenuOption3" }
-              }
-            ]
-          }
-        ],
-        "bottomBar": [
-          {
-            "type": "hstack",
-            "props": { "spacing": 8 },
-            "children": [
-              { "type": "spacer" },
-              {
-                "type": "badge",
-                "props": {
-                  "text": { "format": "Items: {itemCount}", "binds": ["itemCount"] }
-                }
-              }
-            ]
-          }
-        ]
-      }
-    },
+    "type": "tabview",
+    "props": { "selection": "activeTab" },
     "children": [
       {
-        "type": "tabview",
-        "props": { "selection": "activeTab" },
+        "type": "tab",
+        "id": "home",
+        "props": { "title": "Home", "icon": "house" },
         "children": [
           {
-            "type": "tab",
-            "id": "home",
-            "props": { "title": "Home", "icon": "house" },
+            "type": "navigationstack",
+            "props": {
+              "title": "Dashboard"
+            },
+            "host": {
+              "toolbar": {
+                "topTrailing": [
+                  {
+                    "type": "menu",
+                    "props": {
+                      "title": "Actions",
+                      "icon": "ellipsis.circle"
+                    },
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": { "label": "Option 1", "icon": "star" },
+                        "event": { "tap": "onMenuOption1" }
+                      },
+                      {
+                        "type": "button",
+                        "props": { "label": "Check Score", "icon": "trophy" },
+                        "event": { "tap": "onMenuOption2" }
+                      },
+                      {
+                        "type": "button",
+                        "props": { "label": "Go to Details", "icon": "arrow.right" },
+                        "event": { "tap": "onMenuOption3" }
+                      }
+                    ]
+                  }
+                ],
+                "bottomBar": [
+                  {
+                    "type": "hstack",
+                    "props": { "spacing": 8 },
+                    "children": [
+                      { "type": "spacer" },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "text": { "format": "Items: {itemCount}", "binds": ["itemCount"] }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
             "children": [
               {
                 "type": "scroll",
@@ -218,125 +218,119 @@
                 ]
               }
             ]
-          },
+          }
+        ]
+      },
+      {
+        "type": "tab",
+        "id": "settings",
+        "props": { "title": "Settings", "icon": "gear" },
+        "children": [
           {
-            "type": "tab",
-            "id": "settings",
-            "props": { "title": "Settings", "icon": "gear" },
+            "type": "list",
             "children": [
               {
-                "type": "scroll",
-                "props": { "axis": "vertical" },
+                "type": "section",
+                "props": { "title": "Notifications" },
                 "children": [
                   {
-                    "type": "list",
-                    "children": [
-                      {
-                        "type": "section",
-                        "props": { "title": "Notifications" },
-                        "children": [
-                          {
-                            "type": "label",
-                            "props": { "title": "Push Notifications", "icon": "bell" }
-                          },
-                          {
-                            "type": "toggle",
-                            "props": { "title": "Enable Notifications", "bind": "notificationsEnabled" },
-                            "event": { "change": "onNotificationsChange" }
-                          },
-                          {
-                            "type": "toggle",
-                            "props": { "title": "Dark Mode", "bind": "darkModeEnabled" },
-                            "event": { "change": "onDarkModeChange" }
-                          }
-                        ]
-                      },
-                      {
-                        "type": "section",
-                        "props": { "title": "Preferences" },
-                        "children": [
-                          {
-                            "type": "label",
-                            "props": { "title": "Auto Save", "icon": "externaldrive" }
-                          },
-                          {
-                            "type": "toggle",
-                            "props": { "title": "Auto Save", "bind": "autoSaveEnabled" },
-                            "event": { "change": "onAutoSaveChange" }
-                          }
-                        ]
-                      }
-                    ]
+                    "type": "label",
+                    "props": { "title": "Push Notifications", "icon": "bell" }
+                  },
+                  {
+                    "type": "toggle",
+                    "props": { "title": "Enable Notifications", "bind": "notificationsEnabled" },
+                    "event": { "change": "onNotificationsChange" }
+                  },
+                  {
+                    "type": "toggle",
+                    "props": { "title": "Dark Mode", "bind": "darkModeEnabled" },
+                    "event": { "change": "onDarkModeChange" }
+                  }
+                ]
+              },
+              {
+                "type": "section",
+                "props": { "title": "Preferences" },
+                "children": [
+                  {
+                    "type": "label",
+                    "props": { "title": "Auto Save", "icon": "externaldrive" }
+                  },
+                  {
+                    "type": "toggle",
+                    "props": { "title": "Auto Save", "bind": "autoSaveEnabled" },
+                    "event": { "change": "onAutoSaveChange" }
                   }
                 ]
               }
             ]
-          },
+          }
+        ]
+      },
+      {
+        "type": "tab",
+        "id": "counter",
+        "props": { "title": "Counter", "icon": "number" },
+        "children": [
           {
-            "type": "tab",
-            "id": "counter",
-            "props": { "title": "Counter", "icon": "number" },
+            "type": "vstack",
+            "props": { "alignment": "center", "spacing": 20 },
             "children": [
               {
-                "type": "vstack",
-                "props": { "alignment": "center", "spacing": 20 },
+                "type": "text",
+                "props": {
+                  "value": { "format": "Count: {counter}", "binds": ["counter"] }
+                }
+              },
+              {
+                "type": "hstack",
+                "props": { "spacing": 16 },
                 "children": [
                   {
-                    "type": "text",
-                    "props": {
-                      "value": { "format": "Count: {counter}", "binds": ["counter"] }
-                    }
-                  },
-                  {
-                    "type": "hstack",
-                    "props": { "spacing": 16 },
-                    "children": [
-                      {
-                        "type": "button",
-                        "props": { "label": "−", "icon": "minus.circle" },
-                        "event": { "tap": "onCounterDec" },
-                        "enabledWhen": { "gt": [{ "bind": "counter" }, 0] }
-                      },
-                      {
-                        "type": "button",
-                        "props": { "label": "+", "icon": "plus.circle" },
-                        "event": { "tap": "onCounterInc" }
-                      }
-                    ]
+                    "type": "button",
+                    "props": { "label": "−", "icon": "minus.circle" },
+                    "event": { "tap": "onCounterDec" },
+                    "enabledWhen": { "gt": [{ "bind": "counter" }, 0] }
                   },
                   {
                     "type": "button",
-                    "props": { "label": "Toggle Profile", "icon": "person.crop.circle" },
-                    "event": { "tap": "onToggleProfile" }
-                  },
-                  {
-                    "type": "text",
-                    "props": { "value": "Profile is visible" },
-                    "visibleWhen": { "bind": "profileVisible" }
-                  },
-                  {
-                    "type": "text",
-                    "props": { "value": "Counter exceeded 5!" },
-                    "visibleWhen": { "gt": [{ "bind": "counter" }, 5] }
-                  },
-                  {
-                    "type": "text",
-                    "props": { "value": "Both modes active" },
-                    "visibleWhen": {
-                      "and": [{ "bind": "notificationsEnabled" }, { "bind": "darkModeEnabled" }]
-                    }
-                  },
-                  {
-                    "type": "button",
-                    "props": { "label": "View Profile", "icon": "person" },
-                    "event": { "tap": "onNavigate" }
-                  },
-                  {
-                    "type": "button",
-                    "props": { "label": "Show Alert", "icon": "exclamationmark.triangle" },
-                    "event": { "tap": "onShowAlert" }
+                    "props": { "label": "+", "icon": "plus.circle" },
+                    "event": { "tap": "onCounterInc" }
                   }
                 ]
+              },
+              {
+                "type": "button",
+                "props": { "label": "Toggle Profile", "icon": "person.crop.circle" },
+                "event": { "tap": "onToggleProfile" }
+              },
+              {
+                "type": "text",
+                "props": { "value": "Profile is visible" },
+                "visibleWhen": { "bind": "profileVisible" }
+              },
+              {
+                "type": "text",
+                "props": { "value": "Counter exceeded 5!" },
+                "visibleWhen": { "gt": [{ "bind": "counter" }, 5] }
+              },
+              {
+                "type": "text",
+                "props": { "value": "Both modes active" },
+                "visibleWhen": {
+                  "and": [{ "bind": "notificationsEnabled" }, { "bind": "darkModeEnabled" }]
+                }
+              },
+              {
+                "type": "button",
+                "props": { "label": "View Profile", "icon": "person" },
+                "event": { "tap": "onNavigate" }
+              },
+              {
+                "type": "button",
+                "props": { "label": "Show Alert", "icon": "exclamationmark.triangle" },
+                "event": { "tap": "onShowAlert" }
               }
             ]
           }
