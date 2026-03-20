@@ -60,6 +60,10 @@ final class UIActionExecutor {
                 guard let id = action.id, let input = action.input else { continue }
                 onAIRequest?(id, input)
 
+            case "eval":
+                guard let target = action.target, let script = action.script else { continue }
+                WebViewRegistry.shared.evaluate(script: script, on: target)
+
             default:
                 break
             }

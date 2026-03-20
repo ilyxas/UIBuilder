@@ -879,5 +879,59 @@
         }
       ]
     }
+  },
+  {
+    "schema": "com.ilya.ui/1.0",
+    "screenId": "webview-demo",
+    "title": "WebView Demo",
+    "state": { "vars": {} },
+    "root": {
+      "type": "vstack",
+      "props": { "spacing": 12, "padding": 16 },
+      "children": [
+        {
+          "type": "webview",
+          "id": "browser",
+          "props": {
+            "url": "https://example.com",
+            "height": 400,
+            "cornerRadius": 12
+          }
+        },
+        {
+          "type": "hstack",
+          "props": { "spacing": 8 },
+          "children": [
+            {
+              "type": "button",
+              "props": { "label": "Red", "backgroundColor": "#E74C3C", "foregroundColor": "#FFFFFF", "cornerRadius": 8, "padding": 10 },
+              "event": { "tap": "makeRed" }
+            },
+            {
+              "type": "button",
+              "props": { "label": "Blue", "backgroundColor": "#2980B9", "foregroundColor": "#FFFFFF", "cornerRadius": 8, "padding": 10 },
+              "event": { "tap": "makeBlue" }
+            },
+            {
+              "type": "button",
+              "props": { "label": "Reset", "backgroundColor": "#95A5A6", "foregroundColor": "#FFFFFF", "cornerRadius": 8, "padding": 10 },
+              "event": { "tap": "resetBg" }
+            }
+          ]
+        }
+      ]
+    },
+    "events": {
+      "makeRed": [
+        { "do": "eval", "target": "browser", "script": "document.body.style.backgroundColor = 'red';" }
+      ],
+      "makeBlue": [
+        { "do": "eval", "target": "browser", "script": "document.body.style.backgroundColor = 'blue';" }
+      ],
+      "resetBg": [
+        { "do": "eval", "target": "browser", "script": "document.body.style.backgroundColor = '';" }
+      ]
+    },
+    "meta": { "version": 1, "author": "UIBuilder", "tags": ["webview", "eval", "javascript"] }
   }
 ]
