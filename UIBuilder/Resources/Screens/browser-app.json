@@ -1,0 +1,363 @@
+{
+  "schema": "com.ilya.ui/1.0",
+  "screenId": "browser-app",
+  "title": "Browser",
+  "state": {
+    "vars": {
+      "urlInput": "",
+      "menuOpen": false,
+      "statsBarOpen": false,
+      "searchTerm": ""
+    }
+  },
+  "root": {
+    "type": "navigationstack",
+    "props": {
+      "title": "Browser"
+    },
+    "children": [
+      {
+        "type": "vstack",
+        "props": {
+          "spacing": 0
+        },
+        "children": [
+          {
+            "type": "hstack",
+            "props": {
+              "spacing": 8,
+              "padding": 8,
+              "backgroundColor": "#FFFFFF"
+            },
+            "children": [
+              {
+                "type": "textfield",
+                "props": {
+                  "bind": "urlInput",
+                  "placeholder": "Enter URL...",
+                  "keyboardType": "url",
+                  "autocapitalization": "none",
+                  "autocorrectionDisabled": true,
+                  "returnKeyType": "go",
+                  "backgroundColor": "#F2F2F7",
+                  "cornerRadius": 10,
+                  "padding": 8
+                }
+              },
+              {
+                "type": "button",
+                "props": {
+                  "label": "Go",
+                  "backgroundColor": "#007AFF",
+                  "foregroundColor": "#FFFFFF",
+                  "cornerRadius": 10,
+                  "padding": 8
+                },
+                "event": {
+                  "tap": "navigateTo"
+                }
+              }
+            ]
+          },
+          {
+            "type": "hstack",
+            "props": {
+              "spacing": 12,
+              "padding": 10,
+              "backgroundColor": "#1C1C1E"
+            },
+            "visibleWhen": {
+              "bind": "statsBarOpen"
+            },
+            "children": [
+              {
+                "type": "text",
+                "props": {
+                  "value": "⏱",
+                  "foregroundColor": "#FFFFFF"
+                }
+              },
+              {
+                "type": "text",
+                "props": {
+                  "value": "⏱ 00:00:00",
+                  "foregroundColor": "#30D158"
+                }
+              },
+              {
+                "type": "button",
+                "props": {
+                  "label": "Reset",
+                  "foregroundColor": "#FF3B30"
+                },
+                "event": {
+                  "tap": "resetTimer"
+                }
+              },
+              {
+                "type": "spacer"
+              },
+              {
+                "type": "text",
+                "props": {
+                  "value": "🔍",
+                  "foregroundColor": "#FFFFFF"
+                }
+              },
+              {
+                "type": "textfield",
+                "props": {
+                  "bind": "searchTerm",
+                  "placeholder": "Search on page...",
+                  "backgroundColor": "#3A3A3C",
+                  "foregroundColor": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "padding": 6,
+                  "returnKeyType": "search",
+                  "autocapitalization": "none",
+                  "autocorrectionDisabled": true
+                }
+              },
+              {
+                "type": "button",
+                "props": {
+                  "label": "↑",
+                  "foregroundColor": "#FFFFFF"
+                },
+                "event": {
+                  "tap": "searchUp"
+                }
+              },
+              {
+                "type": "button",
+                "props": {
+                  "label": "↓",
+                  "foregroundColor": "#FFFFFF"
+                },
+                "event": {
+                  "tap": "searchDown"
+                }
+              }
+            ]
+          },
+          {
+            "type": "webview",
+            "id": "main-browser",
+            "props": {
+              "url": "",
+              "maxHeight": "infinity",
+              "maxWidth": "infinity"
+            }
+          },
+          {
+            "type": "hstack",
+            "props": {
+              "spacing": 16,
+              "padding": 12,
+              "backgroundColor": "#F2F2F7",
+              "cornerRadius": 12
+            },
+            "visibleWhen": {
+              "bind": "menuOpen"
+            },
+            "children": [
+              {
+                "type": "button",
+                "props": {
+                  "label": "🌐",
+                  "cornerRadius": 8,
+                  "padding": 10,
+                  "backgroundColor": "#E5E5EA"
+                },
+                "event": {
+                  "tap": "translatePage"
+                }
+              },
+              {
+                "type": "button",
+                "props": {
+                  "label": "💬",
+                  "cornerRadius": 8,
+                  "padding": 10,
+                  "backgroundColor": "#E5E5EA"
+                },
+                "event": {
+                  "tap": "findChat"
+                }
+              },
+              {
+                "type": "button",
+                "props": {
+                  "label": "📊",
+                  "cornerRadius": 8,
+                  "padding": 10,
+                  "backgroundColor": "#E5E5EA"
+                },
+                "event": {
+                  "tap": "toggleStatsBar"
+                }
+              },
+              {
+                "type": "spacer"
+              }
+            ]
+          },
+          {
+            "type": "hstack",
+            "props": {
+              "spacing": 0,
+              "padding": 8,
+              "backgroundColor": "#F2F2F7"
+            },
+            "children": [
+              {
+                "type": "button",
+                "props": {
+                  "label": "‹",
+                  "icon": "chevron.left",
+                  "padding": 10,
+                  "foregroundColor": "#007AFF"
+                },
+                "event": {
+                  "tap": "goBack"
+                }
+              },
+              {
+                "type": "spacer"
+              },
+              {
+                "type": "button",
+                "props": {
+                  "label": "›",
+                  "icon": "chevron.right",
+                  "padding": 10,
+                  "foregroundColor": "#007AFF"
+                },
+                "event": {
+                  "tap": "goForward"
+                }
+              },
+              {
+                "type": "spacer"
+              },
+              {
+                "type": "button",
+                "props": {
+                  "label": "🏠",
+                  "icon": "house",
+                  "padding": 10,
+                  "foregroundColor": "#007AFF"
+                },
+                "event": {
+                  "tap": "goHome"
+                }
+              },
+              {
+                "type": "spacer"
+              },
+              {
+                "type": "button",
+                "props": {
+                  "label": "···",
+                  "icon": "ellipsis",
+                  "padding": 10,
+                  "foregroundColor": "#007AFF"
+                },
+                "event": {
+                  "tap": "toggleMenu"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "events": {
+    "navigateTo": [
+      {
+        "do": "eval",
+        "target": "main-browser",
+        "script": "(function(){var u=window.__ub_url;if(u&&u.length>0){window.location.href=u;}else{window.location.href='https://example.com';}})()"
+      }
+    ],
+    "goBack": [
+      {
+        "do": "eval",
+        "target": "main-browser",
+        "script": "history.back();"
+      }
+    ],
+    "goForward": [
+      {
+        "do": "eval",
+        "target": "main-browser",
+        "script": "history.forward();"
+      }
+    ],
+    "goHome": [
+      {
+        "do": "eval",
+        "target": "main-browser",
+        "script": "(function(){var hp=\"<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Home</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#1C1C1E;color:#fff;font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:16px;min-height:100vh}h1{font-size:26px;font-weight:700;margin-bottom:20px}h2{font-size:16px;font-weight:600;color:rgba(235,235,245,.8);margin-bottom:12px}.card{background:#2C2C2E;border-radius:12px;padding:16px;margin-bottom:16px}.url-row{display:flex;gap:8px;margin-bottom:20px}.url-row input{flex:1;padding:10px 14px;background:#3A3A3C;color:#fff;border:none;border-radius:10px;font-size:16px;outline:none}.url-row button{padding:10px 20px;background:#0A84FF;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer}.row{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid #3A3A3C;font-size:13px}.row:last-child{border-bottom:none}.lbl{color:rgba(235,235,245,.67);flex-shrink:0;margin-right:8px}.val{color:#0A84FF;word-break:break-all;font-size:12px;text-align:right;max-width:60%}.hi{padding:8px 0;border-bottom:1px solid #3A3A3C;font-size:13px}.hi:last-child{border-bottom:none}.hi a{color:#0A84FF;text-decoration:none;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ts{color:#8E8E93;font-size:11px;margin-top:2px}.mt{color:#8E8E93;text-align:center;padding:12px;font-size:13px}</style></head><body><h1>\\ud83c\\udfe0 Home</h1><div class='url-row'><input id='ui' type='url' placeholder='Enter URL...' value='https://'><button id='go-btn'>Go</button></div><div class='card'><h2>\\ud83d\\udcf1 Device Stats</h2><div id='st'></div></div><div class='card'><h2>\\ud83d\\udcda Browsing History</h2><div id='hi'></div></div><script>(function(){var b=document.getElementById('go-btn');if(b){b.addEventListener('click',function(){var u=document.getElementById('ui').value.trim();if(!u||u==='https://')return;if(u.indexOf('http://')!==0&&u.indexOf('https://')!==0)u='https://'+u;window.__ub_url=u;window.location.href=u;});}var h=[];try{h=JSON.parse(localStorage.getItem('__ub_history__')||'[]');}catch(e){}h.unshift({url:'Home',time:new Date().toLocaleString()});localStorage.setItem('__ub_history__',JSON.stringify(h.slice(0,50)));var S=[['User Agent',navigator.userAgent],['Language',navigator.language],['Status',navigator.onLine?'Online':'Offline'],['CPU Cores',String(navigator.hardwareConcurrency)+' cores'],['Screen',String(screen.width)+'x'+String(screen.height)],['Pixel Ratio',String(window.devicePixelRatio)+'x'],['Color Depth',String(screen.colorDepth)+' bit'],['Timezone',Intl.DateTimeFormat().resolvedOptions().timeZone],['Date & Time',new Date().toLocaleString()]];var sh='';for(var i=0;i<S.length;i++){sh+='<div class=row><span class=lbl>'+S[i][0]+'</span><span class=val>'+String(S[i][1])+'</span></div>';}document.getElementById('st').innerHTML=sh;var hh='';if(h.length===0){hh='<p class=mt>No history yet</p>';}else{for(var j=0;j<h.length;j++){var it=h[j];var url=typeof it==='string'?it:it.url;var ts=typeof it==='object'&&it.time?it.time:'';hh+='<div class=hi><a href=\\\"'+url+'\\\">'+url+'</a>';if(ts)hh+='<div class=ts>'+ts+'</div>';hh+='</div>';}}document.getElementById('hi').innerHTML=hh;})();</script></body></html>\";document.open();document.write(hp);document.close();})()"
+      }
+    ],
+    "toggleMenu": [
+      {
+        "do": "state.toggle",
+        "key": "menuOpen"
+      }
+    ],
+    "translatePage": [
+      {
+        "do": "eval",
+        "target": "main-browser",
+        "script": "window.location.href='https://translate.google.com/translate?sl=auto&tl=ru&u='+encodeURIComponent(window.location.href);"
+      }
+    ],
+    "findChat": [
+      {
+        "do": "eval",
+        "target": "main-browser",
+        "script": "(function(){var sels=['textarea','input[type=text]','input[type=search]','[class*=chat]','[class*=message]','[id*=chat]','[id*=message]'];var found=0;for(var s=0;s<sels.length;s++){var els=document.querySelectorAll(sels[s]);for(var i=0;i<els.length;i++){var el=els[i];el.style.border='3px solid #FF3B30';el.style.borderRadius='8px';el.style.boxShadow='0 0 8px rgba(255,59,48,0.6)';found++;}}if(found===0){alert('No chat found on this page');}})()"
+      }
+    ],
+    "toggleStatsBar": [
+      {
+        "do": "state.toggle",
+        "key": "statsBarOpen"
+      }
+    ],
+    "resetTimer": [
+      {
+        "do": "eval",
+        "target": "main-browser",
+        "script": "(function(){var ex=document.getElementById('__ub_stats_bar__');if(ex){ex.remove();}var bar=document.createElement('div');bar.id='__ub_stats_bar__';bar.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2147483647;background:rgba(28,28,30,0.95);color:#fff;padding:8px 12px;display:flex;align-items:center;gap:10px;font-family:-apple-system,sans-serif;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,0.4);';var t=document.createElement('span');t.id='__ub_timer_txt__';t.style.cssText='font-variant-numeric:tabular-nums;color:#30D158;font-weight:600;';t.textContent='⏱ 00:00:00';var rb=document.createElement('button');rb.textContent='Reset';rb.style.cssText='padding:2px 8px;background:transparent;color:#FF3B30;border:1px solid #FF3B30;border-radius:6px;cursor:pointer;font-size:12px;';rb.onclick=function(){window.__ub_timer_start=Date.now();};var cb=document.createElement('button');cb.textContent='✕';cb.style.cssText='padding:2px 8px;background:transparent;color:#8E8E93;border:none;cursor:pointer;font-size:14px;';cb.onclick=function(){var o=document.getElementById('__ub_stats_bar__');if(o)o.remove();if(window.__ub_timer_interval){clearInterval(window.__ub_timer_interval);window.__ub_timer_interval=null;}};bar.appendChild(t);bar.appendChild(rb);bar.appendChild(cb);document.documentElement.appendChild(bar);window.__ub_timer_start=Date.now();if(window.__ub_timer_interval){clearInterval(window.__ub_timer_interval);}window.__ub_timer_interval=setInterval(function(){var el=document.getElementById('__ub_timer_txt__');if(!el){clearInterval(window.__ub_timer_interval);return;}var e=Math.floor((Date.now()-window.__ub_timer_start)/1000);var h=Math.floor(e/3600);var m=Math.floor((e%3600)/60);var s=e%60;el.textContent='⏱ '+(h<10?'0'+String(h):String(h))+':'+(m<10?'0'+String(m):String(m))+':'+(s<10?'0'+String(s):String(s));},1000);})()"
+      }
+    ],
+    "searchUp": [
+      {
+        "do": "eval",
+        "target": "main-browser",
+        "script": "(function(){var t=window.__ub_search_term;if(!t){t=prompt('Search on page:','');if(t)window.__ub_search_term=t;}if(t){window.find(t,false,true,true,false,false,false);}})()"
+      }
+    ],
+    "searchDown": [
+      {
+        "do": "eval",
+        "target": "main-browser",
+        "script": "(function(){var t=window.__ub_search_term;if(!t){t=prompt('Search on page:','');if(t)window.__ub_search_term=t;}if(t){window.find(t,false,false,true,false,false,false);}})()"
+      }
+    ]
+  },
+  "meta": {
+    "version": 1,
+    "author": "UIBuilder",
+    "tags": [
+      "browser",
+      "webview",
+      "eval",
+      "javascript"
+    ]
+  }
+}
