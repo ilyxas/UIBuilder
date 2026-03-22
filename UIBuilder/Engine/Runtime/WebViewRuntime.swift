@@ -1,5 +1,6 @@
 import SwiftUI
 import WebKit
+import Combine
 
 final class WebViewStore: ObservableObject {
     let id: String
