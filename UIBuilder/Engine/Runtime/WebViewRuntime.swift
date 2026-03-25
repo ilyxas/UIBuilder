@@ -5,9 +5,15 @@ import Combine
 final class WebViewStore: ObservableObject {
     let id: String
     let webView: WKWebView
+    var urlString: String = ""
+    @Published var isLoading: Bool = false
+    @Published var estimatedProgress: Double = 0.0
+    @Published var canGoBack: Bool = false
+    @Published var canGoForward: Bool = false
 
     init(id: String, initialURL: String?) {
         self.id = id
+        self.urlString = initialURL ?? ""
 
         let config = WKWebViewConfiguration()
         config.websiteDataStore = .default()
@@ -20,14 +26,17 @@ final class WebViewStore: ObservableObject {
         webView.allowsBackForwardNavigationGestures = true
         webView.allowsLinkPreview = true
         webView.configuration.applicationNameForUserAgent = safariUserAgent
-        webView.configuration.allowsAirPlayForMediaPlayback = false
-        webView.configuration.allowsPictureInPictureMediaPlayback = false
+        webView.configuration.defaultWebpagePreferences.preferredContentMode = .desktop
+        webView.configuration.defaultWebpagePreferences.allowsContentJavaScript = true
+        webView.scrollView.showsHorizontalScrollIndicator = true
+        webView.scrollView.showsVerticalScrollIndicator = true
+        webView.isExclusiveTouch=true
 
         self.webView = webView
 
         if let initialURL,
            let url = URL(string: initialURL) {
-            load(url)
+            webView.load(URLRequest(url: url))
         }
     }
 
@@ -98,6 +107,8 @@ struct WebViewRepresentable: UIViewRepresentable {
 struct WebViewNodeView: View {
     let nodeId: String
     let initialURL: String?
+    @State private var currentURL: URL? = URL(string: "https://www.google.com")
+    
 
     @StateObject private var store: WebViewStore
 
@@ -108,9 +119,63 @@ struct WebViewNodeView: View {
     }
 
     var body: some View {
-        WebViewRepresentable(store: store)
-            .onDisappear {
-                WebViewRegistry.shared.remove(id: nodeId)
+        VStack(spacing: 0) {
+            HStack(spacing: 10) {
+                Button {
+                    store.webView.goBack()
+                } label: {
+                    Image(systemName: "chevron.left")
+                }
+                
+                Button {
+                    store.webView.goForward()
+                } label: {
+                    Image(systemName: "chevron.right")
+                }
+                
+                TextField("URL", text: $store.urlString)
+                    .textFieldStyle(.roundedBorder)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .onSubmit { loadRequestedURL() }
+                
+                Button("Go") {
+                    loadRequestedURL()
+                }
+                .buttonStyle(.borderedProminent)
+                
+                Button {
+                    store.webView.reload()
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+                
+                if store.isLoading {
+                    ProgressView(value: store.estimatedProgress)
+                        .progressViewStyle(.linear)
+                        .tint(.purple)
+                }
             }
+                WebViewRepresentable(store: store)
+                    .onDisappear {
+                        WebViewRegistry.shared.remove(id: nodeId)
+                    }
+            
+        }
     }
+    
+            
+            private func loadRequestedURL() {
+                var cleaned = store.urlString.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !cleaned.lowercased().hasPrefix("http") {
+                    cleaned = "https://" + cleaned
+                }
+                guard let url = URL(string: cleaned) else { return }
+                currentURL = url
+                // The load is now triggered via initialURL → makeUIView (first time)
+                // or you can call store.load(url) here explicitly if you want reload on every Go press
+                store.load(url)   // ← add this line if you want "Go" to force reload even on same URL
+            }
 }
