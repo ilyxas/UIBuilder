@@ -2,6 +2,16 @@ import SwiftUI
 import WebKit
 import Combine
 
+@frozen
+public enum JSValue: Sendable, Equatable {
+    case string(String)
+    case bool(Bool)
+    case number(Double)
+    case data(Data)
+    case array([JSValue?])
+    case object([String: JSValue?])
+}
+
 final class WebViewStore: ObservableObject {
     let id: String
     let webView: WKWebView
@@ -91,6 +101,125 @@ final class WebViewRegistry {
 
     func remove(id: String) {
         stores[id] = nil
+    }
+    
+    @MainActor
+    func evaluateAsync(script: String, on targetId: String) async throws -> JSValue? {
+        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<JSValue?, Error>) in
+            // Ensure we only interact with WKWebView from the main actor
+            MainActor.assumeIsolated { }
+
+            guard self.stores[targetId] != nil else {
+                continuation.resume(
+                    throwing: NSError(
+                        domain: "WebViewRegistry",
+                        code: -1,
+                        userInfo: [NSLocalizedDescriptionKey: "WebView with id '\(targetId)' was not found."]
+                    )
+                )
+                return
+            }
+
+            self.evaluate(script: script, on: targetId) { result in
+                switch result {
+                case .success(let value):
+                    // Convert to a Sendable-friendly representation (JSValue)
+                    let boxed: JSValue?
+                    if let v = value {
+                        switch v {
+                        case let s as String:
+                            boxed = .string(s)
+                        case let n as NSNumber:
+                            if CFGetTypeID(n) == CFBooleanGetTypeID() {
+                                boxed = .bool(n.boolValue)
+                            } else {
+                                boxed = .number(n.doubleValue)
+                            }
+                        case let b as Bool:
+                            boxed = .bool(b)
+                        case let d as Data:
+                            boxed = .data(d)
+                        case let arr as [Any?]:
+                            let mapped: [JSValue?] = arr.map { item -> JSValue? in
+                                guard let item else { return nil }
+                                switch item {
+                                case let s as String: return .string(s)
+                                case let n as NSNumber:
+                                    if CFGetTypeID(n) == CFBooleanGetTypeID() {
+                                        return .bool(n.boolValue)
+                                    } else {
+                                        return .number(n.doubleValue)
+                                    }
+                                case let b as Bool: return .bool(b)
+                                case let d as Data: return .data(d)
+                                case let innerArr as [Any?]:
+                                    // Shallowly map nested arrays
+                                    let nested = innerArr.map { inner -> JSValue? in
+                                        guard let inner else { return nil }
+                                        switch inner {
+                                        case let s as String: return .string(s)
+                                        case let n as NSNumber:
+                                            if CFGetTypeID(n) == CFBooleanGetTypeID() { return .bool(n.boolValue) }
+                                            else { return .number(n.doubleValue) }
+                                        case let b as Bool: return .bool(b)
+                                        case let d as Data: return .data(d)
+                                        default: return nil
+                                        }
+                                    }
+                                    return .array(nested)
+                                case let dict as [String: Any?]:
+                                    var out: [String: JSValue?] = [:]
+                                    for (k, v) in dict {
+                                        if let v {
+                                            switch v {
+                                            case let s as String: out[k] = .string(s)
+                                            case let n as NSNumber:
+                                                if CFGetTypeID(n) == CFBooleanGetTypeID() { out[k] = .bool(n.boolValue) }
+                                                else { out[k] = .number(n.doubleValue) }
+                                            case let b as Bool: out[k] = .bool(b)
+                                            case let d as Data: out[k] = .data(d)
+                                            default: out[k] = nil
+                                            }
+                                        } else {
+                                            out[k] = nil
+                                        }
+                                    }
+                                    return .object(out)
+                                default:
+                                    return nil
+                                }
+                            }
+                            boxed = .array(mapped)
+                        case let dict as [String: Any?]:
+                            var out: [String: JSValue?] = [:]
+                            for (k, v) in dict {
+                                if let v {
+                                    switch v {
+                                    case let s as String: out[k] = .string(s)
+                                    case let n as NSNumber:
+                                        if CFGetTypeID(n) == CFBooleanGetTypeID() { out[k] = .bool(n.boolValue) }
+                                        else { out[k] = .number(n.doubleValue) }
+                                    case let b as Bool: out[k] = .bool(b)
+                                    case let d as Data: out[k] = .data(d)
+                                    default: out[k] = nil
+                                    }
+                                } else {
+                                    out[k] = nil
+                                }
+                            }
+                            boxed = .object(out)
+                        default:
+                            boxed = nil
+                        }
+                    } else {
+                        boxed = nil
+                    }
+                    continuation.resume(returning: boxed)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
 }
 
