@@ -331,15 +331,7 @@ struct UIRenderer: View {
             // Styles: plain (default), card, inset.
             groupView(evaluator: evaluator)
 
-        // MARK: - table
-
-        case "table":
-            // Table container. Children of type "section" group rows; plain children are rows.
-            // Props: rowHeight, selectionMode, alternatingRows, headerVisible, columns.
-            tableView(evaluator: evaluator)
-
         // MARK: - webview
-
         case "webview":
             webViewNode(evaluator: evaluator)
 
@@ -587,69 +579,6 @@ struct UIRenderer: View {
         default: // plain
             NodeStyle.apply(groupBody, props: node.props)
         }
-    }
-
-    // MARK: - Table helper
-
-    @ViewBuilder
-    private func tableView(evaluator: ExpressionEvaluator) -> some View {
-        // Table renders as a List with optional alternating row backgrounds.
-        // Props: rowHeight, selectionMode, alternatingRows, headerVisible, columns.
-        // Children of type "section" group rows; other children are direct rows.
-        let rowHeight       = node.props?["rowHeight"]?.doubleValue.map { CGFloat($0) }
-        let alternating     = node.props?["alternatingRows"]?.boolValue ?? false
-        let headerVisible   = node.props?["headerVisible"]?.boolValue ?? true
-        let columns         = node.props?["columns"]?.stringValue  // comma-separated column titles
-        let selectionMode   = node.props?["selectionMode"]?.stringValue ?? "none"
-        let children        = node.children ?? []
-
-        // Selection binding (single mode uses a string key stored in state)
-        let selectionKey = (node.id ?? "table") + ".selection"
-
-        NodeStyle.apply(
-            VStack(spacing: 0) {
-                // Optional column header row
-                if headerVisible, let columns {
-                    let cols = columns.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
-                    HStack {
-                        ForEach(cols, id: \.self) { col in
-                            Text(col)
-                                .font(.caption)
-                                .fontWeight(.semibold)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color(.secondarySystemBackground))
-
-                    Divider()
-                }
-
-                // Rows
-                List {
-                    ForEach(Array(children.enumerated()), id: \.offset) { index, child in
-                        let rowView = UIRenderer(node: child, document: document, state: state, executor: executor)
-                        Group {
-                            if alternating && index % 2 != 0 {
-                                rowView
-                                    .listRowBackground(Color(.systemFill))
-                            } else {
-                                rowView
-                            }
-                        }
-                        .if(rowHeight != nil) { $0.frame(minHeight: rowHeight!) }
-                        .if(selectionMode == "single") {
-                            $0.onTapGesture {
-                                state.set(selectionKey, value: .string(child.id ?? "\(index)"))
-                            }
-                        }
-                    }
-                }
-                .listStyle(.plain)
-            },
-            props: node.props
-        )
     }
 
     // MARK: - WebView helper

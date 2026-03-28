@@ -264,20 +264,6 @@
         "section"
       ]
     },
-    "table": {
-      "useWhen": [
-        "Displaying tabular data with named columns and a header row",
-        "Alternating row backgrounds for readability",
-        "Single-row selection from a data set"
-      ],
-      "avoidWhen": [
-        "Rows have heterogeneous layouts — use list with custom children",
-        "No columns or header is needed — use list"
-      ],
-      "preferOver": [
-        "list"
-      ]
-    },
     "webview": {
       "useWhen": [
         "Embedding a live web page or web-based content inside a native screen",

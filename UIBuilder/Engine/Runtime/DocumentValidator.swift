@@ -151,10 +151,6 @@ struct DocumentValidator {
             try validateEnum(props: props, node: "group", key: "style",
                              allowed: allowedGroupStyles)
 
-        case "table":
-            try validateEnum(props: props, node: "table", key: "selectionMode",
-                             allowed: allowedSelectionModes)
-
         default:
             break
         }
