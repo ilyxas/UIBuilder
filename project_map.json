@@ -1,0 +1,89 @@
+{
+  "project": {
+    "name": "UIBuilder",
+    "repository": "https://github.com/ilyxas/UIBuilder",
+    "summary": "UIBuilder is a Swift 6 runtime engine for executing UI described by external JSON. The system decodes JSON into ScreenDocument and UINode, renders a SwiftUI tree at runtime, supports state-driven updates, navigation flow, event/action execution, and embeds WKWebView through a SwiftUI wrapper with eval/JavaScript bridge support.",
+    "core_principle": "The project is built as a platform for generating, rendering, modifying, and executing UI as data rather than hand-coding static screens."
+  },
+  "system_areas": {
+    "contract_layer": {
+      "purpose": "Defines what UI can be generated and how AI should choose supported runtime entities.",
+      "parts": {
+        "UISchema.json": "Defines the valid document structure, node types, props, events, actions, expressions, and host.toolbar slots.",
+        "UIDecisions.json": "Defines semantic guidance for when to use nodes, what to avoid, and how to compose valid screens."
+      }
+    },
+    "runtime_model": {
+      "purpose": "Defines the in-memory representation of a loaded screen.",
+      "parts": {
+        "ScreenDocument.swift": "Root Codable runtime document for one screen.",
+        "UINode.swift": "Recursive node model representing every UI element in the tree.",
+        "UIAction.swift": "Action model for runtime side effects.",
+        "Expression.swift": "Expression language for visibility, enablement, and conditional logic."
+      }
+    },
+    "runtime_execution": {
+      "purpose": "Executes runtime behavior after a document is decoded.",
+      "parts": {
+        "UIStateStore.swift": "Reactive runtime state container.",
+        "NavigationStore.swift": "Runtime navigation path store.",
+        "ExpressionEvaluator.swift": "Evaluates expressions against current state.",
+        "UIActionExecutor.swift": "Runs action pipelines for events.",
+        "DocumentValidator.swift": "Validates documents before rendering."
+      }
+    },
+    "runtime_rendering": {
+      "purpose": "Transforms the runtime node tree into live SwiftUI views.",
+      "parts": {
+        "UIRenderer.swift": "Recursive renderer from UINode to SwiftUI.",
+        "NodeStyle.swift": "Applies shared prop-driven styling and layout modifiers.",
+        "ColorJSON.swift": "Color parsing helpers.",
+        "LayoutSupport.swift": "Layout helpers and supporting utilities."
+      }
+    },
+    "web_runtime": {
+      "purpose": "Embeds and controls live web content inside the runtime system.",
+      "parts": {
+        "WebViewRuntime.swift": "SwiftUI wrapper/runtime around WKWebView.",
+        "WebViewRegistry.swift": "Tracks live webviews by id for eval targeting.",
+        "Injected toolkit / browser helpers": "JavaScript-side tooling layered over embedded webviews."
+      }
+    },
+    "app_shell": {
+      "purpose": "Hosts the runtime surfaces and internal tools inside the app.",
+      "parts": {
+        "RootView.swift": "Top-level app shell and mode/surface switching.",
+        "ScreenHostView.swift": "Owns the active ScreenDocument and renders the runtime screen.",
+        "Bundled screens / resources": "Example and entry documents used for runtime loading."
+      }
+    },
+    "local_ai_sandbox": {
+      "purpose": "Experimental area for on-device local LLM integration inside the app.",
+      "status": "experimental",
+      "parts": {
+        "LocalLLMView.swift": "SwiftUI sandbox surface for local chat and model experiments.",
+        "LocalLLMService.swift": "MLX-based local model loading and inference service."
+      }
+    }
+  },
+  "system_flows": [
+    "JSON document -> ScreenDocument/UINode -> validation -> UIRenderer -> live SwiftUI tree",
+    "User event -> named handler -> UIActionExecutor -> state/navigation/ui/eval effects",
+    "webview node id -> WebViewRegistry -> eval action -> JavaScript execution inside WKWebView",
+    "LocalLLMView -> LocalLLMService -> local inference output -> future use in web/script workflows"
+  ],
+  "reading_order_for_new_sessions": [
+    "Project summary and core principle",
+    "Contract layer: UISchema.json and UIDecisions.json",
+    "Runtime model: ScreenDocument.swift and UINode.swift",
+    "Runtime rendering: UIRenderer.swift",
+    "Runtime execution: UIActionExecutor.swift, UIStateStore.swift, NavigationStore.swift",
+    "Web runtime: WebViewRuntime.swift",
+    "Local AI sandbox if the task involves on-device LLM work"
+  ],
+  "notes": {
+    "purpose": "This file is an architectural orientation map for new sessions.",
+    "not_a_real_tree": "This file is not intended to mirror the repository filesystem exactly.",
+    "not_current_state": "Task-specific progress, recent changes, and temporary experiments should be tracked separately."
+  }
+}
