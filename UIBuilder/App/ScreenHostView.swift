@@ -10,56 +10,45 @@ import UniformTypeIdentifiers
 
 
 struct ScreenHostView: View {
-    @State private var document: ScreenDocument?
+    init(document: Binding<ScreenDocument?> = .constant(nil)) {
+        self._document = document
+    }
+
+    @Binding var document: ScreenDocument?
     @State private var toastMessage: String?
     @State private var importError: String?
     @State private var isImporting = false
 
     @State private var stateStore = UIStateStore()
     @State private var navigationStore = NavigationStore()
+    @State private var controlsExpanded = false
+    @State private var didAttemptInitialLoad = false
 
     var body: some View {
-        Group {
+        VStack(spacing: 0) {
             if let document {
                 let executor = UIActionExecutor(state: stateStore, navigation: navigationStore)
 
-                VStack(spacing: 0) {
-                    HStack {
-                        Button("Load bundled home") {
-                            Task { await loadBundledHome() }
-                        }
-
-                        Spacer()
-
-                        Button("Upload Screen") {
-                            isImporting = true
-                        }
-                    }
-                    .padding()
-
-                    UIRenderer(
-                        node: document.root,
-                        document: document,
-                        state: stateStore,
-                        executor: configured(executor)
-                    )
-                }
+                UIRenderer(
+                    node: document.root,
+                    document: document,
+                    state: stateStore,
+                    executor: configured(executor)
+                )
             } else {
                 VStack(spacing: 16) {
                     Text("No screen loaded")
-
-                    Button("Load bundled home") {
-                        Task { await loadBundledHome() }
-                    }
-
-                    Button("Upload Screen") {
-                        isImporting = true
-                    }
+                    Text("Use the controls above to load a screen.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                 .padding()
             }
         }
         .task {
+            guard !didAttemptInitialLoad else { return }
+            didAttemptInitialLoad = true
             if document == nil {
                 await loadBundledHome()
             }
@@ -83,7 +72,7 @@ struct ScreenHostView: View {
         }
     }
 
-    private func loadBundledHome() async {
+    @MainActor private func loadBundledHome() async {
         do {
             let doc = try JSONLoader.loadScreen(named: "home")
             try DocumentValidator.validate(doc)
@@ -132,3 +121,4 @@ struct ScreenHostView: View {
         return executor
     }
 }
+
