@@ -6,6 +6,18 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		09740B382F74B487006A90F9 /* MLX in Frameworks */ = {isa = PBXBuildFile; productRef = 09740B372F74B487006A90F9 /* MLX */; };
+		09740B3A2F74B487006A90F9 /* MLXFFT in Frameworks */ = {isa = PBXBuildFile; productRef = 09740B392F74B487006A90F9 /* MLXFFT */; };
+		09740B3C2F74B487006A90F9 /* MLXNN in Frameworks */ = {isa = PBXBuildFile; productRef = 09740B3B2F74B487006A90F9 /* MLXNN */; };
+		09740B3E2F74B487006A90F9 /* MLXOptimizers in Frameworks */ = {isa = PBXBuildFile; productRef = 09740B3D2F74B487006A90F9 /* MLXOptimizers */; };
+		09740B402F74B487006A90F9 /* MLXRandom in Frameworks */ = {isa = PBXBuildFile; productRef = 09740B3F2F74B487006A90F9 /* MLXRandom */; };
+		09740B432F74B538006A90F9 /* MLXEmbedders in Frameworks */ = {isa = PBXBuildFile; productRef = 09740B422F74B538006A90F9 /* MLXEmbedders */; };
+		09740B452F74B538006A90F9 /* MLXLLM in Frameworks */ = {isa = PBXBuildFile; productRef = 09740B442F74B538006A90F9 /* MLXLLM */; };
+		09740B472F74B538006A90F9 /* MLXLMCommon in Frameworks */ = {isa = PBXBuildFile; productRef = 09740B462F74B538006A90F9 /* MLXLMCommon */; };
+		09740B492F74B538006A90F9 /* MLXVLM in Frameworks */ = {isa = PBXBuildFile; productRef = 09740B482F74B538006A90F9 /* MLXVLM */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		09D2D4902F5C89A7004A180F /* UIBuilder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UIBuilder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +35,15 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				09740B452F74B538006A90F9 /* MLXLLM in Frameworks */,
+				09740B3E2F74B487006A90F9 /* MLXOptimizers in Frameworks */,
+				09740B3C2F74B487006A90F9 /* MLXNN in Frameworks */,
+				09740B432F74B538006A90F9 /* MLXEmbedders in Frameworks */,
+				09740B382F74B487006A90F9 /* MLX in Frameworks */,
+				09740B492F74B538006A90F9 /* MLXVLM in Frameworks */,
+				09740B402F74B487006A90F9 /* MLXRandom in Frameworks */,
+				09740B472F74B538006A90F9 /* MLXLMCommon in Frameworks */,
+				09740B3A2F74B487006A90F9 /* MLXFFT in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +86,15 @@
 			);
 			name = UIBuilder;
 			packageProductDependencies = (
+				09740B372F74B487006A90F9 /* MLX */,
+				09740B392F74B487006A90F9 /* MLXFFT */,
+				09740B3B2F74B487006A90F9 /* MLXNN */,
+				09740B3D2F74B487006A90F9 /* MLXOptimizers */,
+				09740B3F2F74B487006A90F9 /* MLXRandom */,
+				09740B422F74B538006A90F9 /* MLXEmbedders */,
+				09740B442F74B538006A90F9 /* MLXLLM */,
+				09740B462F74B538006A90F9 /* MLXLMCommon */,
+				09740B482F74B538006A90F9 /* MLXVLM */,
 			);
 			productName = UIBuilder;
 			productReference = 09D2D4902F5C89A7004A180F /* UIBuilder.app */;
@@ -94,6 +124,10 @@
 			);
 			mainGroup = 09D2D4872F5C89A7004A180F;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				09740B362F74B487006A90F9 /* XCRemoteSwiftPackageReference "mlx-swift" */,
+				09740B412F74B538006A90F9 /* XCRemoteSwiftPackageReference "mlx-swift-lm" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 09D2D4912F5C89A7004A180F /* Products */;
 			projectDirPath = "";
@@ -253,11 +287,19 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 55C6K9KYBZ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = UIBuilder;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = passkey;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Face ID";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = Acess;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "To Talk";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Acess sometimes";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -286,11 +328,19 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 55C6K9KYBZ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = UIBuilder;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = passkey;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Face ID";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = Acess;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "To Talk";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Acess sometimes";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -336,6 +386,74 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		09740B362F74B487006A90F9 /* XCRemoteSwiftPackageReference "mlx-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ml-explore/mlx-swift";
+			requirement = {
+				kind = versionRange;
+				maximumVersion = 0.32.0;
+				minimumVersion = 0.10.0;
+			};
+		};
+		09740B412F74B538006A90F9 /* XCRemoteSwiftPackageReference "mlx-swift-lm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ml-explore/mlx-swift-lm/";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		09740B372F74B487006A90F9 /* MLX */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 09740B362F74B487006A90F9 /* XCRemoteSwiftPackageReference "mlx-swift" */;
+			productName = MLX;
+		};
+		09740B392F74B487006A90F9 /* MLXFFT */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 09740B362F74B487006A90F9 /* XCRemoteSwiftPackageReference "mlx-swift" */;
+			productName = MLXFFT;
+		};
+		09740B3B2F74B487006A90F9 /* MLXNN */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 09740B362F74B487006A90F9 /* XCRemoteSwiftPackageReference "mlx-swift" */;
+			productName = MLXNN;
+		};
+		09740B3D2F74B487006A90F9 /* MLXOptimizers */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 09740B362F74B487006A90F9 /* XCRemoteSwiftPackageReference "mlx-swift" */;
+			productName = MLXOptimizers;
+		};
+		09740B3F2F74B487006A90F9 /* MLXRandom */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 09740B362F74B487006A90F9 /* XCRemoteSwiftPackageReference "mlx-swift" */;
+			productName = MLXRandom;
+		};
+		09740B422F74B538006A90F9 /* MLXEmbedders */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 09740B412F74B538006A90F9 /* XCRemoteSwiftPackageReference "mlx-swift-lm" */;
+			productName = MLXEmbedders;
+		};
+		09740B442F74B538006A90F9 /* MLXLLM */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 09740B412F74B538006A90F9 /* XCRemoteSwiftPackageReference "mlx-swift-lm" */;
+			productName = MLXLLM;
+		};
+		09740B462F74B538006A90F9 /* MLXLMCommon */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 09740B412F74B538006A90F9 /* XCRemoteSwiftPackageReference "mlx-swift-lm" */;
+			productName = MLXLMCommon;
+		};
+		09740B482F74B538006A90F9 /* MLXVLM */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 09740B412F74B538006A90F9 /* XCRemoteSwiftPackageReference "mlx-swift-lm" */;
+			productName = MLXVLM;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 09D2D4882F5C89A7004A180F /* Project object */;
 }
