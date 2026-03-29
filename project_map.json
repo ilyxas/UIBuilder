@@ -70,7 +70,7 @@
     "JSON document -> ScreenDocument/UINode -> validation -> UIRenderer -> live SwiftUI tree",
     "User event -> named handler -> UIActionExecutor -> state/navigation/ui/eval effects",
     "webview node id -> WebViewRegistry -> eval action -> JavaScript execution inside WKWebView",
-    "LocalLLMView -> LocalLLMService -> local inference output -> future use in web/script workflows"
+    "LocalLLMView -> LLMEvaluator -> local inference output -> future use in web/script workflows"
   ],
   "reading_order_for_new_sessions": [
     "Project summary and core principle",

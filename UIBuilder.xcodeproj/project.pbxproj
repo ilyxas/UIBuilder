@@ -16,6 +16,7 @@
 		09740B452F74B538006A90F9 /* MLXLLM in Frameworks */ = {isa = PBXBuildFile; productRef = 09740B442F74B538006A90F9 /* MLXLLM */; };
 		09740B472F74B538006A90F9 /* MLXLMCommon in Frameworks */ = {isa = PBXBuildFile; productRef = 09740B462F74B538006A90F9 /* MLXLMCommon */; };
 		09740B492F74B538006A90F9 /* MLXVLM in Frameworks */ = {isa = PBXBuildFile; productRef = 09740B482F74B538006A90F9 /* MLXVLM */; };
+		09740FB62F79D1C3006A90F9 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = 09740FB52F79D1C3006A90F9 /* MarkdownUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +45,7 @@
 				09740B402F74B487006A90F9 /* MLXRandom in Frameworks */,
 				09740B472F74B538006A90F9 /* MLXLMCommon in Frameworks */,
 				09740B3A2F74B487006A90F9 /* MLXFFT in Frameworks */,
+				09740FB62F79D1C3006A90F9 /* MarkdownUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -95,6 +97,7 @@
 				09740B442F74B538006A90F9 /* MLXLLM */,
 				09740B462F74B538006A90F9 /* MLXLMCommon */,
 				09740B482F74B538006A90F9 /* MLXVLM */,
+				09740FB52F79D1C3006A90F9 /* MarkdownUI */,
 			);
 			productName = UIBuilder;
 			productReference = 09D2D4902F5C89A7004A180F /* UIBuilder.app */;
@@ -127,6 +130,7 @@
 			packageReferences = (
 				09740B362F74B487006A90F9 /* XCRemoteSwiftPackageReference "mlx-swift" */,
 				09740B412F74B538006A90F9 /* XCRemoteSwiftPackageReference "mlx-swift-lm" */,
+				09740FB42F79D1C3006A90F9 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 09D2D4912F5C89A7004A180F /* Products */;
@@ -288,6 +292,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CODE_SIGN_ENTITLEMENTS = UIBuilder/UIBuilder.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 55C6K9KYBZ;
@@ -329,6 +334,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CODE_SIGN_ENTITLEMENTS = UIBuilder/UIBuilder.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 55C6K9KYBZ;
@@ -405,6 +411,14 @@
 				kind = branch;
 			};
 		};
+		09740FB42F79D1C3006A90F9 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/gonzalezreal/swift-markdown-ui";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.4.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -452,6 +466,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 09740B412F74B538006A90F9 /* XCRemoteSwiftPackageReference "mlx-swift-lm" */;
 			productName = MLXVLM;
+		};
+		09740FB52F79D1C3006A90F9 /* MarkdownUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 09740FB42F79D1C3006A90F9 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */;
+			productName = MarkdownUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -2,6 +2,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct RootView: View {
+    
     private enum Section: String, CaseIterable, Identifiable {
         case screen = "Screen"
         case localLLM = "Local LLM"
@@ -20,6 +21,7 @@ struct RootView: View {
     @State private var screenDocument: ScreenDocument? = nil
     @State private var isImporting = false
     @State private var importError: String? = nil
+    
 
     var body: some View {
         NavigationStack {
