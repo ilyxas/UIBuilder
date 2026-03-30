@@ -31,6 +31,7 @@ struct RootView: View {
                     ScreenHostView(document: $screenDocument)
                 case .localLLM:
                     LocalLLMView()
+                        .environment(DeviceStat())
                 }
             }
             .toolbar {

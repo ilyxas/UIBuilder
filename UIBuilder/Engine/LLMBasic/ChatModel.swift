@@ -4,8 +4,6 @@ import MLXLLM
 import MLXLMCommon
 import SwiftUI
 
-/// which model to load
-private let modelConfiguration = LLMRegistry.qwen3_8b_4bit
 
 /// instructions for the model (the system prompt)
 private let instructions =
@@ -25,58 +23,9 @@ Behavior rules:
 - If information is missing, say so directly.
 - Prefer precise, domain-aware answers over generic summaries.
 - Keep your responses practical and relevant to the current session.
-
-Be helpful, accurate, and context-aware.
 """
 
 
-
-/// Downloads and loads the weights for the model -- we have one of these in the process
-@MainActor
-@Observable
-public class ModelLoader {
-
-    enum State {
-        case idle
-        case loading(Task<ModelContainer, Error>)
-        case loaded(ModelContainer)
-    }
-
-    public var progress = 0.0
-    public var isLoaded: Bool {
-        switch state {
-        case .idle, .loading: false
-        case .loaded: true
-        }
-    }
-
-    private var state = State.idle
-
-    public func model() async throws -> ModelContainer {
-        switch self.state {
-        case .idle:
-            let task = Task {
-                // download and report progress
-                try await loadModelContainer(configuration: modelConfiguration) { value in
-                    Task { @MainActor in
-                        self.progress = value.fractionCompleted
-                    }
-                }
-            }
-            self.state = .loading(task)
-            let model = try await task.value
-
-            self.state = .loaded(model)
-            return model
-
-        case .loading(let task):
-            return try await task.value
-
-        case .loaded(let model):
-            return model
-        }
-    }
-}
 
 /// View model for the ChatSession
 @MainActor

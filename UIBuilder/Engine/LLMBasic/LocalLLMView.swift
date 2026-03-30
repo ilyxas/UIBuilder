@@ -16,6 +16,8 @@ struct LocalLLMView: View {
         var id: Self { self }
     }
     
+    @Environment(DeviceStat.self) private var deviceStat
+    
     @State private var selectedDisplayStyle = DisplayStyle.markdown
     
     //@State var loader = ModelLoader()
@@ -85,6 +87,19 @@ struct LocalLLMView: View {
             }
         }
         .padding()
+        
+        // Performance Metrics Panel
+        MetricsView(
+            tokensPerSecond: llm.tokensPerSecond,
+            timeToFirstToken: llm.timeToFirstToken,
+            promptLength: llm.promptLength,
+            totalTokens: llm.totalTokens,
+            totalTime: llm.totalTime,
+            memoryUsed: deviceStat.gpuUsage.activeMemory,
+            cacheMemory: deviceStat.gpuUsage.cacheMemory,
+            peakMemory: deviceStat.gpuUsage.peakMemory
+        )
+        
         .task {
             do {
                 let model = try await llm.load()
