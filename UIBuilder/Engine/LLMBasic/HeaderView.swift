@@ -3,7 +3,7 @@
 import SwiftUI
 
 struct HeaderView: View {
-    @Bindable var llm: LLMEvaluator
+    var llm: LLMEvaluator
     @Binding var selectedDisplayStyle: LocalLLMView.DisplayStyle
 
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
@@ -31,20 +31,6 @@ struct HeaderView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-        }
-    }
-
-    var options: some View {
-        HStack(spacing: 24) {
-            Toggle("Tools", isOn: $llm.includeWeatherTool)
-                .toggleStyle(.switch)
-                .fixedSize()
-                .help("Enable function calling with weather, math, and time tools")
-
-            Toggle("Thinking", isOn: $llm.enableThinking)
-                .toggleStyle(.switch)
-                .fixedSize()
-                .help("Enable thinking mode (supported by Qwen3)")
         }
     }
 
@@ -86,7 +72,6 @@ struct HeaderView: View {
                 status
                 DisclosureGroup("Controls") {
                     VStack {
-                        options
                         HStack {
                             tokens
                             display
@@ -101,7 +86,6 @@ struct HeaderView: View {
                 // Controls row
                 HStack(spacing: 16) {
                     HStack(spacing: 24) {
-                        options
                         tokens
                     }
 

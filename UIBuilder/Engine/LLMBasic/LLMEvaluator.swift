@@ -44,11 +44,38 @@ class LLMEvaluator {
     private var firstTokenTime: TimeInterval = 0
 
     /// This controls which model loads.
-    var modelConfiguration = LLMRegistry.deepSeekR1_7B_4bit
+    static public let qwen25_7b_4bit_uncensored = ModelConfiguration(
+        id: "mlx-community/Qwen2.5-7B-Instruct-Uncensored-4bit",
+        defaultPrompt: "What is the difference between a fruit and a vegetable?"
+    )
+    
+    var modelConfiguration = qwen25_7b_4bit_uncensored
+
 
     /// Parameters controlling the generation output (max tokens and temperature).
+//    var generateParameters: GenerateParameters {
+//        GenerateParameters(maxTokens: maxTokens, temperature: 0.6)
+//    }
+    
     var generateParameters: GenerateParameters {
-        GenerateParameters(maxTokens: maxTokens, temperature: 0.6)
+        GenerateParameters(
+            maxTokens: maxTokens,           // оставляем как у тебя (или nil, если хочешь без лимита)
+            maxKVSize: 32768,               // комфортные 32K токенов — золотая середина для телефона
+            kvBits: 4,                      // квантизация KV-кэша, сильно экономит память
+            kvGroupSize: 64,                // стандартное значение
+            quantizedKVStart: 0,            // сразу включаем
+            temperature: 0.75,              // чуть креативнее для roleplay
+            topP: 0.9,                      // хорошая вариативность
+            topK: 0,                        // выключаем, topP лучше работает
+            minP: 0.05,                     // небольшой фильтр мусора
+            repetitionPenalty: 1.12,        // боремся с зацикливанием в длинных RP
+            repetitionContextSize: 64,      // смотрим чуть дальше назад
+            presencePenalty: 0.2,           // немного разнообразия
+            presenceContextSize: 64,
+            frequencyPenalty: 0.1,          // лёгкий штраф за частые слова
+            frequencyContextSize: 64,
+            prefillStepSize: 512            // оставляем как было
+        )
     }
 
     /// A task responsible for handling the generation process.
@@ -135,7 +162,6 @@ class LLMEvaluator {
             modelInfo = "Loading \(modelName)..."
             downloadProgress = nil
             totalSize = nil
-
             let modelContainer = try await LLMModelFactory.shared.loadContainer(
                 hub: hub,
                 configuration: modelConfiguration

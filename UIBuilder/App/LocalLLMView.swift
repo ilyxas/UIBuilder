@@ -7,9 +7,12 @@ import MLXLLM
 
 struct LocalLLMView: View {
 
-    init(llm: Binding<LLMEvaluator>) {
+    let llm: LLMEvaluator
+    
+    init(evaluator: LLMEvaluator, chatHolder: ChatModel) {
         Memory.cacheLimit = 20 * 1024 * 1024
-        self._llm = llm
+        self.llm = evaluator
+        self.chatModel = chatHolder
     }
     
     enum DisplayStyle: String, CaseIterable, Identifiable {
@@ -17,16 +20,14 @@ struct LocalLLMView: View {
         var id: Self { self }
     }
     
-    @Environment(DeviceStat.self) private var deviceStat
-    
     @State private var selectedDisplayStyle = DisplayStyle.markdown
     
     //@State var loader = ModelLoader()
     
-    @State var llm: LLMEvaluator
+    
 
     /// once loaded this will hold the chat session
-    @State var session: ChatModel?
+    
     @State var error: String?
 
     /// prompt for the LLM (text field)
@@ -34,20 +35,17 @@ struct LocalLLMView: View {
 
     @FocusState var promptFocused
 
+    let chatModel: ChatModel
     var body: some View {
-        VStack {
-                // Header Section
+            VStack {
                 HeaderView(
                     llm: llm,
                     selectedDisplayStyle: $selectedDisplayStyle
                 )
-            
 
-                if let session {
-                // show the chat messages
                 ScrollView(.vertical) {
                     VStack(alignment: .leading, spacing: 0) {
-                        ForEach(session.messages.enumerated(), id: \.offset) { _, message in
+                        ForEach(chatModel.messages.enumerated(), id: \.offset) { _, message in
                             HStack {
                                 OutputViewSecond(
                                     output: message.content,
@@ -61,9 +59,9 @@ struct LocalLLMView: View {
 
                         Spacer()
 
-                        if session.isBusy {
+                        if chatModel.isBusy {
                             HStack {
-                                Button("Stop", action: { session.cancel() })
+                                Button("Stop", action: { chatModel.cancel() })
                                     .keyboardShortcut(".")
                                 Spacer()
                             }
@@ -85,46 +83,41 @@ struct LocalLLMView: View {
                 .scrollDismissesKeyboard(.interactively)
                 .defaultScrollAnchor(.bottom)
             }
-        }
-        .padding()
-        
-//        // Performance Metrics Panel
-//        MetricsView(
-//            tokensPerSecond: llm.tokensPerSecond,
-//            timeToFirstToken: llm.timeToFirstToken,
-//            promptLength: llm.promptLength,
-//            totalTokens: llm.totalTokens,
-//            totalTime: llm.totalTime,
-//            memoryUsed: deviceStat.gpuUsage.activeMemory,
-//            cacheMemory: deviceStat.gpuUsage.cacheMemory,
-//            peakMemory: deviceStat.gpuUsage.peakMemory
-//        )
-            
-        
-        .task {
-            do {
-                let model = try await llm.load()
-                self.session = ChatModel(model: model, genParameters: llm.generateParameters)
-            } catch {
-                self.error = error.localizedDescription
-            }
-        }
-        .onDisappear {
-            //self.session?
-        }
-        .overlay {
-            if llm.isLoading {
-                LoadingOverlayView(
-                    modelInfo: llm.modelInfo,
-                    downloadProgress: llm.downloadProgress,
-                    progressDescription: llm.totalSize
-                )
-            }
-        }
-    }
+            .padding()
+            .task {
+                do {
+                    let model = try await llm.load()
 
-    private func respond() {
-        session?.respond(prompt)
-        prompt = ""
+                    if !chatModel.hasSession {
+                        if chatModel.messages.isEmpty {
+                            chatModel.createSession(
+                                model: model,
+                                genParameters: llm.generateParameters
+                            )
+                        } else {
+                            chatModel.restoreSession(
+                                model: model,
+                                genParameters: llm.generateParameters
+                            )
+                        }
+                    }
+                } catch {
+                    self.error = error.localizedDescription
+                }
+            }
+            .overlay {
+                if llm.isLoading {
+                    LoadingOverlayView(
+                        modelInfo: llm.modelInfo,
+                        downloadProgress: llm.downloadProgress,
+                        progressDescription: llm.totalSize
+                    )
+                }
+            }
+        }
+
+        private func respond() {
+            chatModel.respond(prompt)
+            prompt = ""
+        }
     }
-}

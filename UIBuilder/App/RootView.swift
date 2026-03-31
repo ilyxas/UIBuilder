@@ -21,6 +21,8 @@ struct RootView: View {
     @State private var screenDocument: ScreenDocument? = nil
     @State private var isImporting = false
     @State private var importError: String? = nil
+    @State private var llmEvaluator = LLMEvaluator()
+    @State private var chatModel = ChatModel()
     
 
     var body: some View {
@@ -30,8 +32,7 @@ struct RootView: View {
                 case .screen:
                     ScreenHostView(document: $screenDocument)
                 case .localLLM:
-                    LocalLLMView()
-                        .environment(DeviceStat())
+                    LocalLLMView(evaluator: llmEvaluator, chatHolder: chatModel)
                 }
             }
             .toolbar {
@@ -53,7 +54,7 @@ struct RootView: View {
 
                     if selection == .screen {
                         Button {
-                            loadBundledHomeFromRoot()
+                            
                         } label: {
                             Image(systemName: "house")
                         }
@@ -88,15 +89,15 @@ struct RootView: View {
         }
     }
 
-    private func loadBundledHomeFromRoot() {
-        do {
-            let doc = try JSONLoader.loadScreen(named: "home")
-            try DocumentValidator.validate(doc)
-            screenDocument = doc
-        } catch {
-            importError = error.localizedDescription
-        }
-    }
+//    private func loadBundledHomeFromRoot() {
+//        do {
+//            let doc = try JSONLoader.loadScreen(named: "home")
+//            try DocumentValidator.validate(doc)
+//            screenDocument = doc
+//        } catch {
+//            importError = error.localizedDescription
+//        }
+//    }
 
     private func handleImport(_ result: Result<[URL], Error>) {
         do {
@@ -118,6 +119,3 @@ struct RootView: View {
     }
 }
 
-#Preview {
-    RootView()
-}
