@@ -32,7 +32,7 @@ struct RootView: View {
                 case .screen:
                     ScreenHostView(document: $screenDocument)
                 case .localLLM:
-                    LocalLLMView(evaluator: llmEvaluator, chatHolder: chatModel)
+                    LocalLLMView(llm: llmEvaluator, chatModel: chatModel)
                 }
             }
             .toolbar {
