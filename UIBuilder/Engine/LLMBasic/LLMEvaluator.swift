@@ -21,10 +21,16 @@ class LLMEvaluator {
         defaultPrompt: "What is the difference between a fruit and a vegetable?"
     )
     
+    static public let Josiefied_qwen3_8b_4bit_abliterated = ModelConfiguration(
+        id: "mlx-community/Josiefied-Qwen3-8B-abliterated-v1-4bit",
+        defaultPrompt: "What is the difference between a fruit and a vegetable?"
+    )
+    
     public let availableModels: [LMModel] = [
         LMModel(name: "llama3.2:1b", configuration: LLMRegistry.llama3_2_1B_4bit, type: .llm),
         LMModel(name: "Qwen2.5-7B Uncenzored", configuration: qwen25_7b_4bit_uncensored, type: .llm),
         LMModel(name: "Qwen2.5-7B Josiefied", configuration: Josiefied_qwen25_7b_4bit_abliterated, type: .llm),
+        LMModel(name: "Qwen3-8B Josiefied", configuration: Josiefied_qwen3_8b_4bit_abliterated, type: .llm),
         LMModel(name: "qwen2.5:1.5b", configuration: LLMRegistry.qwen2_5_1_5b, type: .llm),
         LMModel(name: "smolLM:135m", configuration: LLMRegistry.smolLM_135M_4bit, type: .llm),
         LMModel(name: "qwen3:0.6b", configuration: LLMRegistry.qwen3_0_6b_4bit, type: .llm),
@@ -79,7 +85,7 @@ class LLMEvaluator {
 //        GenerateParameters(maxTokens: maxTokens, temperature: 0.6)
 //    }
     
-    var selectedModel = LMModel(name: "Qwen2.5-7B Josiefied", configuration: Josiefied_qwen25_7b_4bit_abliterated, type: .llm)
+    var selectedModel = LMModel(name: "Qwen3-8B Josiefied", configuration: Josiefied_qwen3_8b_4bit_abliterated, type: .llm)
     
     var modelConfiguration: ModelConfiguration {
         selectedModel.configuration
