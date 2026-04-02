@@ -4,7 +4,8 @@ import Foundation
 import MLX
 
 @Observable
-final class DeviceStat: @unchecked Sendable {
+@MainActor
+final class DeviceStat {
 
     @MainActor
     var gpuUsage = Memory.snapshot()
@@ -18,9 +19,9 @@ final class DeviceStat: @unchecked Sendable {
         }
     }
 
-    deinit {
-        timer?.invalidate()
-    }
+//    deinit {
+//        timer?.invalidate()
+//    }
 
     private func updateGPUUsages() {
         let gpuSnapshotDelta = initialGPUSnapshot.delta(Memory.snapshot())

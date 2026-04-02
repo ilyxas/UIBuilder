@@ -8,6 +8,7 @@ import MLXLLM
 struct LocalLLMView: View {
     let llm: LLMEvaluator
     let chatModel: ChatModel
+    let deviceStat: DeviceStat
 
     enum DisplayStyle: String, CaseIterable, Identifiable {
         case plain, markdown
@@ -20,11 +21,12 @@ struct LocalLLMView: View {
 
     @FocusState private var promptFocused: Bool
 
-    init(llm: LLMEvaluator, chatModel: ChatModel) {
+    init(llm: LLMEvaluator, chatModel: ChatModel, deviceStat: DeviceStat) {
         Memory.cacheLimit = 10 * 1024 * 1024
         //MLX.GPU.set(cacheLimit: 1024 * 1024 * 1024)
         self.llm = llm
         self.chatModel = chatModel
+        self.deviceStat = deviceStat
     }
 
     var body: some View {
@@ -86,6 +88,7 @@ struct LocalLLMView: View {
                     NavigationLink {
                         LocalLLMSettingsView(
                             llm: llm,
+                            deviceStat: deviceStat,
                             chatModel: chatModel,
                             selectedDisplayStyle: $selectedDisplayStyle
                         )
@@ -247,7 +250,7 @@ struct LocalLLMView: View {
         let text = trimmedPrompt
         guard !text.isEmpty else { return }
 
-        chatModel.respond(text)
+        chatModel.respondBuffered(text)
         prompt = ""
     }
 }
@@ -337,7 +340,9 @@ private struct MessageBubbleRow: View {
 }
 
 struct LocalLLMSettingsView: View {
+
     let llm: LLMEvaluator
+    let deviceStat: DeviceStat
     let chatModel: ChatModel
 
     @Binding var selectedDisplayStyle: LocalLLMView.DisplayStyle
@@ -350,6 +355,7 @@ struct LocalLLMSettingsView: View {
             modelSection
             generationSection
             displaySection
+            metricsSection
             debugSection
         }
         .scrollContentBackground(.hidden)
@@ -661,6 +667,23 @@ struct LocalLLMSettingsView: View {
             )
         }
         .padding(.vertical, 4)
+    }
+    
+    private var metricsSection: some View {
+        Section("Metrics") {
+            MetricsView(
+                tokensPerSecond: chatModel.tokensPerSecond,
+                timeToFirstToken: chatModel.timeToFirstToken * 1000.0,
+                promptLength: chatModel.promptLength,
+                totalTokens: chatModel.totalTokens,
+                totalTime: chatModel.totalTime,
+                memoryUsed: deviceStat.gpuUsage.activeMemory,
+                cacheMemory: deviceStat.gpuUsage.cacheMemory,
+                peakMemory: deviceStat.gpuUsage.peakMemory
+            )
+            .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+            .listRowBackground(Color.clear)
+        }
     }
 
     private func doubleParameterRow(
