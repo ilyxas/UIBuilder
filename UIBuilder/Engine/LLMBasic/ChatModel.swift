@@ -193,7 +193,6 @@ public final class ChatModel {
                         first = false
                         timeToFirstToken = now - startTime
                     }
-                    print(item)
                     bufferedResponse += item
                     responseChunkCount += 1
 
@@ -206,7 +205,7 @@ public final class ChatModel {
                 let endTime = CFAbsoluteTimeGetCurrent()
                 let responseDuration = endTime - startTime
 
-                messages[lastIndex].content = bufferedResponse
+                messages[lastIndex].content = bufferedResponse.trimmingCharacters(in: .whitespacesAndNewlines)
                 totalTokens += responseChunkCount
                 totalTime += responseDuration
 

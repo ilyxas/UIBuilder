@@ -27,6 +27,7 @@ class LLMEvaluator {
     )
     
     public let availableModels: [LMModel] = [
+        LMModel(name: "llama3_8B_4bit", configuration: LLMRegistry.llama3_8B_4bit, type: .llm),
         LMModel(name: "llama3.2:1b", configuration: LLMRegistry.llama3_2_1B_4bit, type: .llm),
         LMModel(name: "Qwen2.5-7B Uncenzored", configuration: qwen25_7b_4bit_uncensored, type: .llm),
         LMModel(name: "Qwen2.5-7B Josiefied", configuration: Josiefied_qwen25_7b_4bit_abliterated, type: .llm),
