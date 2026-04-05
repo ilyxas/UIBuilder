@@ -6,16 +6,34 @@ import MLXLLM
 import MLXLMCommon
 import Metal
 import SwiftUI
+import MLXVLM
 
 @Observable
 @MainActor
 class LLMEvaluator {
-
+    
+    public let availableModels: [LMModel] = [
+        LMModel(name: "llama3_8B_4bit", configuration: LLMRegistry.llama3_8B_4bit, type: .llm),
+        LMModel(name: "llama3.2:1b", configuration: LLMRegistry.llama3_2_1B_4bit, type: .llm),
+        LMModel(name: "qwen2.5:1.5b", configuration: LLMRegistry.qwen2_5_1_5b, type: .llm),
+        LMModel(name: "smolLM:135m", configuration: LLMRegistry.smolLM_135M_4bit, type: .llm),
+        LMModel(name: "qwen3:0.6b", configuration: LLMRegistry.qwen3_0_6b_4bit, type: .llm),
+        LMModel(name: "qwen3:1.7b", configuration: LLMRegistry.qwen3_1_7b_4bit, type: .llm),
+        LMModel(name: "qwen3:4b", configuration: LLMRegistry.qwen3_4b_4bit, type: .llm),
+        LMModel(name: "qwen3:8b", configuration: LLMRegistry.qwen3_8b_4bit, type: .llm),
+        LMModel(
+            name: "qwen2.5VL:3b", configuration: VLMRegistry.qwen2_5VL3BInstruct4Bit, type: .vlm),
+        LMModel(name: "qwen2VL:2b", configuration: VLMRegistry.qwen2VL2BInstruct4Bit, type: .vlm),
+        LMModel(name: "smolVLM", configuration: VLMRegistry.smolvlminstruct4bit, type: .vlm),
+        LMModel(name: "acereason:7B", configuration: LLMRegistry.acereason_7b_4bit, type: .llm),
+        LMModel(name: "gemma3n:E2B", configuration: LLMRegistry.gemma3n_E2B_it_lm_4bit, type: .llm),
+        LMModel(name: "gemma3n:E4B", configuration: LLMRegistry.gemma3n_E4B_it_lm_4bit, type: .llm),
+    ]
+    
     var running = false
 
     var includeWeatherTool = false
     var enableThinking = false
-    var maxTokens = 2048
 
     var prompt = ""
     var output = ""
@@ -43,38 +61,55 @@ class LLMEvaluator {
     private var generationTimer: Timer?
     private var firstTokenTime: TimeInterval = 0
 
-    /// This controls which model loads.
-    static public let qwen25_7b_4bit_uncensored = ModelConfiguration(
-        id: "mlx-community/Qwen2.5-7B-Instruct-Uncensored-4bit",
-        defaultPrompt: "What is the difference between a fruit and a vegetable?"
-    )
     
-    var modelConfiguration = qwen25_7b_4bit_uncensored
-
+    //var modelConfiguration = qwen25_7b_4bit_uncensored
 
     /// Parameters controlling the generation output (max tokens and temperature).
 //    var generateParameters: GenerateParameters {
 //        GenerateParameters(maxTokens: maxTokens, temperature: 0.6)
 //    }
     
+    var selectedModel = LMModel(name: "llama3_8B_4bit", configuration: LLMRegistry.llama3_8B_4bit, type: .llm)
+    
+    var modelConfiguration: ModelConfiguration {
+        selectedModel.configuration
+    }
+
+    var maxTokens = 1024
+    var maxKVSize: Int = 32768
+    var kvBits: Int = 4
+    var kvGroupSize: Int = 64
+    var quantizedKVStart: Int = 0
+    var temperature: Float = 0.75
+    var topP: Float = 0.9
+    var topK: Int = 0
+    var minP: Float = 0.05
+    var repetitionPenalty: Float = 1.12
+    var repetitionContextSize: Int = 64
+    var presencePenalty: Float = 0.2
+    var presenceContextSize: Int = 64
+    var frequencyPenalty: Float = 0.1
+    var frequencyContextSize: Int = 64
+    var prefillStepSize: Int = 512
+    
     var generateParameters: GenerateParameters {
         GenerateParameters(
-            maxTokens: maxTokens,           // оставляем как у тебя (или nil, если хочешь без лимита)
-            maxKVSize: 32768,               // комфортные 32K токенов — золотая середина для телефона
-            kvBits: 4,                      // квантизация KV-кэша, сильно экономит память
-            kvGroupSize: 64,                // стандартное значение
-            quantizedKVStart: 0,            // сразу включаем
-            temperature: 0.75,              // чуть креативнее для roleplay
-            topP: 0.9,                      // хорошая вариативность
-            topK: 0,                        // выключаем, topP лучше работает
-            minP: 0.05,                     // небольшой фильтр мусора
-            repetitionPenalty: 1.12,        // боремся с зацикливанием в длинных RP
-            repetitionContextSize: 64,      // смотрим чуть дальше назад
-            presencePenalty: 0.2,           // немного разнообразия
-            presenceContextSize: 64,
-            frequencyPenalty: 0.1,          // лёгкий штраф за частые слова
-            frequencyContextSize: 64,
-            prefillStepSize: 512            // оставляем как было
+            maxTokens: maxTokens,
+            maxKVSize: maxKVSize,
+            kvBits: kvBits,
+            kvGroupSize: kvGroupSize,
+            quantizedKVStart: quantizedKVStart,
+            temperature: temperature,
+            topP: topP,
+            topK: topK,
+            minP: minP,
+            repetitionPenalty: repetitionPenalty,
+            repetitionContextSize: repetitionContextSize,
+            presencePenalty: presencePenalty,
+            presenceContextSize: presenceContextSize,
+            frequencyPenalty: frequencyPenalty,
+            frequencyContextSize: frequencyContextSize,
+            prefillStepSize: prefillStepSize
         )
     }
 
@@ -125,9 +160,7 @@ class LLMEvaluator {
         loadState = .loading
         modelInfo = "Downloading \(modelName)..."
         downloadProgress = 0.0
-
-        Memory.cacheLimit = 20 * 1024 * 1024
-
+        Memory.cacheLimit = 10 * 1024 * 1024
         let hub = HubApi(
             downloadBase: FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
         )
@@ -195,7 +228,7 @@ class LLMEvaluator {
         }
     }
 
-    private func resetLoadingState() {
+    public func resetLoadingState() {
         loadState = .idle
         downloadProgress = nil
         totalSize = nil

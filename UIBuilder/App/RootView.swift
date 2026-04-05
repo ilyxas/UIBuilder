@@ -23,6 +23,7 @@ struct RootView: View {
     @State private var importError: String? = nil
     @State private var llmEvaluator = LLMEvaluator()
     @State private var chatModel = ChatModel()
+    @State private var deviceStat = DeviceStat()
     
 
     var body: some View {
@@ -32,7 +33,7 @@ struct RootView: View {
                 case .screen:
                     ScreenHostView(document: $screenDocument)
                 case .localLLM:
-                    LocalLLMView(evaluator: llmEvaluator, chatHolder: chatModel)
+                    LocalLLMView(llm: llmEvaluator, chatModel: chatModel, deviceStat: deviceStat)
                 }
             }
             .toolbar {
