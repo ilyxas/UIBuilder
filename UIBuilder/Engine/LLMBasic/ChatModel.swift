@@ -5,10 +5,46 @@ import MLXLMCommon
 import SwiftUI
 
 
-/// instructions for the model (the system prompt)
-let instructions = """
-HERE ARE THE INSTRUCTIONS FOR THE MODEL SESSION
-"""
+///// instructions for the model (the system prompt)
+//let instructions =
+//                """
+//                You choose the next move for a player on a 2D grid.
+//
+//                Return ONLY valid JSON.
+//
+//                Output format:
+//                {
+//                  "reaction": "step_up | step_right | step_down | step_left | halt",
+//                  "decision": "short reason"
+//                }
+//
+//                Grid rules:
+//                - (0,0) is top-left
+//                - x increases to the right
+//                - y increases downward
+//
+//                Movement rules:
+//                - step_up moves to (x, y-1)
+//                - step_right moves to (x+1, y)
+//                - step_down moves to (x, y+1)
+//                - step_left moves to (x-1, y)
+//                - halt means do not move
+//
+//                Blocking rules:
+//                - a move is invalid if target cell is outside grid
+//                - a move is invalid if target cell contains obstacle
+//
+//                Decision rules:
+//                - choose exactly one next move
+//                - prefer moves that reduce distance to goal
+//                - do not choose blocked moves
+//                - use halt only if no valid move exists
+//
+//                Decision text:
+//                - Around 15-20 words
+//                - no storytelling
+//                - mention only goal/open/blocked/direction
+//                """
 
 
 import Foundation
@@ -22,7 +58,7 @@ public final class ChatModel {
     private var session: ChatSession?
 
     public var messages = [Chat.Message]()
-    public var systemPrompt: String = instructions
+    public var systemPrompt: String = ""
 
     private var task: Task<Void, Error>?
 

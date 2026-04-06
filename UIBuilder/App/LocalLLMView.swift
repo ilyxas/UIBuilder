@@ -22,7 +22,7 @@ struct LocalLLMView: View {
     @FocusState private var promptFocused: Bool
 
     init(llm: LLMEvaluator, chatModel: ChatModel, deviceStat: DeviceStat) {
-        Memory.cacheLimit = 10 * 1024 * 1024
+        Memory.cacheLimit = 20 * 1024 * 1024
         //MLX.GPU.set(cacheLimit: 1024 * 1024 * 1024)
         self.llm = llm
         self.chatModel = chatModel

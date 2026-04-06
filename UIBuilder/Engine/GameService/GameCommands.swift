@@ -1,23 +1,33 @@
 import Foundation
 import CoreGraphics
 
-/// Low-level deterministic commands for the simulation.
-/// These are NOT produced by AI. AI produces intents, executor translates them into commands.
 enum GameCommand: Codable, Equatable {
     case setSpeedProfile(SpeedProfile)
-    case advance(DistanceStep)
+    case step(DistanceStep)
     case reverse(DistanceStep)
     case rotateLeft(RotationStep)
     case rotateRight(RotationStep)
     case halt
 
-    enum SpeedProfile: String, Codable { case slow, normal, fast }
-    enum DistanceStep: String, Codable { case small, medium, large }
-    enum RotationStep: String, Codable { case small, medium, large }
+    enum SpeedProfile: String, Codable, CaseIterable {
+        case slow
+        case normal
+        case fast
+    }
+
+    enum DistanceStep: String, Codable, CaseIterable {
+        case small
+        case medium
+        case large
+    }
+
+    enum RotationStep: String, Codable, CaseIterable {
+        case small
+        case medium
+        case large
+    }
 }
 
-/// Very small, deterministic mapping from enum steps to numeric magnitudes.
-/// Tune these later for your game feel.
 struct GameTuning {
     static func distanceUnits(for step: GameCommand.DistanceStep) -> CGFloat {
         switch step {

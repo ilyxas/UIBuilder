@@ -14,15 +14,18 @@ class LLMEvaluator {
     
     public let availableModels: [LMModel] = [
         LMModel(name: "llama3_8B_4bit", configuration: LLMRegistry.llama3_8B_4bit, type: .llm),
+        LMModel(name: "deepSeekR1_7B_4bit", configuration: LLMRegistry.deepSeekR1_7B_4bit, type: .llm),
+        LMModel(name: "llama3_1_8B_4bit", configuration: LLMRegistry.llama3_1_8B_4bit, type: .llm),
+        LMModel(name: "phi3_5_4bit", configuration: LLMRegistry.phi3_5_4bit, type: .llm),
         LMModel(name: "llama3.2:1b", configuration: LLMRegistry.llama3_2_1B_4bit, type: .llm),
         LMModel(name: "qwen2.5:1.5b", configuration: LLMRegistry.qwen2_5_1_5b, type: .llm),
+        LMModel(name: "qwen2_5_7b", configuration: LLMRegistry.qwen2_5_7b, type: .llm),
         LMModel(name: "smolLM:135m", configuration: LLMRegistry.smolLM_135M_4bit, type: .llm),
         LMModel(name: "qwen3:0.6b", configuration: LLMRegistry.qwen3_0_6b_4bit, type: .llm),
         LMModel(name: "qwen3:1.7b", configuration: LLMRegistry.qwen3_1_7b_4bit, type: .llm),
         LMModel(name: "qwen3:4b", configuration: LLMRegistry.qwen3_4b_4bit, type: .llm),
         LMModel(name: "qwen3:8b", configuration: LLMRegistry.qwen3_8b_4bit, type: .llm),
-        LMModel(
-            name: "qwen2.5VL:3b", configuration: VLMRegistry.qwen2_5VL3BInstruct4Bit, type: .vlm),
+        LMModel(name: "qwen2.5VL:3b", configuration: VLMRegistry.qwen2_5VL3BInstruct4Bit, type: .vlm),
         LMModel(name: "qwen2VL:2b", configuration: VLMRegistry.qwen2VL2BInstruct4Bit, type: .vlm),
         LMModel(name: "smolVLM", configuration: VLMRegistry.smolvlminstruct4bit, type: .vlm),
         LMModel(name: "acereason:7B", configuration: LLMRegistry.acereason_7b_4bit, type: .llm),
@@ -69,7 +72,7 @@ class LLMEvaluator {
 //        GenerateParameters(maxTokens: maxTokens, temperature: 0.6)
 //    }
     
-    var selectedModel = LMModel(name: "llama3_8B_4bit", configuration: LLMRegistry.llama3_8B_4bit, type: .llm)
+    var selectedModel = LMModel(name: "qwen2_5_7b", configuration: LLMRegistry.qwen2_5_7b, type: .llm)
     
     var modelConfiguration: ModelConfiguration {
         selectedModel.configuration
@@ -96,20 +99,20 @@ class LLMEvaluator {
         GenerateParameters(
             maxTokens: maxTokens,
             maxKVSize: maxKVSize,
-            kvBits: kvBits,
-            kvGroupSize: kvGroupSize,
-            quantizedKVStart: quantizedKVStart,
-            temperature: temperature,
-            topP: topP,
-            topK: topK,
-            minP: minP,
-            repetitionPenalty: repetitionPenalty,
-            repetitionContextSize: repetitionContextSize,
-            presencePenalty: presencePenalty,
-            presenceContextSize: presenceContextSize,
-            frequencyPenalty: frequencyPenalty,
-            frequencyContextSize: frequencyContextSize,
-            prefillStepSize: prefillStepSize
+//            kvBits: kvBits,
+//            kvGroupSize: kvGroupSize,
+//            quantizedKVStart: quantizedKVStart,
+//            temperature: temperature,
+//            topP: topP,
+//            topK: topK,
+//            minP: minP,
+//            repetitionPenalty: repetitionPenalty,
+//            repetitionContextSize: repetitionContextSize,
+//            presencePenalty: presencePenalty,
+//            presenceContextSize: presenceContextSize,
+//            frequencyPenalty: frequencyPenalty,
+//            frequencyContextSize: frequencyContextSize,
+//            prefillStepSize: prefillStepSize
         )
     }
 

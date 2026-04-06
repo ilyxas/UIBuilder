@@ -1,11 +1,14 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
+
 struct RootView: View {
     
     private enum Section: String, CaseIterable, Identifiable {
         case screen = "Screen"
         case localLLM = "Local LLM"
+        case gameLLM = "Game LLM"
+        case miniWorld = "Mini World"
 
         var id: Self { self }
 
@@ -13,6 +16,8 @@ struct RootView: View {
             switch self {
             case .screen: return "iphone"
             case .localLLM: return "message"
+            case .gameLLM: return "gamecontroller"
+            case .miniWorld: return "globe"
             }
         }
     }
@@ -24,7 +29,21 @@ struct RootView: View {
     @State private var llmEvaluator = LLMEvaluator()
     @State private var chatModel = ChatModel()
     @State private var deviceStat = DeviceStat()
-    
+    @State private var planner: WorldPlannerService = {
+        // This closure will run after `llmEvaluator` has its default value.
+        // We'll create a temporary evaluator to avoid referencing `self` before init.
+        let evaluator = LLMEvaluator()
+        let gamechatModel = ChatModel()
+        return WorldPlannerService(llm: evaluator, chatModel: gamechatModel)
+    }()
+        
+    @State private var levelPlanner: LevelPlannerService = {
+        // This closure will run after `llmEvaluator` has its default value.
+        // We'll create a temporary evaluator to avoid referencing `self` before init.
+        let evaluator = LLMEvaluator()
+        let gamechatModel = ChatModel()
+        return LevelPlannerService(llm: evaluator, chatModel: gamechatModel)
+    }()
 
     var body: some View {
         NavigationStack {
@@ -34,24 +53,39 @@ struct RootView: View {
                     ScreenHostView(document: $screenDocument)
                 case .localLLM:
                     LocalLLMView(llm: llmEvaluator, chatModel: chatModel, deviceStat: deviceStat)
+                case .gameLLM:
+                    WorldPOCView(llm: llmEvaluator, planner: planner)
+                case .miniWorld:
+                    MiniWorldView(levelPlanner: levelPlanner)
                 }
             }
             .toolbar {
                 ToolbarItemGroup(placement: .topBarLeading) {
                     Menu {
-                        Button {
-                            selection = .screen
+                            Button {
+                                selection = .screen
+                            } label: {
+                                Label("Screen", systemImage: "iphone")
+                            }
+                            Button {
+                                selection = .localLLM
+                            } label: {
+                                Label("Local LLM", systemImage: "message")
+                            }
+                            Button {
+                                selection = .gameLLM
+                            } label: {
+                                Label("Game LLM", systemImage: "gamecontroller")
+                            }
+                            Button {
+                                selection = .miniWorld
+                            } label: {
+                                Image(systemName: "globe")
+                            }
                         } label: {
-                            Label("Screen", systemImage: "iphone")
+                            Image(systemName: "square.grid.2x2")
                         }
-                        Button {
-                            selection = .localLLM
-                        } label: {
-                            Label("Local LLM", systemImage: "message")
-                        }
-                    } label: {
-                        Image(systemName: "square.grid.2x2")
-                    }
+
 
                     if selection == .screen {
                         Button {
