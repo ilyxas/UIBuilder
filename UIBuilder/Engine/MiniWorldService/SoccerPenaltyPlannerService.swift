@@ -16,6 +16,9 @@ final class SoccerPenaltyPlannerService {
     private let llm: LLMEvaluator
     public var chatModel: ChatModel
 
+    // Allow up to 200 s for the model to respond — LLM inference on-device can
+    // be slow on first run (model load + warm-up). The game suspends physics while
+    // waiting, so no gameplay disruption occurs.
     var timeoutNanoseconds: UInt64 = 200_000_000_000
     var pollNanoseconds: UInt64 = 120_000_000
 
