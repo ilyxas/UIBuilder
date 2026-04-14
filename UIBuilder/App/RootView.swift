@@ -9,6 +9,7 @@ struct RootView: View {
         case localLLM = "Local LLM"
         case gameLLM = "Game LLM"
         case miniWorld = "Mini World"
+        case soccerPenalty = "Penalty"
 
         var id: Self { self }
 
@@ -18,6 +19,7 @@ struct RootView: View {
             case .localLLM: return "message"
             case .gameLLM: return "gamecontroller"
             case .miniWorld: return "globe"
+            case .soccerPenalty: return "soccerball"
             }
         }
     }
@@ -45,6 +47,12 @@ struct RootView: View {
         return LevelPlannerService(llm: evaluator, chatModel: gamechatModel)
     }()
 
+    @State private var penaltyPlanner: SoccerPenaltyPlannerService = {
+        let evaluator = LLMEvaluator()
+        let chatModel = ChatModel()
+        return SoccerPenaltyPlannerService(llm: evaluator, chatModel: chatModel)
+    }()
+
     var body: some View {
         NavigationStack {
             Group {
@@ -57,6 +65,8 @@ struct RootView: View {
                     WorldPOCView(llm: llmEvaluator, planner: planner)
                 case .miniWorld:
                     MiniWorldView(levelPlanner: levelPlanner)
+                case .soccerPenalty:
+                    SoccerPenaltyView(planner: penaltyPlanner)
                 }
             }
             .toolbar {
@@ -81,6 +91,11 @@ struct RootView: View {
                                 selection = .miniWorld
                             } label: {
                                 Image(systemName: "globe")
+                            }
+                            Button {
+                                selection = .soccerPenalty
+                            } label: {
+                                Label("Penalty", systemImage: "soccerball")
                             }
                         } label: {
                             Image(systemName: "square.grid.2x2")
