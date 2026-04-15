@@ -43,10 +43,10 @@ final class SoccerPenaltyWorld {
 
     // MARK: Private scene nodes
 
-    private let ground: ModelEntity
+    private let ground: Entity
     private let ball: ModelEntity
     private let goalPost: Entity
-    private let goalkeeper: ModelEntity
+    private let goalkeeper: Entity          // composite humanoid container (y=0 at ground)
     private let camera: PerspectiveCamera
 
     // Trajectory dashes
@@ -71,9 +71,13 @@ final class SoccerPenaltyWorld {
     private let gravity: Float                   = 9.8
     private let ballRadius: Float                = 0.18
 
+    // Goalkeeper container is placed at y=0 (ground level); body parts are children offset upward.
+    // The torso center is ~0.65 m above the container origin, used for collision.
+    private let gkTorsoCenterY: Float            = 0.65
+
     // MARK: Goalkeeper physics
 
-    private var gkTargetPosition: SIMD3<Float>   = [0, 0.9, -5.9]
+    private var gkTargetPosition: SIMD3<Float>   = [0, 0, -5.9]
     private var gkVelocity: SIMD3<Float>         = .zero
     private var gkActive: Bool                   = false
     private var gkIntensity: Float               = 0.5
@@ -87,14 +91,8 @@ final class SoccerPenaltyWorld {
     init(planner: SoccerPenaltyPlannerService) {
         self.planner = planner
 
-        // --- Ground ---
-        let groundMesh = MeshResource.generatePlane(width: 20, depth: 30)
-        var groundMat = SimpleMaterial()
-        groundMat.color = .init(tint: UIColor(red: 0.16, green: 0.52, blue: 0.20, alpha: 1), texture: nil)
-        groundMat.roughness = 1.0
-        groundMat.metallic  = 0.0
-        ground = ModelEntity(mesh: groundMesh, materials: [groundMat])
-        ground.position = [0, 0, -6]
+        // --- Grass field with alternating stripes ---
+        ground = SoccerPenaltyWorld.buildGrassField()
 
         // --- Ball ---
         let ballMesh = MeshResource.generateSphere(radius: ballRadius)
@@ -109,30 +107,37 @@ final class SoccerPenaltyWorld {
                                                      width: goalWidth,
                                                      height: goalHeight)
 
-        // --- Goalkeeper ---
-        let gkMesh = MeshResource.generateBox(size: [0.6, 1.8, 0.3])
-        let gkMat  = SimpleMaterial(color: UIColor(red: 0.1, green: 0.3, blue: 0.9, alpha: 1),
-                                    roughness: 0.5, isMetallic: false)
-        goalkeeper = ModelEntity(mesh: gkMesh, materials: [gkMat])
-        goalkeeper.position = [0, 0.9, -5.9]
+        // --- Goalkeeper: humanoid composite ---
+        goalkeeper = SoccerPenaltyWorld.buildHumanoidGoalkeeper()
+        goalkeeper.position = [0, 0, -5.9]
 
-        // --- Light ---
-        let light = DirectionalLight()
-        light.light.intensity = 35_000
-        light.shadow = DirectionalLightComponent.Shadow()
-        light.orientation = simd_quatf(angle: -.pi / 3.5, axis: [1, 0, 0])
+        // --- Lighting: directional sun + ambient fill ---
+        let sun = DirectionalLight()
+        sun.light.intensity = 38_000
+        sun.shadow = DirectionalLightComponent.Shadow()
+        sun.orientation = simd_quatf(angle: -.pi / 3.5, axis: [1, 0, 0])
+
+        let fill = DirectionalLight()
+        fill.light.intensity = 6_000
+        fill.orientation = simd_quatf(angle: .pi / 6, axis: [0, 1, 0]) *
+                           simd_quatf(angle: .pi / 8, axis: [1, 0, 0])
 
         // --- Camera ---
         camera = PerspectiveCamera()
         camera.camera.fieldOfViewInDegrees = 65
 
+        // --- Environment: sky + crowd ---
+        let env = SoccerPenaltyWorld.buildEnvironment()
+
         // Build hierarchy
-        root.addChild(light)
+        root.addChild(sun)
+        root.addChild(fill)
         root.addChild(camera)
         root.addChild(ground)
         root.addChild(ball)
         root.addChild(goalPost)
         root.addChild(goalkeeper)
+        root.addChild(env)
 
         updateCamera()
     }
@@ -155,9 +160,9 @@ final class SoccerPenaltyWorld {
 
         // Goalkeeper chase
         if gkActive {
-            let diff      = gkTargetPosition - goalkeeper.position
-            let dist      = simd_length(diff)
-            let speed     = gkIntensity * 6.0
+            let diff  = gkTargetPosition - goalkeeper.position
+            let dist  = simd_length(diff)
+            let speed = gkIntensity * 6.0
             if dist > 0.01 {
                 goalkeeper.position += (diff / dist) * min(speed * dt, dist)
             } else {
@@ -167,9 +172,10 @@ final class SoccerPenaltyWorld {
 
         // --- Collision checks ---
 
-        // 1. Ball hits goalkeeper?
-        let toGK = simd_distance(ball.position, goalkeeper.position)
-        if toGK < (ballRadius + 0.5) && ball.position.z < -4.5 {
+        // 1. Ball hits goalkeeper? (check against torso center)
+        let gkTorsoPos = goalkeeper.position + SIMD3<Float>(0, gkTorsoCenterY, 0)
+        let toGK = simd_distance(ball.position, gkTorsoPos)
+        if toGK < (ballRadius + 0.55) && ball.position.z < -4.5 {
             handleBlocked()
             return
         }
@@ -229,7 +235,7 @@ final class SoccerPenaltyWorld {
                 let response = try await planner.interpret(request: request)
                 applyGoalkeeperResponse(response)
             } catch {
-                // Fallback: goalkeeper dives to the opposite corner
+                // Fallback: goalkeeper dives to a random corner
                 applyFallbackGoalkeeper()
             }
             isLLMBusy = false
@@ -267,20 +273,19 @@ final class SoccerPenaltyWorld {
         aimDirection     = .zero
         shotPower        = 0.5
         phase            = .aiming
-        goalkeeper.position = [0, 0.9, -5.9]
+        goalkeeper.position = [0, 0, -5.9]
         clearDashes()
         updateCamera()
     }
 
     private func startNewRound() {
-        // Randomise ball X slightly to vary the angle
         let offsetX = Float.random(in: -1.0...1.0)
         ball.position    = [offsetX, ballRadius, 0]
         ballVelocity     = .zero
         aimDirection     = .zero
         shotPower        = 0.5
         phase            = .aiming
-        goalkeeper.position = [0, 0.9, -5.9]
+        goalkeeper.position = [0, 0, -5.9]
         clearDashes()
         updateCamera()
     }
@@ -304,9 +309,9 @@ final class SoccerPenaltyWorld {
     }
 
     private func classifyDirection() -> ShotDirection {
-        // aimDirection: x = horizontal, y = vertical (y positive = up)
-        let x = aimDirection.x  // -1 = left, 1 = right
-        let y = aimDirection.y  // -1 = down, 1 = up
+        // aimDirection: x > 0 = player's right (+X world), y > 0 = up
+        let x = aimDirection.x
+        let y = aimDirection.y
 
         let isLeft   = x < -0.25
         let isRight  = x >  0.25
@@ -340,7 +345,6 @@ final class SoccerPenaltyWorld {
     }
 
     private func applyFallbackGoalkeeper() {
-        // Jump to a random corner
         let directions: [ShotDirection] = [.bottomLeft, .bottomRight, .topLeft, .topRight]
         let dir = directions.randomElement() ?? .bottomLeft
         gkTargetPosition = goalPositionFor(direction: dir)
@@ -348,27 +352,33 @@ final class SoccerPenaltyWorld {
         gkActive = true
     }
 
+    /// Maps goalkeeper jump direction to world-space position.
+    ///
+    /// The LLM responds using the GOALKEEPER's perspective (facing the player):
+    ///   • "left"  = goalkeeper's left  = player's right = +X world space
+    ///   • "right" = goalkeeper's right = player's left  = –X world space
+    ///
+    /// The goalkeeper container origin is at ground level (y = 0).
     private func goalPositionFor(direction: ShotDirection) -> SIMD3<Float> {
         let halfW = goalWidth / 2
-        let halfH = goalHeight / 2
         let z: Float = -5.9
 
         switch direction {
-        case .topLeft:     return [-halfW * 0.75,  goalCenter.y + halfH * 0.7, z]
-        case .leftCenter:  return [-halfW * 0.75,  goalCenter.y,               z]
-        case .bottomLeft:  return [-halfW * 0.75,  goalCenter.y - halfH * 0.5, z]
-        case .topCenter:   return [ 0,             goalCenter.y + halfH * 0.7, z]
-        case .bottomCenter:return [ 0,             goalCenter.y - halfH * 0.5, z]
-        case .topRight:    return [ halfW * 0.75,  goalCenter.y + halfH * 0.7, z]
-        case .rightCenter: return [ halfW * 0.75,  goalCenter.y,               z]
-        case .bottomRight: return [ halfW * 0.75,  goalCenter.y - halfH * 0.5, z]
+        case .topLeft, .leftCenter, .bottomLeft:
+            return [+halfW * 0.75, 0, z]   // goalkeeper's left  = player's right = +X
+        case .topCenter, .bottomCenter:
+            return [0, 0, z]
+        case .topRight, .rightCenter, .bottomRight:
+            return [-halfW * 0.75, 0, z]   // goalkeeper's right = player's left  = –X
         }
     }
 
     private func launchBall() {
         let power = shotPower * 18.0 + 6.0    // 6…24 m/s
         let dx    = aimDirection.x * 3.0
-        let dy    = max(0, aimDirection.y) * 4.0 + 2.0   // always has some lift
+        // Vertical: base lift of 2 m/s; full upward aim adds ~4.5 m/s,
+        // calibrated so that top-of-goal is reachable at medium power.
+        let dy    = max(0, aimDirection.y) * 4.5 + 2.0
         let dz    = -power
 
         ballVelocity  = SIMD3<Float>(dx, dy, dz)
@@ -383,8 +393,9 @@ final class SoccerPenaltyWorld {
         let inWidth  = abs(bx - goalCenter.x) < goalWidth / 2
         let inHeight = by > 0 && by < goalCenter.y + goalHeight / 2
 
-        // Check if goalkeeper is blocking
-        let gkDist = simd_distance(ball.position, goalkeeper.position)
+        // Check if goalkeeper is blocking (against torso center)
+        let gkTorsoPos = goalkeeper.position + SIMD3<Float>(0, gkTorsoCenterY, 0)
+        let gkDist = simd_distance(ball.position, gkTorsoPos)
         let blocked = gkDist < (ballRadius + 0.55)
 
         if inWidth && inHeight && !blocked {
@@ -394,26 +405,37 @@ final class SoccerPenaltyWorld {
         }
     }
 
-    // MARK: - Trajectory dashes
+    // MARK: - Trajectory dashes (physics-based arc)
 
     private func rebuildTrajectory() {
         clearDashes()
         guard simd_length(aimDirection) > 0.05 else { return }
 
-        let steps  = 8
-        let step   = SIMD3<Float>(aimDirection.x * 0.3, 0.1, -0.5)
+        let power  = shotPower * 18.0 + 6.0
+        let dx     = aimDirection.x * 3.0
+        let dy     = max(0, aimDirection.y) * 4.5 + 2.0
+        let dz     = -power
+        var vel    = SIMD3<Float>(dx, dy, dz)
+        var pos    = ball.position
+        let simDt: Float = 0.09
 
-        for i in 1...steps {
-            let pos = ball.position + step * Float(i)
+        for i in 0..<14 {
+            vel.y -= gravity * simDt
+            pos   += vel * simDt
+            guard pos.y >= ballRadius && pos.z >= goalCenter.z - 0.5 else { break }
 
-            let dashMesh = MeshResource.generateBox(size: [0.06, 0.06, 0.25])
-            var dashMat  = SimpleMaterial()
-            dashMat.color = .init(tint: UIColor(red: 1, green: 0.85, blue: 0.0, alpha: 0.85), texture: nil)
-            let dash = ModelEntity(mesh: dashMesh, materials: [dashMat])
-            dash.position = pos
+            let alpha = Float(0.9) * (1.0 - Float(i) / 16.0)
+            var dotMat = SimpleMaterial()
+            dotMat.color = .init(
+                tint: UIColor(red: 1.0, green: 0.85, blue: 0.0, alpha: CGFloat(alpha)),
+                texture: nil
+            )
+            let dotMesh = MeshResource.generateSphere(radius: 0.045)
+            let dot = ModelEntity(mesh: dotMesh, materials: [dotMat])
+            dot.position = pos
 
-            root.addChild(dash)
-            dashEntities.append(dash)
+            root.addChild(dot)
+            dashEntities.append(dot)
         }
     }
 
@@ -434,42 +456,345 @@ final class SoccerPenaltyWorld {
         camera.look(at: targetPos, from: camPos, relativeTo: nil)
     }
 
-    // MARK: - Goal post builder
+    // MARK: - Scene builders
 
+    /// Creates a grass field with alternating dark / light green stripes
+    /// plus a white penalty box outline and centre spot.
+    private static func buildGrassField() -> Entity {
+        let container = Entity()
+
+        let darkGreen  = UIColor(red: 0.10, green: 0.38, blue: 0.10, alpha: 1)
+        let lightGreen = UIColor(red: 0.16, green: 0.52, blue: 0.16, alpha: 1)
+        let stripeDepth: Float = 3.0
+        let fieldWidth: Float  = 22.0
+        let numStripes = 10
+
+        for i in 0..<numStripes {
+            let color = i % 2 == 0 ? darkGreen : lightGreen
+            var mat = SimpleMaterial()
+            mat.color = .init(tint: color, texture: nil)
+            mat.roughness = 1.0
+            mat.metallic  = 0.0
+            let mesh   = MeshResource.generatePlane(width: fieldWidth, depth: stripeDepth)
+            let stripe = ModelEntity(mesh: mesh, materials: [mat])
+            // stripes: 0 at z=+0, 1 at z=-3, …, 9 at z=-27
+            stripe.position = [0, 0.0, Float(i) * (-stripeDepth) + 1.5]
+            container.addChild(stripe)
+        }
+
+        // Field markings in white
+        addFieldMarkings(to: container, fieldWidth: fieldWidth)
+
+        return container
+    }
+
+    /// Adds white penalty box and centre-spot markings as thin box entities.
+    private static func addFieldMarkings(to container: Entity, fieldWidth: Float) {
+        let lineMat: SimpleMaterial = {
+            var m = SimpleMaterial()
+            m.color = .init(tint: UIColor(white: 1, alpha: 0.80), texture: nil)
+            m.roughness = 1.0
+            return m
+        }()
+        let lineH: Float  = 0.02   // line sits just above the grass
+        let lineT: Float  = 0.06   // line thickness (world units)
+
+        // Penalty box: 7.32 m wide, extends ~5.5 m forward from goal line
+        let boxW: Float = 8.0
+        let boxDepth: Float = 5.5
+        let goalLineZ: Float = -6.0
+        let frontZ = goalLineZ + boxDepth  // ≈ -0.5
+
+        // Goal line (x-axis at z = -6)
+        addLine(to: container, mat: lineMat,
+                size: [boxW + lineT, lineH, lineT],
+                at: [0, lineH / 2, goalLineZ])
+
+        // Front line of penalty box
+        addLine(to: container, mat: lineMat,
+                size: [boxW + lineT, lineH, lineT],
+                at: [0, lineH / 2, frontZ])
+
+        // Left side of penalty box
+        addLine(to: container, mat: lineMat,
+                size: [lineT, lineH, boxDepth],
+                at: [-boxW / 2, lineH / 2, goalLineZ + boxDepth / 2])
+
+        // Right side of penalty box
+        addLine(to: container, mat: lineMat,
+                size: [lineT, lineH, boxDepth],
+                at: [boxW / 2, lineH / 2, goalLineZ + boxDepth / 2])
+
+        // Penalty spot
+        let spotMesh = MeshResource.generatePlane(width: 0.2, depth: 0.2)
+        let spot = ModelEntity(mesh: spotMesh, materials: [lineMat])
+        spot.position = [0, lineH / 2, -5.5]
+        container.addChild(spot)
+    }
+
+    private static func addLine(to container: Entity,
+                                mat: SimpleMaterial,
+                                size: SIMD3<Float>,
+                                at position: SIMD3<Float>) {
+        let mesh   = MeshResource.generateBox(size: size)
+        let entity = ModelEntity(mesh: mesh, materials: [mat])
+        entity.position = position
+        container.addChild(entity)
+    }
+
+    /// Builds a realistic soccer goal using cylinder posts and a visible net.
     private static func buildGoalPost(center: SIMD3<Float>,
                                       width: Float,
                                       height: Float) -> Entity {
-        let container = Entity()
-        let postRadius: Float = 0.07
-        let mat = SimpleMaterial(color: .white, roughness: 0.3, isMetallic: true)
+        let container  = Entity()
+        let postRadius: Float = 0.065
+        let goalDepth: Float  = 1.5   // how deep the goal frame extends back
 
-        // Left post
-        let leftMesh = MeshResource.generateBox(size: [postRadius * 2, height, postRadius * 2])
-        let leftPost = ModelEntity(mesh: leftMesh, materials: [mat])
-        leftPost.position = [center.x - width / 2, center.y, center.z]
-        container.addChild(leftPost)
+        // White metallic post material
+        let postMat = SimpleMaterial(color: .white, roughness: 0.25, isMetallic: true)
 
-        // Right post
-        let rightMesh = MeshResource.generateBox(size: [postRadius * 2, height, postRadius * 2])
-        let rightPost = ModelEntity(mesh: rightMesh, materials: [mat])
-        rightPost.position = [center.x + width / 2, center.y, center.z]
-        container.addChild(rightPost)
+        // Helper: vertical cylinder
+        func vertPost(x: Float, z: Float) -> ModelEntity {
+            let mesh = MeshResource.generateCylinder(height: height, radius: postRadius)
+            let e = ModelEntity(mesh: mesh, materials: [postMat])
+            e.position = [x, center.y, z]
+            return e
+        }
 
-        // Crossbar
-        let barMesh = MeshResource.generateBox(size: [width + postRadius * 2, postRadius * 2, postRadius * 2])
-        let crossbar = ModelEntity(mesh: barMesh, materials: [mat])
-        crossbar.position = [center.x, center.y + height / 2, center.z]
-        container.addChild(crossbar)
+        // Helper: horizontal cylinder along X
+        func horizBar(y: Float, z: Float, barWidth: Float) -> ModelEntity {
+            let mesh = MeshResource.generateCylinder(height: barWidth, radius: postRadius)
+            let e = ModelEntity(mesh: mesh, materials: [postMat])
+            e.position = [center.x, y, z]
+            e.orientation = simd_quatf(angle: .pi / 2, axis: [0, 0, 1])
+            return e
+        }
 
-        // Back net (visual only — thin plane)
+        // Helper: horizontal cylinder along Z (depth bar)
+        func depthBar(x: Float, y: Float) -> ModelEntity {
+            let mesh = MeshResource.generateCylinder(height: goalDepth, radius: postRadius)
+            let e = ModelEntity(mesh: mesh, materials: [postMat])
+            e.position = [x, y, center.z - goalDepth / 2]
+            e.orientation = simd_quatf(angle: .pi / 2, axis: [1, 0, 0])
+            return e
+        }
+
+        let lx = center.x - width / 2
+        let rx = center.x + width / 2
+        let topY = center.y + height / 2
+
+        // Front left & right posts
+        container.addChild(vertPost(x: lx, z: center.z))
+        container.addChild(vertPost(x: rx, z: center.z))
+
+        // Back left & right posts
+        container.addChild(vertPost(x: lx, z: center.z - goalDepth))
+        container.addChild(vertPost(x: rx, z: center.z - goalDepth))
+
+        // Front crossbar
+        container.addChild(horizBar(y: topY, z: center.z,            barWidth: width + postRadius * 2))
+        // Back crossbar
+        container.addChild(horizBar(y: topY, z: center.z - goalDepth, barWidth: width + postRadius * 2))
+
+        // Top side bars (left and right, going into depth)
+        container.addChild(depthBar(x: lx, y: topY))
+        container.addChild(depthBar(x: rx, y: topY))
+
+        // Bottom back bar
+        container.addChild(horizBar(y: 0, z: center.z - goalDepth,   barWidth: width + postRadius * 2))
+
+        // Net planes (semi-transparent white)
         var netMat = SimpleMaterial()
-        netMat.color = .init(tint: UIColor(white: 1, alpha: 0.15), texture: nil)
-        let netMesh = MeshResource.generatePlane(width: width, depth: height)
-        let net = ModelEntity(mesh: netMesh, materials: [netMat])
-        // Rotate the plane so it stands upright in the XY plane
-        net.orientation = simd_quatf(angle: .pi / 2, axis: [1, 0, 0])
-        net.position = [center.x, center.y, center.z - 0.05]
-        container.addChild(net)
+        netMat.color = .init(tint: UIColor(white: 1.0, alpha: 0.18), texture: nil)
+
+        // Back net
+        let backNetMesh = MeshResource.generatePlane(width: width, depth: height)
+        let backNet = ModelEntity(mesh: backNetMesh, materials: [netMat])
+        backNet.orientation = simd_quatf(angle: .pi / 2, axis: [1, 0, 0])
+        backNet.position = [center.x, center.y, center.z - goalDepth]
+        container.addChild(backNet)
+
+        // Top net (ceiling)
+        let topNetMesh = MeshResource.generatePlane(width: width, depth: goalDepth)
+        let topNet = ModelEntity(mesh: topNetMesh, materials: [netMat])
+        topNet.position = [center.x, topY, center.z - goalDepth / 2]
+        container.addChild(topNet)
+
+        // Left side net
+        let sideNetMesh = MeshResource.generatePlane(width: goalDepth, depth: height)
+        let leftSideNet = ModelEntity(mesh: sideNetMesh, materials: [netMat])
+        leftSideNet.orientation = simd_quatf(angle: .pi / 2, axis: [0, 1, 0]) *
+                                   simd_quatf(angle: .pi / 2, axis: [1, 0, 0])
+        leftSideNet.position = [lx, center.y, center.z - goalDepth / 2]
+        container.addChild(leftSideNet)
+
+        // Right side net
+        let rightSideNet = ModelEntity(mesh: sideNetMesh, materials: [netMat])
+        rightSideNet.orientation = simd_quatf(angle: -.pi / 2, axis: [0, 1, 0]) *
+                                    simd_quatf(angle: .pi / 2, axis: [1, 0, 0])
+        rightSideNet.position = [rx, center.y, center.z - goalDepth / 2]
+        container.addChild(rightSideNet)
+
+        return container
+    }
+
+    /// Builds a humanoid goalkeeper character from primitive shapes.
+    /// The container origin is at ground level (y = 0) so that the entity can
+    /// be moved purely in the XZ plane. Body parts are offset in Y.
+    private static func buildHumanoidGoalkeeper() -> Entity {
+        let container = Entity()
+
+        // Jersey: bright orange (typical goalkeeper colour)
+        let jerseyMat = SimpleMaterial(
+            color: UIColor(red: 0.90, green: 0.55, blue: 0.05, alpha: 1),
+            roughness: 0.5, isMetallic: false
+        )
+        // Shorts: dark navy
+        let shortsMat = SimpleMaterial(
+            color: UIColor(red: 0.05, green: 0.08, blue: 0.50, alpha: 1),
+            roughness: 0.5, isMetallic: false
+        )
+        // Skin
+        let skinMat = SimpleMaterial(
+            color: UIColor(red: 0.94, green: 0.80, blue: 0.65, alpha: 1),
+            roughness: 0.60, isMetallic: false
+        )
+        // Gloves: white
+        let gloveMat = SimpleMaterial(
+            color: UIColor(white: 0.92, alpha: 1),
+            roughness: 0.55, isMetallic: false
+        )
+        // Boots: black
+        let bootMat = SimpleMaterial(
+            color: UIColor(white: 0.08, alpha: 1),
+            roughness: 0.6, isMetallic: false
+        )
+
+        let legH: Float     = 0.52
+        let legR: Float     = 0.075
+        let legMesh         = MeshResource.generateCylinder(height: legH, radius: legR)
+        let leftLeg         = ModelEntity(mesh: legMesh, materials: [shortsMat])
+        leftLeg.position    = [-0.12, legH / 2, 0]
+        let rightLeg        = ModelEntity(mesh: legMesh, materials: [shortsMat])
+        rightLeg.position   = [ 0.12, legH / 2, 0]
+        container.addChild(leftLeg)
+        container.addChild(rightLeg)
+
+        // Boots (small boxes at foot level)
+        let bootMesh       = MeshResource.generateBox(size: [0.14, 0.10, 0.22])
+        let leftBoot       = ModelEntity(mesh: bootMesh, materials: [bootMat])
+        leftBoot.position  = [-0.12, 0.05, 0.04]
+        let rightBoot      = ModelEntity(mesh: bootMesh, materials: [bootMat])
+        rightBoot.position = [ 0.12, 0.05, 0.04]
+        container.addChild(leftBoot)
+        container.addChild(rightBoot)
+
+        // Torso
+        let torsoMesh     = MeshResource.generateBox(size: [0.44, 0.46, 0.22])
+        let torso         = ModelEntity(mesh: torsoMesh, materials: [jerseyMat])
+        torso.position    = [0, 0.77, 0]
+        container.addChild(torso)
+
+        // Neck
+        let neckMesh      = MeshResource.generateCylinder(height: 0.12, radius: 0.07)
+        let neck          = ModelEntity(mesh: neckMesh, materials: [skinMat])
+        neck.position     = [0, 1.06, 0]
+        container.addChild(neck)
+
+        // Head
+        let headMesh      = MeshResource.generateSphere(radius: 0.16)
+        let head          = ModelEntity(mesh: headMesh, materials: [skinMat])
+        head.position     = [0, 1.24, 0]
+        container.addChild(head)
+
+        // Arms (angled slightly outward — ready pose)
+        let armH: Float   = 0.40
+        let armR: Float   = 0.065
+        let armMesh       = MeshResource.generateCylinder(height: armH, radius: armR)
+
+        let leftArm       = ModelEntity(mesh: armMesh, materials: [jerseyMat])
+        leftArm.position  = [-0.30, 0.88, 0]
+        leftArm.orientation = simd_quatf(angle: .pi / 5.5, axis: [0, 0, 1])
+        let rightArm      = ModelEntity(mesh: armMesh, materials: [jerseyMat])
+        rightArm.position = [ 0.30, 0.88, 0]
+        rightArm.orientation = simd_quatf(angle: -.pi / 5.5, axis: [0, 0, 1])
+        container.addChild(leftArm)
+        container.addChild(rightArm)
+
+        // Gloves (at the tips of the arms)
+        let gloveMesh       = MeshResource.generateSphere(radius: 0.09)
+        let leftGlove       = ModelEntity(mesh: gloveMesh, materials: [gloveMat])
+        leftGlove.position  = [-0.41, 0.62, 0]
+        let rightGlove      = ModelEntity(mesh: gloveMesh, materials: [gloveMat])
+        rightGlove.position = [ 0.41, 0.62, 0]
+        container.addChild(leftGlove)
+        container.addChild(rightGlove)
+
+        return container
+    }
+
+    /// Adds a sky backdrop and simple crowd suggestion behind the goal.
+    private static func buildEnvironment() -> Entity {
+        let container = Entity()
+
+        // Sky: large light-blue vertical plane far behind the goal
+        var skyMat = SimpleMaterial()
+        skyMat.color = .init(tint: UIColor(red: 0.53, green: 0.81, blue: 0.98, alpha: 1), texture: nil)
+        skyMat.roughness = 1.0
+        let skyMesh = MeshResource.generatePlane(width: 60, depth: 20)
+        let sky = ModelEntity(mesh: skyMesh, materials: [skyMat])
+        sky.orientation = simd_quatf(angle: .pi / 2, axis: [1, 0, 0])
+        sky.position = [0, 10, -20]
+        container.addChild(sky)
+
+        // Crowd stand: two rows of coloured boxes behind the goal
+        let rowColors: [UIColor] = [
+            UIColor(red: 0.80, green: 0.15, blue: 0.15, alpha: 1),
+            UIColor(red: 0.20, green: 0.50, blue: 0.80, alpha: 1),
+            UIColor(red: 0.90, green: 0.85, blue: 0.10, alpha: 1),
+            UIColor(red: 0.85, green: 0.85, blue: 0.85, alpha: 1),
+            UIColor(red: 0.15, green: 0.65, blue: 0.20, alpha: 1),
+        ]
+        let seatSize: SIMD3<Float> = [1.8, 0.6, 0.5]
+
+        for row in 0..<3 {
+            for col in 0..<7 {
+                let color = rowColors[(row + col) % rowColors.count]
+                var mat = SimpleMaterial()
+                mat.color = .init(tint: color, texture: nil)
+                let mesh  = MeshResource.generateBox(size: seatSize)
+                let seat  = ModelEntity(mesh: mesh, materials: [mat])
+                seat.position = [
+                    Float(col - 3) * 2.0,
+                    0.8 + Float(row) * 0.8,
+                    -9.0 - Float(row) * 0.6
+                ]
+                container.addChild(seat)
+            }
+        }
+
+        // Side stands (left and right)
+        let standColors: [UIColor] = [
+            UIColor(red: 0.80, green: 0.15, blue: 0.15, alpha: 1),
+            UIColor(red: 0.20, green: 0.50, blue: 0.80, alpha: 1),
+        ]
+        for side in [-1, 1] as [Float] {
+            for row in 0..<2 {
+                for col in 0..<5 {
+                    let color = standColors[(row + col) % standColors.count]
+                    var mat = SimpleMaterial()
+                    mat.color = .init(tint: color, texture: nil)
+                    let mesh  = MeshResource.generateBox(size: seatSize)
+                    let seat  = ModelEntity(mesh: mesh, materials: [mat])
+                    seat.position = [
+                        side * (10.0 + Float(row) * 0.6),
+                        0.6 + Float(row) * 0.7,
+                        Float(col - 2) * 2.2 - 3.0
+                    ]
+                    container.addChild(seat)
+                }
+            }
+        }
 
         return container
     }
