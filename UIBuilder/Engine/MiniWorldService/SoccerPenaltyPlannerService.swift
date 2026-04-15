@@ -113,7 +113,16 @@ final class SoccerPenaltyPlannerService {
 
         Input fields:
         - ballDistance: "close" | "medium" | "far"
-        - shotDirection: one of 8 sectors: "top-left" | "left-center" | "bottom-left" | "top-center" | "bottom-center" | "top-right" | "right-center" | "bottom-right"
+        - shotDirection: one of 8 sectors describing where the ball is heading,
+          from the GOALKEEPER's perspective (facing the player):
+          "top-left" | "left-center" | "bottom-left" | "top-center" | "bottom-center"
+          | "top-right" | "right-center" | "bottom-right"
+
+        IMPORTANT — Direction convention:
+        Both shotDirection and jumpDirection use the GOALKEEPER's reference frame.
+        "left" means the goalkeeper's left side; "right" means the goalkeeper's right side.
+        To BLOCK the shot, your jumpDirection must be the SAME value as shotDirection.
+        Example: shot "top-left" → jump "top-left" to block it.
 
         Output format:
         {
@@ -123,12 +132,12 @@ final class SoccerPenaltyPlannerService {
         }
 
         Goalkeeper rules:
-        - React based on the shot direction and distance
-        - If the ball is far, the goalkeeper has more reaction time — be more accurate
-        - If the ball is close, reaction is harder — allow some misses
-        - Vary the reactions slightly to be realistic (do not always perfectly predict the shot)
-        - "intensity" reflects how far / fast the goalkeeper dives
-        - Keep "note" to 10 words or less
+        - React based on the shot direction and distance.
+        - If the ball is far, the goalkeeper has more reaction time — be more accurate.
+        - If the ball is close, reaction is harder — allow some misses.
+        - Vary the reactions slightly to be realistic (do not always perfectly predict the shot).
+        - "intensity" reflects how far / fast the goalkeeper dives.
+        - Keep "note" to 10 words or less.
         """
     }
 
