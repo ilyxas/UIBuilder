@@ -45,7 +45,7 @@ final class SoccerPenaltyWorld {
 
     private let ground: Entity
     private let ball: ModelEntity
-    private let goalPost: Entity
+    public let goalPost: Entity
     private let goalkeeper: Entity          // composite humanoid container (y=0 at ground)
     private let camera: PerspectiveCamera
 
@@ -199,15 +199,12 @@ final class SoccerPenaltyWorld {
     }
 
     func updateAimDrag(_ drag: SIMD2<Float>) {
-        guard phase == .aiming else { return }
         aimDirection = drag
         rebuildTrajectory()
     }
 
     func confirmAim() {
-        guard phase == .aiming else { return }
         phase = .ready
-        clearDashes()
     }
 
     // MARK: - Power
@@ -365,11 +362,11 @@ final class SoccerPenaltyWorld {
 
         switch direction {
         case .topLeft, .leftCenter, .bottomLeft:
-            return [+halfW * 0.75, 0, z]   // goalkeeper's left  = player's right = +X
+            return [-halfW * 0.75, 0, z]   // goalkeeper's left  = player's right = +X
         case .topCenter, .bottomCenter:
             return [0, 0, z]
         case .topRight, .rightCenter, .bottomRight:
-            return [-halfW * 0.75, 0, z]   // goalkeeper's right = player's left  = –X
+            return [+halfW * 0.75, 0, z]   // goalkeeper's right = player's left  = –X
         }
     }
 
@@ -409,7 +406,7 @@ final class SoccerPenaltyWorld {
 
     private func rebuildTrajectory() {
         clearDashes()
-        guard simd_length(aimDirection) > 0.05 else { return }
+        guard simd_length(aimDirection) > 0.08 else { return }
 
         let power  = shotPower * 18.0 + 6.0
         let dx     = aimDirection.x * 3.0
@@ -426,10 +423,8 @@ final class SoccerPenaltyWorld {
 
             let alpha = Float(0.9) * (1.0 - Float(i) / 16.0)
             var dotMat = SimpleMaterial()
-            dotMat.color = .init(
-                tint: UIColor(red: 1.0, green: 0.85, blue: 0.0, alpha: CGFloat(alpha)),
-                texture: nil
-            )
+            // Blue and yellow color
+            dotMat.color = .init(tint: UIColor(red: 1.0, green: 0.0, blue: 0.0, alpha: CGFloat(alpha)), texture: nil)
             let dotMesh = MeshResource.generateSphere(radius: 0.045)
             let dot = ModelEntity(mesh: dotMesh, materials: [dotMat])
             dot.position = pos
@@ -605,8 +600,7 @@ final class SoccerPenaltyWorld {
 
         // Net planes (semi-transparent white)
         var netMat = SimpleMaterial()
-        netMat.color = .init(tint: UIColor(white: 1.0, alpha: 0.18), texture: nil)
-
+        netMat.color = .init(tint: UIColor(red: 0.15, green: 0.45, blue: 0.95, alpha: 0.18), texture: nil)
         // Back net
         let backNetMesh = MeshResource.generatePlane(width: width, depth: height)
         let backNet = ModelEntity(mesh: backNetMesh, materials: [netMat])
@@ -799,3 +793,4 @@ final class SoccerPenaltyWorld {
         return container
     }
 }
+

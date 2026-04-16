@@ -73,10 +73,13 @@ struct SoccerPenaltyView: View {
     private var aimGesture: some Gesture {
         DragGesture(minimumDistance: 4)
             .onChanged { value in
-                guard world.phase == .aiming else { return }
-                let size = UIScreen.main.bounds.size
-                let nx = Float(value.translation.width  / size.width)  * 2
-                let ny = Float(-value.translation.height / size.height) * 2
+               
+                let bounds = world.goalPost.visualBounds(relativeTo: world.root)
+                // Derive a 2D size from 3D bounding box extents (x ~ width, y ~ height)
+                let width = max(CGFloat(bounds.extents.x), 1)
+                let height = max(CGFloat(bounds.extents.y), 1)
+                let nx = Float(value.translation.width  / width)  * 2
+                let ny = Float(-value.translation.height / height) * 2
                 let raw = SIMD2<Float>(nx, ny)
                 let len = simd_length(raw)
                 let clamped = len > 1 ? raw / len : raw
@@ -247,3 +250,4 @@ struct SoccerPenaltyView: View {
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
     }
 }
+
